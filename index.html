@@ -559,6 +559,38 @@ input,select{
   .setup-guide-head h2{font-size:17px}
 }
 
+
+/* v50 bill editing + collapsed Smart Stride */
+.bill-update-modern{
+  border:1px solid rgba(70,174,245,.32);
+  background:rgba(70,174,245,.08);
+  color:#61b8f2;
+  border-radius:9px;
+  padding:6px 8px;
+  font-size:9px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.bill-update-modern:active{background:rgba(70,174,245,.16)}
+.smart-stride-dropdown{
+  margin-bottom:10px;border:1px solid var(--border);border-radius:16px;background:var(--card);overflow:hidden
+}
+.smart-stride-dropdown>summary{
+  list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;cursor:pointer
+}
+.smart-stride-dropdown>summary::-webkit-details-marker{display:none}
+.smart-stride-dropdown>summary b{display:block;font-size:14px}
+.smart-stride-dropdown>summary small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.smart-stride-dropdown>summary>span{color:var(--accent);font-size:10px;font-weight:700}
+.smart-stride-dropdown[open]>summary>span{font-size:0}
+.smart-stride-dropdown[open]>summary>span::after{content:"Close";font-size:10px}
+.smart-stride-body{padding:0 8px 8px}
+.smart-stride-body>.card{margin:0;box-shadow:none}
+@media(max-width:640px){
+  .bill-row-modern{grid-template-columns:minmax(0,1fr) auto auto auto auto}
+  .bill-update-modern,.bill-remove-modern{padding:6px 7px}
+}
+
 </style>
 </head>
 <body>
@@ -822,7 +854,7 @@ input,select{
           </select>
         </div>
         <div class="field"><label>Priority</label><select id="billPriority"><option value="critical">Critical</option><option value="important" selected>Important</option><option value="flexible">Flexible</option></select></div>
-        <button id="addBill" class="primary-btn">Add bill</button>
+        <button id="addBill" class="primary-btn">Add bill</button><button id="cancelBillEdit" type="button" class="ghost hidden">Cancel</button>
       </div>
       <div id="billMsg" class="msg hidden"></div><div class="bill-helper">If you don’t know the exact due date, choose <b>Monthly — date unknown</b>. Stride will reserve the bill across your paychecks instead of forcing you to guess a date.</div>
     </details>
@@ -910,6 +942,9 @@ input,select{
   <details class="compact-details appPageHidden" id="planAdvanced">
     <summary><div><b>More plan details</b><small>Catch-up style comparison and adaptive pacing.</small></div><span>Show</span></summary>
     <div class="details-body">
+  <details class="smart-stride-dropdown" id="smartStrideDropdown">
+    <summary><div><b>Smart Stride</b><small>Learning & recommendations</small></div><span>Open</span></summary>
+    <div class="smart-stride-body">
 
 
   <section class="card section" id="planSection">
@@ -927,6 +962,8 @@ input,select{
       <div class="smart-row"><span>Spending trend</span><b id="spendingPattern">Waiting for completed paychecks.</b></div>
     </div>
   </section>
+    </div>
+  </details>
 
   <section class="card section" id="adaptiveSection">
     <div class="title-row"><h2>Next few paychecks</h2><span id="adaptiveMode">Learning</span></div>
@@ -1031,12 +1068,20 @@ input,select{
     const r=await fetch(url,{headers:{Authorization:`Bearer ${s.idToken}`}});
     if(r.status===404)return {...blank};if(!r.ok)throw new Error("LOAD_FAILED");
     const j=await r.json(),fields=j.fields||{},decoded=Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,decodeValue(v)]));
-    return {...blank,...decoded,bills:Array.isArray(decoded.bills)?decoded.bills:[],paycheckHistory:Array.isArray(decoded.paycheckHistory)?decoded.paycheckHistory:[],paymentHistory:Array.isArray(decoded.paymentHistory)?decoded.paymentHistory:[]};
+    const rawBills=Array.isArray(decoded.bills)?decoded.bills:[];
+    const seen=new Set();
+    const fixedBills=rawBills.map((b,i)=>{
+      let id=String(b?.id||"").trim();
+      if(!id||seen.has(id))id=`bill-${Date.now()}-${i}-${Math.random().toString(36).slice(2,8)}`;
+      seen.add(id);
+      return {...b,id};
+    });
+    return {...blank,...decoded,bills:fixedBills,paycheckHistory:Array.isArray(decoded.paycheckHistory)?decoded.paycheckHistory:[],paymentHistory:Array.isArray(decoded.paymentHistory)?decoded.paymentHistory:[]};
   }
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:49};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:50};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -1778,6 +1823,27 @@ input,select{
     scheduleSave();
   }
 
+
+  window.checkstrideEditBill=(id)=>{
+    const bill=state.bills.find(b=>b.id===id);
+    if(!bill)return;
+    editingBillId=id;
+    const b=normalizedBill(bill);
+    switchPage("bills");
+    $("addBillPanel").open=true;
+    $("billName").value=b.name||"";
+    $("billAmount").value=clampMoney(b.amount)||"";
+    $("billDueMode").value=b.dueMode;
+    $("billDay").value=b.dueMode==="date"?(b.dueDay||1):1;
+    $("billDayField").classList.toggle("hidden",b.dueMode==="monthly");
+    $("billSplitMode").value=b.splitMode||"auto";
+    $("billPriority").value=b.priority||"important";
+    $("addBill").textContent="Save changes";
+    $("cancelBillEdit").classList.remove("hidden");
+    setMsg("billMsg",`Updating ${b.name}.`);
+    setTimeout(()=>$("addBillPanel").scrollIntoView({behavior:"smooth",block:"start"}),50);
+  };
+
   window.checkstrideRemoveBill=(id,button)=>{
     const bill=state.bills.find(b=>b.id===id);
     if(!bill)return;
@@ -1861,7 +1927,16 @@ input,select{
     $("billsProgress").style.width=`${snap.pct}%`;
     $("billsProgressText").textContent=`${snap.pct}% paid`;
 
-    document.querySelectorAll("[data-bills-view]").forEach(b=>b.classList.toggle("active",b.dataset.billsView===billsView));
+  
+  if($("cancelBillEdit"))$("cancelBillEdit").onclick=()=>{
+    editingBillId=null;
+    $("billName").value="";$("billAmount").value="";$("billDueMode").value="date";$("billDay").value="1";$("billDayField").classList.remove("hidden");$("billSplitMode").value="auto";$("billPriority").value="important";
+    $("addBill").textContent="Add bill";
+    $("cancelBillEdit").classList.add("hidden");
+    setMsg("billMsg","");
+  };
+
+  document.querySelectorAll("[data-bills-view]").forEach(b=>b.classList.toggle("active",b.dataset.billsView===billsView));
 
     const rows=snap.rows.map(x=>({...x,status:billStatusFor(x,billsView)}));
     const counts={
@@ -1889,6 +1964,7 @@ input,select{
         <div class="bill-main"><b>${escapeHtml(x.bill.name)}</b><small>${dueText}</small><small class="split-note">${escapeHtml(billSplitLabel(x.bill))}</small></div>
         <div class="bill-amount">${money(x.bill.amount)}</div>
         <button class="bill-status ${x.status}" data-bill-toggle="${x.bill.id}" data-paid="${x.status==="paid"?"1":"0"}">${label}</button>
+        <button type="button" class="bill-update-modern" data-bill-update="${x.bill.id}" aria-label="Update ${escapeHtml(x.bill.name)}">Update</button>
         <button type="button" class="bill-remove-modern" data-bill-remove="${x.bill.id}" onclick="window.checkstrideRemoveBill('${x.bill.id}',this)" aria-label="Remove ${escapeHtml(x.bill.name)}">Remove</button>
       </div>`;
     }).join(""):'<div class="empty">No bills in this view.</div>';
@@ -2117,17 +2193,39 @@ input,select{
 
   ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>$(id).addEventListener("change",e=>{state={...state,[id]:["paycheck","extraIncome","cushion"].includes(id)?Number(e.target.value):e.target.value};scheduleSave()}));
   document.querySelectorAll(".strategy").forEach(el=>el.onclick=()=>{state={...state,strategy:el.dataset.strategy};$("strategy").value=state.strategy;scheduleSave()});
-  $("addBill").onclick=()=>{const name=$("billName").value.trim(),amount=clampMoney($("billAmount").value),dueMode=$("billDueMode").value,day=Math.trunc(Number($("billDay").value)),splitMode=$("billSplitMode").value,priority=$("billPriority").value;
+  $("addBill").onclick=()=>{
+    const name=$("billName").value.trim(),amount=clampMoney($("billAmount").value),dueMode=$("billDueMode").value,day=Math.trunc(Number($("billDay").value)),splitMode=$("billSplitMode").value,priority=$("billPriority").value;
     if(!name||amount<=0)return setMsg("billMsg","Enter a bill name and amount.");
     if(dueMode==="date"&&(day<1||day>31))return setMsg("billMsg","Enter a due day from 1–31, or choose Monthly — date unknown.");
-    if(state.bills.some(b=>b.name.trim().toLowerCase()===name.toLowerCase()))return setMsg("billMsg","That bill is already in your list.");
-    setMsg("billMsg","");
-    state={...state,bills:[...state.bills,{id:crypto.randomUUID(),name,amount,dueMode,dueDay:dueMode==="date"?day:0,splitMode,priority,overdue:0}]};
-    $("billName").value="";$("billAmount").value="";$("billDueMode").value="date";$("billDayField").classList.remove("hidden");$("billSplitMode").value="auto";scheduleSave();
+
+    if(editingBillId){
+      const duplicate=state.bills.some(b=>b.id!==editingBillId&&b.name.trim().toLowerCase()===name.toLowerCase());
+      if(duplicate)return setMsg("billMsg","Another bill already uses that name.");
+      state={...state,bills:state.bills.map(b=>b.id===editingBillId?{...b,name,amount,dueMode,dueDay:dueMode==="date"?day:0,splitMode,priority}:b)};
+      setMsg("billMsg","Bill updated.");
+      editingBillId=null;
+      $("addBill").textContent="Add bill";
+      $("cancelBillEdit").classList.add("hidden");
+    }else{
+      if(state.bills.some(b=>b.name.trim().toLowerCase()===name.toLowerCase()))return setMsg("billMsg","That bill is already in your list.");
+      state={...state,bills:[...state.bills,{id:crypto.randomUUID(),name,amount,dueMode,dueDay:dueMode==="date"?day:0,splitMode,priority,overdue:0}]};
+      setMsg("billMsg","");
+    }
+
+    $("billName").value="";$("billAmount").value="";$("billDueMode").value="date";$("billDay").value="1";$("billDayField").classList.remove("hidden");$("billSplitMode").value="auto";$("billPriority").value="important";
+    scheduleSave();
   };
   $("billList").onclick=e=>{
     const target=e.target instanceof Element?e.target:null;
     if(!target)return;
+
+    const updateBtn=target.closest("[data-bill-update]");
+    if(updateBtn){
+      e.preventDefault();
+      e.stopPropagation();
+      window.checkstrideEditBill(updateBtn.dataset.billUpdate);
+      return;
+    }
 
     const toggle=target.closest("[data-bill-toggle]");
     if(toggle){
@@ -2241,7 +2339,7 @@ input,select{
 
   const PAGE_GROUPS={
     home:["setupGuide","homeSection","homeActions","quickStats","billSnapshot","todayFocus"],
-    bills:["billsSection","completeSection"],
+    bills:["smartStrideDropdown","billsSection","completeSection"],
     coach:["coach12Section","strideAdvanced"],
     more:["setupSection","autoplanSection","goalsSection","scenarioSection","planAdvanced","moreAdvanced"]
   };
