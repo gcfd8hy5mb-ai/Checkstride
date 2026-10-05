@@ -203,6 +203,172 @@ input,select{min-height:42px;padding:10px 12px;border-radius:12px}
   .quick-grid>div{padding:9px 7px}
 }
 
+
+/* UI/UX Pass 4 — cleaner / flatter / quieter */
+:root{
+  --background:#08111d;
+  --surface:#0b1623;
+  --card:#0d1927;
+  --border:#1a2a3a;
+  --muted-foreground:#8ea1b2;
+  --shadow:none;
+  --shadow-md:none;
+  --shadow-lg:none;
+}
+body{background:var(--background)}
+.app{max-width:660px;padding-left:12px;padding-right:12px}
+.topbar{
+  padding:10px 2px 8px;
+  margin:0 0 4px;
+  background:rgba(8,17,29,.96);
+  backdrop-filter:blur(14px);
+}
+.topbar h1{font-size:22px;font-weight:700;letter-spacing:-.025em}
+.page-head{
+  align-items:center;
+  margin:0 0 10px;
+  padding:0 2px;
+}
+.page-head span:first-child{display:none}
+.page-head h2{font-size:18px;margin:0}
+.page-head .pill{
+  border:0;
+  background:transparent;
+  padding:0;
+  color:var(--muted);
+  font-size:10px;
+}
+.hero{
+  padding:18px;
+  border-radius:18px;
+  background:linear-gradient(145deg,#0d2740,#103547);
+  border:1px solid #21445b;
+  box-shadow:none;
+}
+.hero span{font-size:10px;letter-spacing:.07em}
+.hero strong{font-size:35px;margin-top:4px}
+.hero p{font-size:11px;margin-top:8px;color:#b7c8d7}
+.quick-grid{gap:6px;margin-bottom:10px}
+.quick-grid>div{
+  min-height:58px;
+  padding:9px 10px;
+  border-radius:13px;
+  background:var(--surface);
+}
+.quick-grid span{font-size:10px}
+.quick-grid b{font-size:13px}
+.card{
+  padding:13px;
+  margin-bottom:9px;
+  border-radius:16px;
+  background:var(--card);
+  border-color:var(--border);
+  box-shadow:none;
+}
+.card h2{font-size:15px;margin-bottom:9px}
+.title-row{min-height:22px}
+.title-row span{font-size:10px}
+.home-focus{
+  border-color:var(--border);
+  background:var(--card);
+}
+.focus-copy{padding:3px 0}
+.focus-copy strong{font-size:16px;line-height:1.35}
+.focus-copy p{font-size:11px;line-height:1.4;margin-top:5px}
+.focus-actions{gap:7px;margin-top:9px}
+.primary-btn,.ghost{
+  min-height:40px;
+  border-radius:11px;
+  font-size:12px;
+}
+.primary-btn{margin-top:6px}
+.ghost{background:transparent}
+.form-grid{gap:8px}
+.field{gap:4px;margin:0}
+.field label{
+  font-size:10px;
+  text-transform:none;
+  letter-spacing:0;
+}
+input,select{
+  min-height:41px;
+  padding:9px 11px;
+  border-radius:11px;
+  background:#0a1521;
+}
+.smart-rows{gap:6px}
+.smart-row,.plan-line,.row,.warning-item{
+  min-height:42px;
+  padding:8px 10px;
+  border-radius:11px;
+  background:var(--surface);
+}
+.smart-row span,.plan-line span,.row small{font-size:10px}
+.smart-row b,.plan-line b,.row b{font-size:12px;line-height:1.35}
+.ai-banner{
+  padding:11px;
+  border-radius:12px;
+  background:var(--surface);
+  border-color:var(--border);
+}
+.ai-banner strong{font-size:13px}
+.ai-banner p{font-size:10px}
+.compact-details{
+  margin-bottom:9px;
+  border-radius:14px;
+  background:transparent;
+}
+.compact-details>summary{
+  padding:11px 12px;
+  background:var(--surface);
+}
+.compact-details>summary b{font-size:12px}
+.compact-details>summary small{display:none}
+.details-body{padding:7px 0 0}
+.details-body .card{
+  margin-bottom:7px;
+  background:var(--card);
+  border-radius:14px;
+}
+.bottom-nav{
+  width:min(calc(100% - 18px),500px);
+  padding:4px;
+  border-radius:17px;
+  background:rgba(10,21,33,.96);
+  border-color:#1c3042;
+  box-shadow:0 8px 22px rgba(0,0,0,.22);
+}
+.bottom-nav button{
+  min-height:47px;
+  gap:1px;
+  font-size:9px;
+  border-radius:12px;
+}
+.bottom-nav .navIcon{font-size:15px}
+.bottom-nav button.active{
+  background:#15283a;
+}
+.scenario-grid{gap:7px}
+.scenario-result{padding:10px;border-radius:11px}
+.goal-row{gap:7px}
+.approve-row{gap:7px}
+.auth-card{
+  border-radius:22px;
+  padding:20px;
+  box-shadow:none;
+}
+.auth h1{font-size:31px}
+.logo{width:48px;height:48px;border-radius:14px}
+.tabs{margin:16px 0 12px}
+.auth-note{font-size:10px}
+@media(max-width:640px){
+  .app{padding-left:9px;padding-right:9px}
+  .hero{padding:16px}
+  .hero strong{font-size:32px}
+  .card{padding:11px}
+  .quick-grid>div{padding:8px}
+}
+
 </style>
 </head>
 <body>
@@ -233,7 +399,7 @@ input,select{min-height:42px;padding:10px 12px;border-radius:12px}
   </section>
 
   <details class="compact-details appPageHidden" id="strideAdvanced">
-    <summary><div><b>Why Stride chose this</b><small>Forecast reasoning and outcome diagnosis.</small></div><span>Show</span></summary>
+    <summary><div><b>Why this recommendation</b><small>Forecast reasoning and outcome diagnosis.</small></div><span>Show</span></summary>
     <div class="details-body">
 
 
@@ -265,7 +431,7 @@ input,select{min-height:42px;padding:10px 12px;border-radius:12px}
 
 <main id="appView" class="app hidden">
   <header class="topbar">
-    <div><h1>Checkstride</h1><small>Know what this paycheck needs to do.</small></div>
+    <div><h1>Checkstride</h1></div>
     <button id="logout" class="ghost">Sign out</button>
   </header>
 
@@ -285,17 +451,15 @@ input,select{min-height:42px;padding:10px 12px;border-radius:12px}
     <div><span>Risk</span><b id="quickRisk">Finish setup</b></div>
   </section>
 
-<div class="pageIntro appPageHidden" id="planIntro"><b>Plan</b><small>Your paycheck setup, allocation, and 4-check outlook.</small></div>
-
   <section class="card home-focus section" id="todayFocus">
-    <div class="title-row"><h2>Next move</h2><span id="todayState" class="pill">Building plan</span></div>
+    <div class="title-row"><h2>Recommended</h2><span id="todayState" class="pill">Building plan</span></div>
     <div class="focus-copy">
       <strong id="todayAction">Finish paycheck setup to build today’s plan.</strong>
       <p id="todayReason">Stride will surface the single most important move for this paycheck.</p>
     </div>
     <div class="focus-actions">
-      <button id="goPlan" class="primary-btn">Review plan</button>
-      <button id="goCoach" class="ghost">Ask Stride</button>
+      <button id="goPlan" class="primary-btn">View plan</button>
+      <button id="goCoach" class="ghost">View Stride</button>
     </div>
   </section>
 
@@ -330,8 +494,6 @@ input,select{min-height:42px;padding:10px 12px;border-radius:12px}
       <button id="planMissed" class="ghost">Needs adjustment</button>
     </div>
   </section>
-
-<div class="pageIntro appPageHidden" id="billsIntro"><b>Bills & outcomes</b><small>Keep bills current and complete each paycheck so the Stride can learn from reality.</small></div>
   <section class="card section" id="billsSection">
     <div class="title-row"><h2>Bills</h2><span id="billCount">0 tracked</span></div>
     <div class="bill-form">
@@ -355,8 +517,6 @@ input,select{min-height:42px;padding:10px 12px;border-radius:12px}
     </div>
     <div id="planApprovalMsg" class="msg hidden"></div>
   </section>
-
-<div class="pageIntro appPageHidden" id="moreIntro"><b>More</b><small>Goals, scenarios, and advanced intelligence.</small></div>
   <section class="card section" id="scenarioSection">
     <div class="title-row"><h2>Scenario planner</h2><span>What if?</span></div>
     <div class="scenario-grid">
@@ -378,22 +538,20 @@ input,select{min-height:42px;padding:10px 12px;border-radius:12px}
     </div>
     <div id="goalPlan" class="smart-rows"></div>
   </section>
-
-<div class="pageIntro appPageHidden" id="coachIntro"><b>Stride</b><small>One recommendation, with deeper reasoning available when you want it.</small></div>
   <section class="card section" id="coach12Section">
     <div class="title-row"><h2>Stride</h2><span id="coachModePill" class="pill">Guided</span></div>
     <div class="ai-stack">
       <div class="ai-banner"><strong id="coach12Action">Finish setup to activate Stride.</strong><p id="coach12Reason">Stride will combine forecasts, outcomes, goals, and context reliability into one plan.</p></div>
-      <div class="smart-row"><span>Current operating mode</span><b id="coach12Mode">Guided — recommendations require your approval.</b></div>
-      <div class="smart-row"><span>What changed</span><b id="coach12Change">No completed outcome to compare yet.</b></div>
-      <div class="smart-row"><span>Next review trigger</span><b id="coach12Trigger">Next paycheck completion or a meaningful plan change.</b></div>
+      <div class="smart-row"><span>Mode</span><b id="coach12Mode">Guided — recommendations require your approval.</b></div>
+      <div class="smart-row"><span>Latest adjustment</span><b id="coach12Change">No completed outcome to compare yet.</b></div>
+      <div class="smart-row"><span>Next review</span><b id="coach12Trigger">Next paycheck completion or a meaningful plan change.</b></div>
       <button id="toggleCoachMode" class="ghost">Switch to Auto-draft mode</button>
     </div>
   </section>
 
 
   <details class="compact-details appPageHidden" id="moreAdvanced">
-    <summary><div><b>Advanced intelligence</b><small>Warnings, calibration, and learning details.</small></div><span>Show</span></summary>
+    <summary><div><b>Learning details</b><small>Warnings, calibration, and learning details.</small></div><span>Show</span></summary>
     <div class="details-body">
 
 
@@ -428,7 +586,7 @@ input,select{min-height:42px;padding:10px 12px;border-radius:12px}
 
 
   <details class="compact-details appPageHidden" id="planAdvanced">
-    <summary><div><b>Advanced plan details</b><small>Strategy comparison and adaptive pacing.</small></div><span>Show</span></summary>
+    <summary><div><b>Plan details</b><small>Strategy comparison and adaptive pacing.</small></div><span>Show</span></summary>
     <div class="details-body">
 
 
@@ -457,13 +615,13 @@ input,select{min-height:42px;padding:10px 12px;border-radius:12px}
       <div class="smart-row"><span>Adjustment logic</span><b id="adaptiveWhy">Checkstride will become more aggressive only when recent paychecks are stable and recommendations are landing close to actual results.</b></div>
     </div>
   </section>
-    </div>
-  </details>
 
   <section class="card section" id="forecastSection">
     <h2>Next 4 paychecks</h2>
     <div id="forecastList" class="list"></div>
   </section>
+    </div>
+  </details>
 </main>
 
 <nav id="bottomNav" class="bottom-nav hidden" aria-label="Primary">
@@ -557,7 +715,7 @@ input,select{min-height:42px;padding:10px 12px;border-radius:12px}
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>({...b,amount:clampMoney(b.amount),overdue:clampMoney(b.overdue),dueDay:Math.min(31,Math.max(1,Math.trunc(Number(b.dueDay)||1)))})),version:42};
+      bills:data.bills.map(b=>({...b,amount:clampMoney(b.amount),overdue:clampMoney(b.overdue),dueDay:Math.min(31,Math.max(1,Math.trunc(Number(b.dueDay)||1)))})),version:43};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -1345,11 +1503,11 @@ input,select{min-height:42px;padding:10px 12px;border-radius:12px}
   };
 
   const PAGE_GROUPS={
-    home:["homeSection","quickStats","todayFocus","upcomingBills"],
-    plan:["planIntro","setupSection","autoplanSection","forecastSection","planAdvanced"],
-    coach:["coachIntro","coach12Section","strideAdvanced"],
-    bills:["billsIntro","billsSection","completeSection"],
-    more:["moreIntro","goalsSection","scenarioSection","moreAdvanced"]
+    home:["homeSection","quickStats","todayFocus"],
+    plan:["setupSection","autoplanSection","planAdvanced"],
+    coach:["coach12Section","strideAdvanced"],
+    bills:["billsSection","upcomingBills","completeSection"],
+    more:["goalsSection","scenarioSection","moreAdvanced"]
   };
   const PAGE_COPY={
     home:["Today","Your paycheck","Live"],
