@@ -77,6 +77,81 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
 .approve-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 @media(max-width:640px){.scenario-grid,.goal-row{grid-template-columns:1fr}.goal-row>*{grid-column:1/-1}.approve-row{grid-template-columns:1fr 1fr}}
 
+
+/* UI/UX polish pass */
+body{overscroll-behavior-y:none}
+.app{max-width:720px;padding-left:16px;padding-right:16px}
+.topbar{padding-top:8px;padding-bottom:10px}
+.topbar h1{letter-spacing:-.02em}
+.page-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:4px 0 12px}
+.page-head span:first-child{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.page-head h2{font:700 24px/1.05 var(--display);margin:4px 0 0}
+.hero{padding:22px 20px}
+.card{padding:16px;border-radius:18px}
+.card h2{font-size:18px}
+.quick-grid{grid-template-columns:repeat(3,1fr)}
+.quick-grid>div{min-height:72px;display:flex;flex-direction:column;justify-content:center}
+.primary-btn,.ghost,.tabs button,.bottom-nav button{min-height:44px}
+.bottom-nav{width:min(calc(100% - 24px),520px);grid-template-columns:repeat(5,1fr);gap:4px;padding:6px;border-radius:20px}
+.bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;padding:7px 3px}
+.bottom-nav .navIcon{font-size:16px;line-height:1}
+.bottom-nav button.active{background:linear-gradient(180deg,#183047,#12283c);color:var(--fg)}
+.appPageHidden{display:none!important}
+.section{scroll-margin-top:78px}
+.pageIntro{padding:12px 14px;margin-bottom:12px;border-radius:15px;background:rgba(111,159,189,.07);border:1px solid rgba(111,159,189,.18)}
+.pageIntro b{display:block;font-size:13px}.pageIntro small{display:block;color:var(--muted);margin-top:3px;line-height:1.35}
+.card .title-row{margin-bottom:2px}
+.smart-row,.plan-line,.row,.warning-item{min-height:50px}
+.form-grid{gap:12px}
+.field label{font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+input,select{min-height:46px}
+.ai-banner{padding:15px}
+#coach12Section{border-color:rgba(42,169,160,.35);box-shadow:0 10px 28px rgba(42,169,160,.06)}
+#autoplanSection{border-color:rgba(111,159,189,.3)}
+#warningList .empty{padding:10px}
+@media(max-width:640px){
+  .app{padding-left:12px;padding-right:12px}
+  .page-head h2{font-size:22px}
+  .quick-grid{grid-template-columns:repeat(3,1fr)}
+  .quick-grid>div{padding:10px 8px}
+  .quick-grid b{font-size:13px}
+  .hero{padding:20px 17px}
+  .hero strong{font-size:38px}
+  .card{padding:14px}
+}
+@media(max-width:380px){
+  .quick-grid{grid-template-columns:1fr}
+  .bottom-nav button{font-size:9px}
+}
+
+
+/* UI/UX polish pass 2 */
+.home-focus{border-color:rgba(42,169,160,.32);background:
+  radial-gradient(circle at 100% 0,rgba(42,169,160,.09),transparent 36%),var(--card)}
+.focus-copy{padding:6px 0 2px}
+.focus-copy strong{display:block;font:700 19px/1.3 var(--display);letter-spacing:-.01em}
+.focus-copy p{margin:7px 0 0;color:var(--muted);font-size:12px;line-height:1.45}
+.focus-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}
+.focus-actions .primary-btn{margin-top:0}
+#upcomingList .row{padding:12px}
+.due-badge{display:inline-flex;align-items:center;padding:4px 7px;border-radius:999px;font-size:10px;font-weight:700;margin-top:5px}
+.due-badge.urgent{background:rgba(214,90,100,.12);color:#f39aa1}
+.due-badge.soon{background:rgba(213,162,62,.12);color:#e2bb69}
+.due-badge.later{background:rgba(111,159,189,.10);color:#a8c4d6}
+.risk-low{color:var(--ok)!important}.risk-medium{color:var(--warn)!important}.risk-high{color:var(--error)!important}
+.password-wrap{position:relative}.password-wrap input{padding-right:62px}.password-wrap button{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--accent);font-weight:700;font-size:12px;padding:8px}
+.auth-note{margin-top:14px;padding-top:13px;border-top:1px solid var(--border);color:var(--muted);font-size:11px;line-height:1.45}
+.advanced-label{margin:6px 2px 10px}.advanced-label span{display:block;color:var(--fg);font-weight:700;font-size:13px}.advanced-label small{display:block;color:var(--muted);font-size:11px;line-height:1.4;margin-top:3px}
+.page-head .pill{white-space:nowrap}
+.hero strong{letter-spacing:-.035em}
+.hero p{max-width:540px}
+.row b{font-variant-numeric:tabular-nums}
+.quick-grid b,.hero strong,.plan-line b{font-variant-numeric:tabular-nums}
+@media(max-width:640px){
+  .focus-actions{grid-template-columns:1fr 1fr}
+  .focus-copy strong{font-size:18px}
+}
+
 </style>
 </head>
 <body>
@@ -93,9 +168,9 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
       <button id="tabSignup">Create account</button>
     </div>
     <div class="field"><label>Email</label><input id="email" type="email" autocomplete="email" /></div>
-    <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password" /></div>
+    <div class="field"><label>Password</label><div class="password-wrap"><input id="password" type="password" autocomplete="current-password" /><button id="togglePassword" type="button" aria-label="Show password">Show</button></div></div>
     <button id="authSubmit" class="primary-btn">Sign in</button>
-    <button id="resetPassword" class="link-btn">Forgot password?</button>
+    <button id="resetPassword" class="link-btn">Forgot password?</button><div class="auth-note">Your plan is private to your account. Checkstride does not move money or make payments.</div>
     <div id="authMsg" class="msg hidden"></div>
   </section>
 </main>
@@ -106,16 +181,23 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     <button id="logout" class="ghost">Sign out</button>
   </header>
 
+
+  <section class="page-head" id="pageHead">
+    <div><span id="pageEyebrow">Today</span><h2 id="pageTitle">Your paycheck</h2></div>
+    <span id="pageStatus" class="pill">Live plan</span>
+  </section>
+
   <section class="hero section" id="homeSection">
     <span>Safe to spend</span><strong id="safeSpend">$0.00</strong><p id="heroText">Add your next payday and paycheck amount to build the plan.</p>
   </section>
 
-  <section class="quick-grid">
+  <section class="quick-grid" id="quickStats">
     <div><span>Next payday</span><b id="quickPayday">—</b></div>
     <div><span>Overdue</span><b id="quickOverdue">$0.00</b></div>
     <div><span>Risk</span><b id="quickRisk">Finish setup</b></div>
   </section>
 
+<div class="pageIntro appPageHidden" id="planIntro"><b>Plan this paycheck</b><small>Set your income, choose a strategy, then review the four-check runway.</small></div>
   <section class="card section" id="setupSection">
     <div class="title-row"><h2>Paycheck setup</h2><span id="cloudStatus" class="status-saved">Saved</span></div>
     <div class="form-grid">
@@ -159,6 +241,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     </div>
   </section>
 
+<div class="pageIntro appPageHidden" id="billsIntro"><b>Bills & outcomes</b><small>Keep bills current and complete each paycheck so the coach can learn from reality.</small></div>
   <section class="card section" id="billsSection">
     <div class="title-row"><h2>Bills</h2><span id="billCount">0 tracked</span></div>
     <div class="bill-form">
@@ -205,6 +288,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     <div id="planApprovalMsg" class="msg hidden"></div>
   </section>
 
+<div class="pageIntro appPageHidden" id="moreIntro"><b>More tools</b><small>Run what-if scenarios, manage goals, and inspect deeper intelligence signals.</small></div>
   <section class="card section" id="scenarioSection">
     <div class="title-row"><h2>Scenario planner</h2><span>What if?</span></div>
     <div class="scenario-grid">
@@ -232,6 +316,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     <div id="warningList" class="warning-list"></div>
   </section>
 
+<div class="pageIntro appPageHidden" id="coachIntro"><b>Coach intelligence</b><small>See the recommendation, why it changed, and how much confidence Checkstride has in it.</small></div>
   <section class="card section" id="coach12Section">
     <div class="title-row"><h2>Closed-loop coach</h2><span id="coachModePill" class="pill">Guided</span></div>
     <div class="ai-stack">
@@ -243,6 +328,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     </div>
   </section>
 
+  <div class="advanced-label appPageHidden" id="advancedLabel"><span>Advanced intelligence</span><small>Deeper calibration details — useful when you want to inspect how Checkstride is learning.</small></div>
   <section class="card section" id="contextSection">
     <div class="title-row"><h2>Context intelligence</h2><span id="contextStatus">Learning</span></div>
     <div class="smart-rows">
@@ -282,16 +368,12 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
   </section>
 </main>
 
-<nav id="bottomNav" class="bottom-nav hidden">
-  <button data-target="homeSection" class="active">Home</button>
-  <button data-target="setupSection">Setup</button>
-  <button data-target="coachSection">Coach</button>
-  <button data-target="billsSection">Bills</button>
-  <button data-target="reasoningSection">Reasoning</button>
-  <button data-target="contextSection">Context</button>
-  <button data-target="adaptiveSection">Adaptive</button>
-  <button data-target="completeSection">Complete</button>
-  <button data-target="forecastSection">Forecast</button>
+<nav id="bottomNav" class="bottom-nav hidden" aria-label="Primary">
+  <button data-page="home" class="active"><span class="navIcon">⌂</span><span>Home</span></button>
+  <button data-page="plan"><span class="navIcon">▤</span><span>Plan</span></button>
+  <button data-page="coach"><span class="navIcon">✦</span><span>Coach</span></button>
+  <button data-page="bills"><span class="navIcon">$</span><span>Bills</span></button>
+  <button data-page="more"><span class="navIcon">•••</span><span>More</span></button>
 </nav>
 
 <script>
@@ -959,6 +1041,29 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     const warns=proactiveWarnings();
     $("warningCount").textContent=`${warns.length} active`;
     $("warningList").innerHTML=warns.length?warns.map(w=>`<div class="warning-item ${w.severity}"><b>${escapeHtml(w.title)}</b><small>${escapeHtml(w.detail)}</small></div>`).join(""):'<p class="empty">No proactive warnings right now.</p>';
+    const coachHome=closedLoopCoach(), homePlan=currentAutonomousPlan();
+    $("todayAction").textContent=coachHome.action;
+    $("todayReason").textContent=coachHome.reason;
+    const topWarning=warns[0];
+    $("todayState").textContent=topWarning?.severity==="high"?"Needs attention":topWarning?.severity==="medium"?"Watch closely":homePlan?"On track":"Building plan";
+    $("todayState").className=`pill ${topWarning?.severity==="high"?"risk-high":topWarning?.severity==="medium"?"risk-medium":"risk-low"}`;
+
+    const now=new Date(), currentDay=now.getDate();
+    const upcoming=[...state.bills].map(b=>{
+      let delta=Number(b.dueDay)-currentDay;
+      if(delta<0)delta+=daysInMonth(now.getFullYear(),now.getMonth());
+      return {...b,daysAway:delta};
+    }).sort((a,b)=>a.daysAway-b.daysAway).slice(0,4);
+    $("upcomingCount").textContent=`${upcoming.length} bill${upcoming.length===1?"":"s"}`;
+    $("upcomingList").innerHTML=upcoming.length?upcoming.map(b=>{
+      const label=b.daysAway===0?"Due today":b.daysAway===1?"Due tomorrow":`Due in ${b.daysAway} days`;
+      const cls=b.daysAway<=1?"urgent":b.daysAway<=5?"soon":"later";
+      return `<div class="row"><div><b>${escapeHtml(b.name)}</b><span class="due-badge ${cls}">${label}</span></div><div class="right"><b>${money(b.amount)}</b><small>${escapeHtml(b.priority)}</small></div></div>`;
+    }).join(""):'<p class="empty">Add bills to see what is coming up next.</p>';
+
+    const riskEl=$("quickRisk");
+    riskEl.className=String(riskEl.textContent).includes("Short")?"risk-high":String(riskEl.textContent).includes("Tight")||String(riskEl.textContent).includes("Needs")?"risk-medium":"risk-low";
+
 
     const coach=closedLoopCoach(), coachMode=state.smartMemory?.coachMode||"guided";
     $("coachModePill").textContent=coachMode==="auto-draft"?"Auto-draft":"Guided";
@@ -999,7 +1104,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     try{
       const j=await authRequest(mode==="signup"?"accounts:signUp":"accounts:signInWithPassword",{email:$("email").value.trim(),password:$("password").value,returnSecureToken:true});
       const s={idToken:j.idToken,refreshToken:j.refreshToken,localId:j.localId,email:j.email||$("email").value.trim()};
-      const loaded=await loadState(s);session=s;state=loaded;localStorage.setItem(SESSION_KEY,JSON.stringify(s));hydrated=true;setCloud("Saved");render();show("app");
+      const loaded=await loadState(s);session=s;state=loaded;localStorage.setItem(SESSION_KEY,JSON.stringify(s));hydrated=true;setCloud("Saved");render();show("app");switchPage(sessionStorage.getItem("checkstride_page")||"home");switchPage(sessionStorage.getItem("checkstride_page")||"home");
     }catch(e){
       session=null;hydrated=false;const code=String(e?.message||"");
       setMsg("authMsg",code.includes("TOO_MANY_ATTEMPTS")?"Too many attempts. Try again later.":code.includes("EMAIL_EXISTS")?"An account already uses that email.":code.includes("WEAK_PASSWORD")?"Use a stronger password.":code.includes("INVALID_LOGIN_CREDENTIALS")||code.includes("INVALID_PASSWORD")||code.includes("EMAIL_NOT_FOUND")?"Could not sign in. Check your email and password.":"Could not sign in right now.");
@@ -1010,7 +1115,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
   $("tabSignup").onclick=()=>{mode="signup";$("tabSignup").classList.add("active");$("tabLogin").classList.remove("active");$("authSubmit").textContent="Create account"};
   $("authSubmit").onclick=submitAuth;
   $("resetPassword").onclick=async()=>{const email=$("email").value.trim();if(!email)return setMsg("authMsg","Enter your email first.");try{await authRequest("accounts:sendOobCode",{requestType:"PASSWORD_RESET",email});setMsg("authMsg","Password reset email sent.")}catch{setMsg("authMsg","If that email has an account, a reset email will be sent.")}};
-  $("logout").onclick=async()=>{if(session&&hydrated){try{await saveState(session,state)}catch{try{const fresh=await refreshSession(session.refreshToken);await saveState({...fresh,email:session.email},state)}catch{}}}localStorage.removeItem(SESSION_KEY);session=null;hydrated=false;state={...blank};show("auth")};
+  $("logout").onclick=async()=>{if(session&&hydrated){try{await saveState(session,state)}catch{try{const fresh=await refreshSession(session.refreshToken);await saveState({...fresh,email:session.email},state)}catch{}}}localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem("checkstride_page");session=null;hydrated=false;state={...blank};show("auth")};
 
   ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>$(id).addEventListener("change",e=>{state={...state,[id]:["paycheck","extraIncome","cushion"].includes(id)?Number(e.target.value):e.target.value};scheduleSave()}));
   document.querySelectorAll(".strategy").forEach(el=>el.onclick=()=>{state={...state,strategy:el.dataset.strategy};$("strategy").value=state.strategy;scheduleSave()});
@@ -1093,7 +1198,42 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     scheduleSave();
   };
 
-  document.querySelectorAll("#bottomNav button").forEach(btn=>btn.onclick=()=>{document.querySelectorAll("#bottomNav button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");$(btn.dataset.target).scrollIntoView({behavior:"smooth",block:"start"})});
+  
+
+  $("goPlan").onclick=()=>switchPage("plan");
+  $("goCoach").onclick=()=>switchPage("coach");
+  $("togglePassword").onclick=()=>{
+    const input=$("password"), show=input.type==="password";
+    input.type=show?"text":"password";
+    $("togglePassword").textContent=show?"Hide":"Show";
+    $("togglePassword").setAttribute("aria-label",show?"Hide password":"Show password");
+  };
+
+  const PAGE_GROUPS={
+    home:["homeSection","quickStats","todayFocus","upcomingBills","planSection","warningsSection"],
+    plan:["planIntro","setupSection","autoplanSection","adaptiveSection","forecastSection"],
+    coach:["coachIntro","coach12Section","reasoningSection","diagnosisSection"],
+    bills:["billsIntro","billsSection","completeSection"],
+    more:["moreIntro","scenarioSection","goalsSection","advancedLabel","contextSection"]
+  };
+  const PAGE_COPY={
+    home:["Today","Your paycheck","Live"],
+    plan:["Plan","Build the next move","4 checks"],
+    coach:["Coach","What Checkstride recommends","Smart"],
+    bills:["Bills","What actually happened","Learning data"],
+    more:["Tools","Scenarios & goals","Advanced"]
+  };
+  function switchPage(page){
+    const allIds=[...new Set(Object.values(PAGE_GROUPS).flat())];
+    allIds.forEach(id=>{const el=$(id);if(el)el.classList.add("appPageHidden")});
+    (PAGE_GROUPS[page]||PAGE_GROUPS.home).forEach(id=>{const el=$(id);if(el)el.classList.remove("appPageHidden")});
+    document.querySelectorAll("#bottomNav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+    const copy=PAGE_COPY[page]||PAGE_COPY.home;
+    $("pageEyebrow").textContent=copy[0];$("pageTitle").textContent=copy[1];$("pageStatus").textContent=copy[2];
+    window.scrollTo({top:0,behavior:"smooth"});
+    sessionStorage.setItem("checkstride_page",page);
+  }
+  document.querySelectorAll("#bottomNav button").forEach(btn=>btn.onclick=()=>switchPage(btn.dataset.page));
 
   const manifest={
     name:"Checkstride",short_name:"Checkstride",start_url:".",display:"standalone",background_color:"#07111f",theme_color:"#07111f",
@@ -1107,7 +1247,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
       const raw=localStorage.getItem(SESSION_KEY);
       if(!raw){show("auth");return}
       const old=JSON.parse(raw),fresh=await refreshSession(old.refreshToken),merged={...fresh,email:old.email},loaded=await loadState(merged);
-      localStorage.setItem(SESSION_KEY,JSON.stringify(merged));session=merged;state=loaded;hydrated=true;render();show("app");
+      localStorage.setItem(SESSION_KEY,JSON.stringify(merged));session=merged;state=loaded;hydrated=true;render();show("app");switchPage(sessionStorage.getItem("checkstride_page")||"home");switchPage(sessionStorage.getItem("checkstride_page")||"home");
     }catch{localStorage.removeItem(SESSION_KEY);show("auth")}
   })();
 })();
