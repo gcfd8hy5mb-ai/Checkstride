@@ -31,6 +31,10 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
 .status-chip{font-size:10px;padding:5px 7px;border-radius:999px;font-weight:800;white-space:nowrap}
 .status-paid{background:#123026;color:#9ff5d8}.status-due{background:#0f365f;color:#bfdbfe}.status-soon{background:#422006;color:#fde68a}.status-overdue{background:#3f1d1d;color:#fecaca}.status-upcoming{background:#243046;color:#d8e0ea}
 .alert-box{border-radius:14px;padding:13px;background:#0c1d2e;border:1px solid #31516d;margin-bottom:10px}.alert-box strong{display:block;margin-bottom:4px}
+.closeout{background:linear-gradient(145deg,#0b2238,#0d2f46);border:1px solid #22577a;border-radius:16px;padding:15px}
+.closeout h3{margin:0 0 6px;font-size:17px}.closeout-actions{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
+.check-history{display:flex;flex-direction:column;gap:8px;margin-top:10px}.check-row{background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px}
+.check-row-top{display:flex;justify-content:space-between;gap:12px;align-items:center}.check-row b{font-size:14px}.check-row .money{font-weight:800}
 @media(max-width:560px){.status-grid{grid-template-columns:1fr 1fr}}
 .footer{position:fixed;left:0;right:0;bottom:0;background:rgba(7,17,31,.96);border-top:1px solid #1f2937;padding:10px 14px calc(env(safe-area-inset-bottom) + 10px)}.footer>div{max-width:760px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}.footer button{width:100%}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}.modal.show{display:flex}.modalbox{width:min(430px,100%);background:#0d1b2a;border:1px solid var(--line);border-radius:20px;padding:18px}.modalbox .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
@@ -156,6 +160,19 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
   </div>
 
   <div class="card">
+    <h2>Paycheck closeout</h2>
+    <div class="closeout">
+      <h3>Finished with this paycheck?</h3>
+      <div id="closeoutSummary" class="small">Checkstride will save a snapshot, carry any unpaid current-cycle bills forward, and advance to your next payday.</div>
+      <div class="closeout-actions">
+        <button id="completePaycheckBtn" class="primary">Complete this paycheck</button>
+      </div>
+    </div>
+    <h3>Paycheck history</h3>
+    <div id="paycheckHistory" class="check-history"></div>
+  </div>
+
+  <div class="card">
     <h2>Payment history</h2>
     <div class="small" style="margin-bottom:10px">Mark bills paid as you go. Checkstride uses that history so paid bills are not planned again for the same due cycle.</div>
     <div id="paymentHistory" class="list"></div>
@@ -195,7 +212,7 @@ measurementId:"G-B4W5L2SN0H"
 };
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
-let bills=[],paymentHistory=[],currentUser=null,timer=null,obStep=1,obBills=[];
+let bills=[],paymentHistory=[],paycheckHistory=[],currentUser=null,timer=null,obStep=1,obBills=[];
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n||0));
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const parseDate=s=>s?new Date(s+'T00:00:00'):null;
@@ -274,7 +291,7 @@ function upcomingOccurrences(b,start,end){
   while(cur<=last){const d=billDueDateForMonth(b,cur.getFullYear(),cur.getMonth());if(d>=start&&d<=end)out.push(d);cur.setMonth(cur.getMonth()+1)}
   return out;
 }
-function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,paymentHistory,onboardingComplete:true,version:4}}
+function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,paymentHistory,paycheckHistory,onboardingComplete:true,version:5}}
 function normalizeBill(b){
   if(b.dueDay) return {...b,id:b.id||uid(),dueDay:Number(b.dueDay)};
   let dueDay=1;
@@ -287,6 +304,7 @@ function apply(d){
   $('cushion').value=d.cushion||'';$('extraIncome').value=d.extraIncome||'';$('strategy').value=d.strategy||'balanced';
   bills=(Array.isArray(d.bills)?d.bills:[]).map(normalizeBill);
   paymentHistory=Array.isArray(d.paymentHistory)?d.paymentHistory:[];
+  paycheckHistory=Array.isArray(d.paycheckHistory)?d.paycheckHistory:[];
   recalc();
 }
 function saveLocal(){if(currentUser)localStorage.setItem('checkstrideV2_'+currentUser.uid,JSON.stringify(state()))}
@@ -376,6 +394,19 @@ function buildForecast(extraFirst=0,spendFirst=0){
   const caught=checks.find(c=>c.short<=0);
   return {checks,remainingOverdue:arrears.reduce((s,a)=>s+a.amount,0),caughtUp:caught?caught.date:null}
 }
+function renderPaycheckHistory(){
+  const box=$('paycheckHistory');
+  if(!paycheckHistory.length){
+    box.innerHTML='<div class="empty">No completed paychecks yet.</div>';
+    return;
+  }
+  box.innerHTML='';
+  paycheckHistory.slice(0,12).forEach(h=>{
+    const row=document.createElement('div'); row.className='check-row';
+    row.innerHTML=`<div class="check-row-top"><div><b>${esc(h.payday||'Paycheck')}</b><div class="small">${h.paymentCount||0} planned payment${(h.paymentCount||0)===1?'':'s'} · ${h.unpaidCarried||0} carried forward</div></div><div class="money">${money(h.safeSpend||0)} safe</div></div><div class="small" style="margin-top:6px">Income ${money(h.income||0)} · bills planned ${money(h.plannedBills||0)} · closed ${new Date(h.closedAt).toLocaleDateString()}</div>`;
+    box.appendChild(row);
+  });
+}
 function renderPaymentHistory(){
   const box=$('paymentHistory');
   if(!paymentHistory.length){box.innerHTML='<div class="empty">No payments recorded yet.</div>';return}
@@ -391,6 +422,7 @@ function renderPaymentHistory(){
 function recalc(){
   renderBillStatus();
   renderBills();
+  renderPaycheckHistory();
   renderPaymentHistory();
   const f=buildForecast(),first=f.checks[0];
   const paycheck=Number($('paycheck').value||0)+Number($('extraIncome').value||0);
@@ -400,6 +432,11 @@ function recalc(){
   $('safeSpend').textContent=first?money(first.safe):'$0.00';
   const d=daysUntil($('payday').value);$('countdown').textContent=$('payday').value?`${d} day${d===1?'':'s'} until next payday.`:'Set your next payday below.';
   $('caughtUpKpi').textContent=f.caughtUp?iso(f.caughtUp):(f.checks.length&&f.remainingOverdue>0?'4+ checks':'—');
+  const close=$('closeoutSummary');
+  if(first){
+    const unpaidDue=first.items.filter(x=>x.type==='due').length;
+    close.textContent=`This paycheck has ${first.items.length} planned payment${first.items.length===1?'':'s'} and ${unpaidDue} unpaid current-cycle bill${unpaidDue===1?'':'s'} still in the plan.`;
+  }else close.textContent='Set your payday and paycheck amount before closing a paycheck.';
   const s=$('planSummary'),p=$('planSteps');
   if(!first||!bills.length){s.textContent='Add your paycheck and recurring bills to generate a plan.';p.innerHTML=''}
   else{
@@ -430,11 +467,58 @@ $('obAddBill').onclick=()=>{const name=$('obBillName').value.trim(),amount=Numbe
 $('obBack').onclick=()=>{if(obStep>1){obStep--;renderOb()}};
 $('obNext').onclick=async()=>{if(obStep===1){if(!$('obPayday').value||Number($('obPaycheck').value||0)<=0)return alert('Enter your next payday and expected take-home pay.');obStep=2;renderOb();return}if(obStep===2){obStep=3;renderOb();return}if(obStep===3){$('payday').value=$('obPayday').value;$('paycheck').value=$('obPaycheck').value;$('payFrequency').value=$('obFrequency').value;$('cushion').value=$('obCushion').value||'';$('strategy').value=$('obStrategy').value;bills=obBills.slice();recalc();saveLocal();try{await saveCloud()}catch{badge('Sync error')}obStep=4;renderOb();return}if(obStep===4){hideOnboarding();recalc()}};
 
+
+async function completeCurrentPaycheck(){
+  const forecast=buildForecast(), first=forecast.checks[0];
+  if(!first || !$('payday').value || Number($('paycheck').value||0)<=0){
+    alert('Set your current payday and paycheck amount first.');
+    return;
+  }
+  if(!confirm('Complete this paycheck? Unpaid current-cycle bills will carry forward and Checkstride will move to your next payday.')) return;
+
+  // Any unpaid recurring bill due in this paycheck window becomes overdue.
+  const carryByBill={};
+  first.items.filter(x=>x.type==='due' && x.billId).forEach(x=>{
+    const obligation=Number(x.pay||0)+Number(x.remaining||0);
+    carryByBill[x.billId]=(carryByBill[x.billId]||0)+obligation;
+  });
+
+  let unpaidCarried=0;
+  bills=bills.map(b=>{
+    const carry=Number(carryByBill[b.id]||0);
+    if(!carry) return b;
+    unpaidCarried++;
+    return {...b,overdue:Number(b.overdue||0)+carry};
+  });
+
+  const plannedBills=first.items.reduce((s,x)=>s+Number(x.pay||0),0);
+  paycheckHistory.unshift({
+    id:uid(),
+    payday:$('payday').value,
+    income:first.income,
+    safeSpend:first.safe,
+    plannedBills,
+    paymentCount:first.items.length,
+    unpaidCarried,
+    closedAt:new Date().toISOString()
+  });
+
+  const dates=nextPaydays($('payday').value,$('payFrequency').value,2);
+  if(dates.length>1) $('payday').value=iso(dates[1]);
+  $('extraIncome').value='';
+
+  saveLocal();
+  try{ await saveCloud(); }catch{ badge('Sync error'); }
+  recalc();
+  alert('Paycheck completed. Your next payday is ready.');
+}
+$('completePaycheckBtn').onclick=completeCurrentPaycheck;
+
 $('addBillBtn').onclick=()=>{const name=$('billName').value.trim(),amount=Number($('billAmount').value||0),overdue=Number($('billOverdue').value||0),dueDay=Number($('billDueDay').value||0);if(!name||amount<=0||dueDay<1||dueDay>31)return alert('Enter a bill name, amount, and monthly due day from 1 to 31.');bills.push({id:uid(),name,amount,overdue,dueDay,priority:$('billPriority').value});['billName','billAmount','billOverdue','billDueDay'].forEach(id=>$(id).value='');schedule();recalc()};
 ['payday','paycheck','payFrequency','cushion','extraIncome','strategy'].forEach(id=>$(id).oninput=()=>{schedule();recalc()});
 $('whatIfBtn').onclick=()=>{const f=buildForecast(Number($('whatIfIncome').value||0),Number($('whatIfSpend').value||0));if(!f.checks.length)return $('whatIfResult').textContent='Set your pay schedule first.';$('whatIfResult').textContent=f.caughtUp?`With that change, the plan is caught up by ${iso(f.caughtUp)}.`:`After 4 checks, about ${money(f.remainingOverdue)} would still be carrying forward.`};
 $('saveBtn').onclick=async()=>{schedule();try{await saveCloud();alert('Saved to Checkstride cloud.')}catch{alert('Saved on this device. Cloud sync failed.')}};
-$('resetBtn').onclick=()=>{if(!confirm('Reset this plan and payment history?'))return;bills=[];paymentHistory=[];['payday','paycheck','cushion','extraIncome'].forEach(id=>$(id).value='');$('payFrequency').value='biweekly';$('strategy').value='balanced';schedule();recalc()};
+$('resetBtn').onclick=()=>{if(!confirm('Reset this plan and payment history?'))return;bills=[];paymentHistory=[];paycheckHistory=[];['payday','paycheck','cushion','extraIncome'].forEach(id=>$(id).value='');$('payFrequency').value='biweekly';$('strategy').value='balanced';schedule();recalc()};
 $('gateSignIn').onclick=()=>{$('authModal').classList.add('show');$('authStatus').textContent=''};
 $('gateCreate').onclick=()=>{$('authModal').classList.add('show');$('authStatus').textContent='Create your Checkstride account below.'};
 $('closeAuth').onclick=()=>$('authModal').classList.remove('show');
