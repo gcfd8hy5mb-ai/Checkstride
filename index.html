@@ -43,6 +43,8 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
 .closeout{background:linear-gradient(145deg,#0b2238,#0d2f46);border:1px solid #22577a;border-radius:16px;padding:15px}
 .closeout h3{margin:0 0 6px;font-size:17px}.closeout-actions{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
 .check-history{display:flex;flex-direction:column;gap:8px;margin-top:10px}.check-row{background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px}
+.history-filter{display:flex;gap:8px;overflow:auto;padding-bottom:2px;margin-bottom:10px}.history-filter button{white-space:nowrap;border:1px solid #29445c;background:#102238;color:#c9d8e7;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:800}.history-filter button.active{background:#14314b;color:#fff;border-color:#34658a}
+.history-empty-tip{margin-top:8px;font-size:11px;color:var(--muted)}
 .check-row-top{display:flex;justify-content:space-between;gap:12px;align-items:center}.check-row b{font-size:14px}.check-row .money{font-weight:800}
 @media(max-width:560px){.status-grid{grid-template-columns:1fr 1fr}}
 .footer{position:fixed;left:0;right:0;bottom:0;background:rgba(7,17,31,.96);border-top:1px solid #1f2937;padding:10px 14px calc(env(safe-area-inset-bottom) + 10px)}.footer>div{max-width:760px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}.footer button{width:100%}
@@ -57,12 +59,25 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
 .drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.drawer-head h2{margin:0;font-size:20px}.drawer-group{margin:16px 0}.drawer-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}.drawer button.nav-btn{width:100%;text-align:left;margin-bottom:8px;background:#0e2032;border:1px solid #223a50;color:#fff;border-radius:13px;padding:14px 14px;font-weight:750;min-height:48px;touch-action:manipulation}
 .mobile-tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(7,17,31,.96);border-top:1px solid #1f2937;z-index:30;padding:8px 10px calc(env(safe-area-inset-bottom) + 8px);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 -8px 24px rgba(0,0,0,.18)}.mobile-tabs>div{max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.tab-btn{border:0;background:transparent;color:#7f93a7;border-radius:12px;padding:8px 4px;font-size:10px;font-weight:750;min-height:50px;touch-action:manipulation}.tab-btn strong{display:block;font-size:17px;line-height:1.05;margin-bottom:4px}.tab-btn.active{background:#10253a;color:#fff;box-shadow:inset 0 0 0 1px #1f405c}
 .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quick-actions button{min-height:48px}
+.dashboard-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.dashboard-strip .mini-stat{background:#081522;border:1px solid var(--line-soft);border-radius:13px;padding:10px}
+.dashboard-strip .mini-stat span{display:block;color:var(--muted);font-size:10px}
+.dashboard-strip .mini-stat b{display:block;font-size:14px;margin-top:3px}
+.hero-subline{margin-top:8px;font-size:12px;color:#cae5f7;line-height:1.4}
+.home-nudge{margin-top:10px;background:#0a2030;border:1px solid #24465f;border-radius:13px;padding:11px 12px;font-size:12px;color:#d8e8f7}
+@media(max-width:560px){.dashboard-strip{grid-template-columns:1fr 1fr 1fr}.home-nudge{font-size:11.5px}}
 .section-collapse{overflow:hidden;transition:max-height .22s ease,opacity .18s ease}.section-collapse.closed{max-height:0!important;opacity:0;margin:0!important;padding:0!important;border:0!important}
 .compact-card{background:#091827;border:1px solid var(--line);border-radius:16px;padding:13px}
 .card-subtle{background:#0b1928;border:1px solid #1f3347;border-radius:16px;padding:13px}
 .bill-card{background:linear-gradient(180deg,#0a1a2a,#091725);border:1px solid var(--line-soft);border-radius:16px;padding:13px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.10)}
 .bill-card-main{min-width:0}.bill-card-title{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.bill-card-title strong{font-size:15px}.bill-card-meta{font-size:11px;color:var(--muted);margin-top:5px}
 .bill-card-actions{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}.bill-amount{font-weight:800;font-size:15px}
+.bill-edit-btn{border:1px solid #334e66;background:#102238;color:#ddecf8;border-radius:10px;padding:8px 10px;font-size:11px;font-weight:800;min-height:38px}
+.plan-progress{height:7px;background:#07111f;border-radius:999px;overflow:hidden;margin-top:10px;border:1px solid #1a2c3e}.plan-progress>div{height:100%;background:linear-gradient(90deg,#18b7b0,#4da3ff);width:0%}
+.plan-meta-row{display:flex;justify-content:space-between;gap:12px;margin-top:8px;font-size:11px;color:var(--muted)}
+.plan-card.done{opacity:.66}.plan-card.done .plan-card-title{text-decoration:line-through}
+.inline-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.inline-actions button{flex:1;min-width:120px}
 .plan-card{background:linear-gradient(180deg,#0a1a2a,#091725);border:1px solid var(--line-soft);border-radius:16px;padding:14px;margin-bottom:8px;box-shadow:0 4px 14px rgba(0,0,0,.10)}.plan-card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.plan-card-title{font-weight:800;font-size:15px}.plan-card-amount{font-weight:900;font-size:16px;white-space:nowrap}.plan-card-meta{font-size:11px;color:var(--muted);margin-top:5px}.plan-card .paid-btn{margin-top:10px}
 .paycard{padding:14px}.paytop b{font-size:14px}.paycard .money{font-size:14px}
 .section-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:-2px 0 10px}.section-summary .small{margin:0}
@@ -83,6 +98,9 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .auth-link{border:0;background:transparent;color:#9edcf1;padding:4px 0;font-size:12px;font-weight:800}
 .auth-help{background:#091827;border:1px solid #29425a;border-radius:14px;padding:12px;margin-top:10px}
 .auth-help strong{display:block;font-size:13px;margin-bottom:4px}.auth-help span{font-size:12px;color:var(--muted);line-height:1.45}
+.password-wrap{position:relative}.password-wrap input{padding-right:54px}.password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:#13263a;color:#d7e7f5;border-radius:9px;padding:8px 10px;font-size:11px;font-weight:800}
+.auth-banner{display:none;margin-top:10px;padding:10px 12px;border-radius:12px;font-size:12px;font-weight:700}.auth-banner.show{display:block}.auth-banner.warn{background:#3a2d12;border:1px solid #70571e;color:#fde68a}.auth-banner.error{background:#3b1b20;border:1px solid #77343a;color:#fecaca}.auth-banner.ok{background:#0b3230;border:1px solid #176b66;color:#b7f7ef}
+.offline-pill{display:none;position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 8px);transform:translateX(-50%);z-index:95;background:#3a2d12;border:1px solid #70571e;color:#fde68a;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.24)}.offline-pill.show{display:block}
 *{-webkit-tap-highlight-color:transparent}
 .toast-stack{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 82px);transform:translateX(-50%);z-index:90;width:min(calc(100% - 28px),430px);display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{background:rgba(12,29,46,.97);border:1px solid #2e506b;color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 12px 32px rgba(0,0,0,.28);font-size:13px;font-weight:700;opacity:0;transform:translateY(12px) scale(.98);transition:opacity .18s ease,transform .18s ease;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
@@ -250,6 +268,8 @@ button:disabled{opacity:.55;cursor:not-allowed}
   <div class="card" id="planCard" class="card scroll-anchor">
     <h2>This paycheck</h2>
     <div id="planSummary" class="notice">Add your paycheck and bills to generate a plan.</div>
+    <div class="plan-progress"><div id="planProgressFill"></div></div>
+    <div class="plan-meta-row"><span id="planProgressText">0 of 0 complete</span><span id="planRemainingText">$0 remaining</span></div>
     <div id="planSteps" style="margin-top:10px"></div>
   </div>
 
@@ -309,6 +329,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
     <div class="drawer-label">Account</div>
     <button id="drawerSignOut" class="nav-btn">Sign out</button>
   </div>
+  <div class="small" style="opacity:.55;margin-top:18px">Checkstride v1.0 beta · build 12</div>
 </aside>
 
 <div id="mobileTabs" class="mobile-tabs" style="display:none">
@@ -323,13 +344,34 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <div id="authModal" class="modal"><div class="modalbox">
   <h2 style="margin-top:0">Checkstride account</h2>
   <label>Email</label><input id="authEmail" type="email" autocomplete="email">
-  <label>Password</label><input id="authPassword" type="password" autocomplete="current-password">
+  <label>Password</label>
+  <div class="password-wrap">
+    <input id="authPassword" type="password" autocomplete="current-password">
+    <button id="togglePassword" class="password-toggle" type="button">Show</button>
+  </div>
+  <div id="authBanner" class="auth-banner"></div>
   <div class="auth-links">
     <button id="forgotPasswordBtn" class="auth-link" type="button">Forgot password?</button>
     <button id="forgotEmailBtn" class="auth-link" type="button">Forgot email?</button>
   </div>
   <div class="actions"><button id="signInNow" class="secondary">Sign in</button><button id="createNow" class="primary">Create account</button></div>
   <div id="authStatus" class="small" style="margin-top:10px"></div><div style="height:8px"></div><button id="closeAuth" class="secondary" style="width:100%">Close</button>
+</div></div>
+
+
+<div id="editBillModal" class="modal"><div class="modalbox">
+  <h2 style="margin-top:0">Edit bill</h2>
+  <input type="hidden" id="editBillId">
+  <label>Name</label><input id="editBillName">
+  <div class="row">
+    <div><label>Amount</label><input id="editBillAmount" type="number" min="0" step="0.01"></div>
+    <div><label>Due day</label><input id="editBillDueDay" type="number" min="1" max="31"></div>
+  </div>
+  <div class="row">
+    <div><label>Overdue balance</label><input id="editBillOverdue" type="number" min="0" step="0.01"></div>
+    <div><label>Priority</label><select id="editBillPriority"><option value="critical">Critical</option><option value="important">Important</option><option value="flexible">Flexible</option></select></div>
+  </div>
+  <div class="actions"><button id="cancelEditBill" class="secondary">Cancel</button><button id="saveEditBill" class="primary">Save changes</button></div>
 </div></div>
 
 <div id="recoverEmailModal" class="modal"><div class="modalbox">
@@ -440,12 +482,35 @@ function upcomingOccurrences(b,start,end){
   while(cur<=last){const d=billDueDateForMonth(b,cur.getFullYear(),cur.getMonth());if(d>=start&&d<=end)out.push(d);cur.setMonth(cur.getMonth()+1)}
   return out;
 }
-function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,paymentHistory,paycheckHistory,onboardingComplete:true,version:12}}
+function state(){return {payday:$('payday').value,paycheck:cleanMoney($('paycheck').value),payFrequency:$('payFrequency').value,cushion:cleanMoney($('cushion').value),extraIncome:cleanMoney($('extraIncome').value),strategy:$('strategy').value,bills:bills.map(normalizeBill),paymentHistory,paycheckHistory,onboardingComplete:true,version:18}}
+
+function cleanMoney(v){
+  const n=Number(v);
+  return Number.isFinite(n)?Math.max(0,Math.round(n*100)/100):0;
+}
+function cleanDay(v){
+  const n=Math.round(Number(v));
+  return Number.isFinite(n)?Math.min(31,Math.max(1,n)):1;
+}
+function cleanText(v,fallback=''){
+  const s=String(v??'').trim();
+  return s||fallback;
+}
+function duplicateBillName(name,ignoreId=null){
+  const target=cleanText(name).toLowerCase();
+  return bills.some(b=>b.id!==ignoreId && cleanText(b.name).toLowerCase()===target);
+}
+function validatePlanInputs(){
+  const payday=$('payday')?.value||'';
+  const paycheck=cleanMoney($('paycheck')?.value||0);
+  const cushion=cleanMoney($('cushion')?.value||0);
+  return {payday,paycheck,cushion,valid:!!payday&&paycheck>0};
+}
 function normalizeBill(b){
-  if(b.dueDay) return {...b,id:b.id||uid(),dueDay:Number(b.dueDay)};
+  if(b.dueDay) return {...b,id:b.id||uid(),name:cleanText(b.name,'Bill'),amount:cleanMoney(b.amount),overdue:cleanMoney(b.overdue),dueDay:cleanDay(b.dueDay),priority:['critical','important','flexible'].includes(b.priority)?b.priority:'important'};
   let dueDay=1;
   if(b.date){const d=parseDate(b.date);if(d)dueDay=d.getDate()}
-  return {id:b.id||uid(),name:b.name||'Bill',amount:Number(b.amount||0),overdue:Number(b.overdue||0),dueDay,priority:b.priority||'important'};
+  return {id:b.id||uid(),name:cleanText(b.name,'Bill'),amount:cleanMoney(b.amount),overdue:cleanMoney(b.overdue),dueDay:cleanDay(dueDay),priority:['critical','important','flexible'].includes(b.priority)?b.priority:'important'};
 }
 function apply(d){
   if(!d)return;
@@ -494,6 +559,32 @@ function renderBillStatus(){
     alerts.innerHTML=urgent.slice(0,3).map(({b,s})=>`<div class="alert-box"><strong>${esc(b.name)} — ${s.label}</strong><span class="small">${money(b.amount)} · ${s.key==='overdue'?'needs attention first':'due '+iso(s.date)}</span></div>`).join('');
   }
 }
+
+function openEditBill(id){
+  const b=bills.find(x=>x.id===id); if(!b)return;
+  $('editBillId').value=b.id;
+  $('editBillName').value=b.name;
+  $('editBillAmount').value=b.amount;
+  $('editBillDueDay').value=b.dueDay;
+  $('editBillOverdue').value=b.overdue||0;
+  $('editBillPriority').value=b.priority||'important';
+  $('editBillModal').classList.add('show');
+}
+$('cancelEditBill').onclick=()=>$('editBillModal').classList.remove('show');
+$('saveEditBill').onclick=()=>{
+  const id=$('editBillId').value;
+  const b=bills.find(x=>x.id===id); if(!b)return;
+  const name=cleanText($('editBillName').value,'Bill');
+  if(duplicateBillName(name,id)){toast('A bill with that name already exists.','warn');return}
+  b.name=name;
+  b.amount=cleanMoney($('editBillAmount').value);
+  b.dueDay=cleanDay($('editBillDueDay').value);
+  b.overdue=cleanMoney($('editBillOverdue').value);
+  b.priority=$('editBillPriority').value;
+  $('editBillModal').classList.remove('show');
+  schedule();recalc();toast(`${name} updated.`,'success');
+};
+
 function renderBills(){
   const box=$('billList');
   if(!bills.length){box.className='small';box.textContent='No recurring bills added yet.';return}
@@ -512,10 +603,12 @@ function renderBills(){
     <div class="bill-card-actions">
       <span class="bill-amount">${money(b.amount)}</span>
       <button class="paid-btn ${paid?'done':''}" data-pay="${i}">${paid?'Paid ✓':'Mark paid'}</button>
+      <button class="bill-edit-btn" data-edit="${esc(b.id)}">Edit</button>
       <button class="danger remove" data-i="${i}" aria-label="Remove bill">×</button>
     </div>`;
     box.appendChild(row)
   });
+  box.querySelectorAll('[data-edit]').forEach(x=>x.onclick=()=>openEditBill(x.dataset.edit));
   box.querySelectorAll('.remove').forEach(x=>x.onclick=()=>{
     const i=Number(x.dataset.i), bill=bills[i];
     if(!bill)return;
@@ -575,17 +668,33 @@ function renderPaycheckHistory(){
   });
   if($('showMorePaychecks')) $('showMorePaychecks').style.display=paycheckHistory.length>3?'inline-block':'none';
 }
+
+let paymentHistoryFilter='all';
+document.querySelectorAll('[data-history-filter]').forEach(btn=>{
+  btn.onclick=()=>{
+    paymentHistoryFilter=btn.dataset.historyFilter;
+    document.querySelectorAll('[data-history-filter]').forEach(x=>x.classList.toggle('active',x===btn));
+    renderPaymentHistory();
+  };
+});
+function filteredPaymentHistory(){
+  if(paymentHistoryFilter==='all') return paymentHistory;
+  const days=Number(paymentHistoryFilter);
+  const cutoff=Date.now()-days*86400000;
+  return paymentHistory.filter(p=>new Date(p.paidAt).getTime()>=cutoff);
+}
 function renderPaymentHistory(){
   const box=$('paymentHistory');
-  if(!paymentHistory.length){box.innerHTML='<div class="empty-state"><strong>No payments yet</strong><span>Mark a bill paid and it will show here.</span></div>';return}
+  const filtered=filteredPaymentHistory();
+  if(!filtered.length){box.innerHTML='<div class="empty-state"><strong>No payments in this view</strong><span>Paid bills will appear here once you start marking them complete.</span></div>';if($('showMorePayments'))$('showMorePayments').style.display='none';return}
   box.innerHTML='';
-  paymentHistory.slice(0,25).forEach(p=>{
+  filtered.slice(0,25).forEach(p=>{
     const row=document.createElement('div');row.className='history-row';
     const paidDate=new Date(p.paidAt);
     row.innerHTML=`<div><b>${esc(p.billName)}</b><div class="meta">${money(p.amount)} · due ${esc(p.dueKey)} · paid ${paidDate.toLocaleDateString()}</div></div><button class="mini-btn" data-undo="${esc(p.id)}">Undo</button>`;
     box.appendChild(row);
   });
-  if($('showMorePayments')) $('showMorePayments').style.display=paymentHistory.length>3?'inline-block':'none';
+  if($('showMorePayments')) $('showMorePayments').style.display=filtered.length>3?'inline-block':'none';
   box.querySelectorAll('[data-undo]').forEach(x=>x.onclick=()=>undoPayment(x.dataset.undo));
 }
 function recalc(){
@@ -604,6 +713,18 @@ function recalc(){
   $('caughtUpKpi').textContent=f.caughtUp?iso(f.caughtUp):(f.checks.length&&f.remainingOverdue>0?'4+ checks':'—');
   const overdueTotal=bills.reduce((s,b)=>s+Number(b.overdue||0),0);
   $('heroStatus').textContent=!first?'Plan not ready':first.short>0?'Needs attention':overdueTotal>0?'Catching up':'On track';
+  $('miniPayday').textContent=$('payday').value||'—';
+  const dueBefore=first?first.items.filter(x=>x.type==='due').length:0;
+  $('miniDue').textContent=String(dueBefore);
+  $('miniCushion').textContent=money(Number($('cushion').value||0));
+  $('heroSubline').textContent=!first?'Enter your next payday and paycheck amount to build the plan.':
+    first.short>0?`${money(first.short)} will need to carry forward unless income changes.`:
+    `${money(first.safe)} remains available after planned obligations and your cushion.`;
+  const nudge=$('homeNudge');
+  if(!first){nudge.style.display='block';nudge.textContent='Finish setup to see what this paycheck needs to do.'}
+  else if(overdueTotal>0){nudge.style.display='block';nudge.textContent=`You are carrying ${money(overdueTotal)} overdue. Checkstride is prioritizing catch-up.`}
+  else if(dueBefore===0){nudge.style.display='block';nudge.textContent='No recurring bills are currently assigned before the next payday.'}
+  else{nudge.style.display='none';nudge.textContent=''}
   document.querySelectorAll('.kpi').forEach(x=>x.classList.remove('attention','good'));
   if(overdueTotal>0) $('overdueKpi').closest('.kpi').classList.add('attention');
   else $('overdueKpi').closest('.kpi').classList.add('good');
@@ -614,6 +735,18 @@ function recalc(){
   }else close.textContent='Set your payday and paycheck amount before closing a paycheck.';
   const s=$('planSummary'),p=$('planSteps');
   $('planActionCount').textContent=first?`${first.items.length} action${first.items.length===1?'':'s'}`:'0 actions';
+  if(first){
+    const total=first.items.length;
+    const paid=first.items.filter(x=>x.type==='due'&&x.billId&&x.due&&isOccurrencePaid(bills.find(b=>b.id===x.billId)||{},x.due)).length;
+    const pct=total?Math.min(100,Math.round((paid/total)*100)):0;
+    $('planProgressFill').style.width=pct+'%';
+    $('planProgressText').textContent=`${paid} of ${total} complete`;
+    $('planRemainingText').textContent=`${money(first.items.reduce((s,x)=>s+Number(x.pay||0),0))} planned`;
+  }else{
+    $('planProgressFill').style.width='0%';
+    $('planProgressText').textContent='0 of 0 complete';
+    $('planRemainingText').textContent='$0 planned';
+  }
   if(!first||!bills.length){s.textContent='Add your paycheck and recurring bills to generate a plan.';p.innerHTML=''}
   else{
     const overdueCount=bills.filter(b=>billStatus(b).key==='overdue').length;
@@ -645,8 +778,9 @@ $('obNext').onclick=async()=>{if(obStep===1){if(!$('obPayday').value||Number($('
 
 
 async function completeCurrentPaycheck(){
+  const valid=validatePlanInputs();
   const forecast=buildForecast(), first=forecast.checks[0];
-  if(!first || !$('payday').value || Number($('paycheck').value||0)<=0){
+  if(!valid.valid || !first){
     toast('Set your payday and paycheck amount first.','warn');
     return;
   }
@@ -698,12 +832,66 @@ async function completeCurrentPaycheck(){
 }
 $('completePaycheckBtn').onclick=completeCurrentPaycheck;
 
-$('addBillBtn').onclick=()=>{const name=$('billName').value.trim(),amount=Number($('billAmount').value||0),overdue=Number($('billOverdue').value||0),dueDay=Number($('billDueDay').value||0);if(!name||amount<=0||dueDay<1||dueDay>31)return alert('Enter a bill name, amount, and monthly due day from 1 to 31.');bills.push({id:uid(),name,amount,overdue,dueDay,priority:$('billPriority').value});
+$('addBillBtn').onclick=()=>{const name=$('billName').value.trim(),amount=Number($('billAmount').value||0),overdue=Number($('billOverdue').value||0),dueDay=Number($('billDueDay').value||0);if(!name||amount<=0||dueDay<1||dueDay>31)return alert('Enter a bill name, amount, and monthly due day from 1 to 31.');if(duplicateBillName(name)){toast('A bill with that name already exists.','warn');return}
+  bills.push({id:uid(),name:cleanText(name,'Bill'),amount:cleanMoney(amount),overdue:cleanMoney(overdue),dueDay:cleanDay(dueDay),priority:$('billPriority').value});
   toast(`${name} added.`,'success');['billName','billAmount','billOverdue','billDueDay'].forEach(id=>$(id).value='');schedule();recalc()};
 ['payday','paycheck','payFrequency','cushion','extraIncome','strategy'].forEach(id=>$(id).oninput=()=>{schedule();recalc()});
 $('whatIfBtn').onclick=()=>{const f=buildForecast(Number($('whatIfIncome').value||0),Number($('whatIfSpend').value||0));if(!f.checks.length)return $('whatIfResult').textContent='Set your pay schedule first.';$('whatIfResult').textContent=f.caughtUp?`With that change, the plan is caught up by ${iso(f.caughtUp)}.`:`After 4 checks, about ${money(f.remainingOverdue)} would still be carrying forward.`};
 $('saveBtn').onclick=async()=>{schedule();try{await saveCloud();alert('Saved to Checkstride cloud.')}catch{alert('Saved on this device. Cloud sync failed.')}};
 $('resetBtn').onclick=()=>{if(!confirm('Reset this plan and payment history?'))return;bills=[];paymentHistory=[];paycheckHistory=[];['payday','paycheck','cushion','extraIncome'].forEach(id=>$(id).value='');$('payFrequency').value='biweekly';$('strategy').value='balanced';schedule();recalc()};
+
+let authBusy=false;
+let authCooldownUntil=0;
+
+function setAuthBanner(message,type=''){
+  const el=$('authBanner');
+  if(!el)return;
+  el.textContent=message||'';
+  el.className='auth-banner'+(message?' show':'')+(type?' '+type:'');
+}
+function setAuthBusy(on){
+  authBusy=!!on;
+  ['signInNow','createNow','forgotPasswordBtn'].forEach(id=>{
+    const el=$(id); if(el) el.disabled=authBusy;
+  });
+}
+function authCooldownRemaining(){
+  return Math.max(0,Math.ceil((authCooldownUntil-Date.now())/1000));
+}
+function beginAuthCooldown(seconds=60){
+  authCooldownUntil=Date.now()+seconds*1000;
+  const tick=()=>{
+    const left=authCooldownRemaining();
+    if(left<=0){
+      setAuthBanner('You can try signing in again now.','ok');
+      return;
+    }
+    setAuthBanner(`Too many attempts. Try again in about ${left} second${left===1?'':'s'}.`,'warn');
+    setTimeout(tick,1000);
+  };
+  tick();
+}
+
+window.addEventListener('error',e=>{
+  const badge=$('diagnosticBadge');
+  if(badge){badge.style.display='block';badge.textContent='App error detected'}
+  console.error('Checkstride runtime error',e.error||e.message);
+});
+window.addEventListener('unhandledrejection',e=>{
+  const badge=$('diagnosticBadge');
+  if(badge){badge.style.display='block';badge.textContent='Sync/app error'}
+  console.error('Checkstride unhandled rejection',e.reason);
+});
+
+function updateOnlineState(){
+  const offline=!navigator.onLine;
+  $('offlinePill')?.classList.toggle('show',offline);
+  if(offline) setAuthBanner('You are offline. Reconnect before signing in.','warn');
+}
+window.addEventListener('online',updateOnlineState);
+window.addEventListener('offline',updateOnlineState);
+updateOnlineState();
+
 function friendlyAuthError(e){
   const code=e?.code||'';
   if(code==='auth/too-many-requests') return 'Too many sign-in attempts. Please wait a little while and try again.';
@@ -724,6 +912,7 @@ function savedAccountEmail(){
 $('gateSignIn').onclick=()=>{
   $('authModal').classList.add('show');
   $('authStatus').textContent='';
+  setAuthBanner('');
   const saved=savedAccountEmail();
   if(saved && !$('authEmail').value) $('authEmail').value=saved;
 };
@@ -732,53 +921,88 @@ $('gateCreate').onclick=()=>{
   $('authStatus').textContent='Create your Checkstride account below.';
 };
 $('closeAuth').onclick=()=>$('authModal').classList.remove('show');
+$('togglePassword').onclick=()=>{
+  const input=$('authPassword');
+  const showing=input.type==='text';
+  input.type=showing?'password':'text';
+  $('togglePassword').textContent=showing?'Show':'Hide';
+};
+
 
 $('signInNow').onclick=async()=>{
+  if(authBusy)return;
+  const left=authCooldownRemaining();
+  if(left>0){setAuthBanner(`Please wait about ${left} more second${left===1?'':'s'} before trying again.`,'warn');return}
+  if(!navigator.onLine){setAuthBanner('You are offline. Reconnect before signing in.','warn');return}
   const email=$('authEmail').value.trim();
   const password=$('authPassword').value;
+  if(!email){setAuthBanner('Enter your email address.','warn');$('authEmail').focus();return}
+  if(!password){setAuthBanner('Enter your password.','warn');$('authPassword').focus();return}
   $('authStatus').textContent='';
+  setAuthBanner('Signing in…');
+  setAuthBusy(true);
   try{
     await signInWithEmailAndPassword(auth,email,password);
     rememberAccountEmail(email);
+    setAuthBanner('Signed in.','ok');
     $('authModal').classList.remove('show');
   }catch(e){
-    $('authStatus').textContent=friendlyAuthError(e);
+    const msg=friendlyAuthError(e);
+    setAuthBanner(msg,e?.code==='auth/too-many-requests'?'warn':'error');
+    if(e?.code==='auth/too-many-requests') beginAuthCooldown(60);
+  }finally{
+    setAuthBusy(false);
   }
 };
 
 $('createNow').onclick=async()=>{
+  if(authBusy)return;
+  if(!navigator.onLine){setAuthBanner('You are offline. Reconnect before creating an account.','warn');return}
   const email=$('authEmail').value.trim();
   const password=$('authPassword').value;
+  if(!email){setAuthBanner('Enter an email address first.','warn');$('authEmail').focus();return}
+  if(password.length<6){setAuthBanner('Use a password with at least 6 characters.','warn');$('authPassword').focus();return}
   $('authStatus').textContent='';
+  setAuthBanner('Creating account…');
+  setAuthBusy(true);
   try{
     await createUserWithEmailAndPassword(auth,email,password);
     rememberAccountEmail(email);
+    setAuthBanner('Account created.','ok');
     $('authModal').classList.remove('show');
   }catch(e){
-    $('authStatus').textContent=friendlyAuthError(e);
+    setAuthBanner(friendlyAuthError(e),'error');
+  }finally{
+    setAuthBusy(false);
   }
 };
 
 $('forgotPasswordBtn').onclick=async()=>{
+  if(authBusy)return;
   const email=$('authEmail').value.trim();
   if(!email){
-    $('authStatus').textContent='Enter your email first, then tap Forgot password.';
+    setAuthBanner('Enter your email first, then tap Forgot password.','warn');
     $('authEmail').focus();
     return;
   }
+  if(!navigator.onLine){setAuthBanner('You are offline. Reconnect before requesting a reset.','warn');return}
+  setAuthBusy(true);
+  setAuthBanner('Sending reset email…');
   try{
     await sendPasswordResetEmail(auth,email);
     rememberAccountEmail(email);
-    $('authStatus').textContent='Password reset email sent. Check your inbox and junk folder.';
+    setAuthBanner('Password reset email sent. Check your inbox and junk folder.','ok');
   }catch(e){
-    // Avoid exposing whether an account exists. Keep response privacy-safe.
     if(e?.code==='auth/too-many-requests'){
-      $('authStatus').textContent='Too many reset attempts. Please wait a little while and try again.';
+      setAuthBanner('Too many reset attempts. Please wait before trying again.','warn');
+      beginAuthCooldown(60);
     }else if(e?.code==='auth/invalid-email'){
-      $('authStatus').textContent='Enter a valid email address.';
+      setAuthBanner('Enter a valid email address.','warn');
     }else{
-      $('authStatus').textContent='If that email is linked to a Checkstride account, a reset email will be sent.';
+      setAuthBanner('If that email is linked to a Checkstride account, a reset email will be sent.','ok');
     }
+  }finally{
+    setAuthBusy(false);
   }
 };
 
@@ -966,9 +1190,12 @@ onAuthStateChanged(auth,async user=>{
     hideOnboarding();closeDrawer();$('authGate').style.display='flex';$('appShell').style.display='none';$('footer').style.display='none';$('mobileTabs').style.display='none';badge('Local only')
   }
 });
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}
 </script>
 
 <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+<div id="offlinePill" class="offline-pill">No internet connection</div>
+<div id="diagnosticBadge" style="display:none;position:fixed;right:10px;bottom:calc(env(safe-area-inset-bottom) + 92px);z-index:92;background:#3b1b20;border:1px solid #77343a;color:#fecaca;border-radius:999px;padding:7px 10px;font-size:10px;font-weight:800">App error</div>
 <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
   <div class="loading-card"><span class="spinner"></span><span id="loadingText">Working…</span></div>
 </div>
