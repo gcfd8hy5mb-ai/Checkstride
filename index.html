@@ -25,7 +25,7 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
 <body>
 <div class="app">
 <div class="header">
-  <div class="brand"><img src="./checkstride-logo.png" alt="" onerror="this.style.display='none'"><div><h1>Checkstride</h1><p>Know what this paycheck needs to do.</p></div></div>
+  <div class="brand"><img src="./checkstride-logo.svg" alt="" onerror="this.style.display='none'"><div><h1>Checkstride</h1><p>Know what this paycheck needs to do.</p></div></div>
   <div id="cloudBadge" class="badge">Local only</div>
 </div>
 
@@ -116,7 +116,7 @@ const s=$('planSummary'),p=$('planSteps');if(!bills.length||r.income<=0){s.textC
 
 $('addBillBtn').onclick=()=>{const name=$('billName').value.trim(),amount=Number($('billAmount').value||0),overdueAmt=Number($('billOverdue').value||0);if(!name||amount<=0)return alert('Enter a bill name and amount.');bills.push({name,amount,overdue:overdueAmt,date:$('billDate').value||'',priority:$('billPriority').value});$('billName').value=$('billAmount').value=$('billOverdue').value=$('billDate').value='';schedule();recalc()};
 ['payday','paycheck','cushion','extraIncome','strategy'].forEach(id=>$(id).oninput=()=>{schedule();recalc()});
-$('whatIfBtn').onclick=()=>{const r=plan(Number($('whatIfIncome').value||0),Number($('whatIfSpend').value||0));$('whatIfResult').textContent=r.unpaid<=0?'With that change, this paycheck could fully cover the catch-up plan.':`With that change, about ${money(r.unpaid)} would still remain after this paycheck.`};
+$('whatIfBtn').onclick=()=>{const r=plan(Number($('whatIfIncome').value||0),Number($('whatIfSpend').value||0));$('whatIfResult').textContent=r.unpaid<=0?'With that change, this paycheck could fully cover the current catch-up plan.':`With that change, about ${money(r.unpaid)} would still remain after this paycheck.`};
 $('saveBtn').onclick=async()=>{schedule();if(currentUser){try{await saveCloud();alert('Saved to Checkstride cloud.')}catch{alert('Saved locally. Cloud sync failed.')}}else alert('Saved on this device. Sign in to sync across devices.')};
 $('resetBtn').onclick=()=>{if(!confirm('Reset this plan?'))return;bills=[];['payday','paycheck','cushion','extraIncome'].forEach(id=>$(id).value='');$('strategy').value='balanced';schedule();recalc()};
 
