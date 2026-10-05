@@ -57,7 +57,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
 .list{display:flex;flex-direction:column;gap:8px;margin-top:10px}.row{display:flex;justify-content:space-between;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:11px 12px}.row small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.row .right{text-align:right}.remove{border:0;background:transparent;color:var(--error);padding:4px 0;font-size:10px}
 .empty{color:var(--muted);font-size:12px;text-align:center;padding:16px 8px;margin:0}
 .section{scroll-margin-top:74px}
-.bottom-nav{position:fixed;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(92%,520px);display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:rgba(9,21,34,.96);border:1px solid var(--border);border-radius:18px;padding:7px;box-shadow:var(--shadow);backdrop-filter:blur(18px);z-index:30}
+.bottom-nav{position:fixed;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(92%,520px);display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:rgba(9,21,34,.96);border:1px solid var(--border);border-radius:18px;padding:7px;box-shadow:var(--shadow);backdrop-filter:blur(18px);z-index:30}
 .bottom-nav button{border:0;background:transparent;color:var(--muted);padding:10px 6px;border-radius:12px;font-size:11px}.bottom-nav button.active{background:#183047;color:var(--fg);font-weight:700}
 .status-saved{color:var(--ok)!important}.status-saving{color:var(--warn)!important}.status-error{color:var(--error)!important}
 @media(max-width:640px){.quick-grid,.form-grid,.strategy-grid{grid-template-columns:1fr}.bill-form{grid-template-columns:1fr 1fr}.bill-form>*:first-child,.bill-form>*:last-child{grid-column:1/-1}.hero strong{font-size:40px}.topbar small{display:none}}
@@ -127,6 +127,21 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     </div>
   </section>
 
+
+  <section class="card section" id="coachSection">
+    <div class="title-row"><h2>Smart Coach</h2><span id="coachLearning">Learning</span></div>
+    <div class="smart-rows">
+      <div class="smart-row"><span>What this paycheck needs to do</span><b id="coachAction">Finish setup so Checkstride can build a recommendation.</b></div>
+      <div class="smart-row"><span>Why</span><b id="coachWhy">Recommendations are based on your paycheck, bill timing, overdue balance, cushion, and past paycheck results.</b></div>
+      <div class="smart-row"><span>Adaptive cushion</span><b id="coachCushion">Waiting for enough history.</b></div>
+      <div class="smart-row"><span>Prediction reliability</span><b id="coachReliability">Not enough completed paychecks yet.</b></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+      <button id="planWorked" class="ghost">Plan worked</button>
+      <button id="planMissed" class="ghost">Needs adjustment</button>
+    </div>
+  </section>
+
   <section class="card section" id="billsSection">
     <div class="title-row"><h2>Bills</h2><span id="billCount">0 tracked</span></div>
     <div class="bill-form">
@@ -149,6 +164,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
 <nav id="bottomNav" class="bottom-nav hidden">
   <button data-target="homeSection" class="active">Home</button>
   <button data-target="setupSection">Setup</button>
+  <button data-target="coachSection">Coach</button>
   <button data-target="billsSection">Bills</button>
   <button data-target="forecastSection">Forecast</button>
 </nav>
@@ -158,7 +174,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
   const API_KEY="AIzaSyDoLHFn-sHVa9LROJOg3TFA6m4xFZCfhos";
   const PROJECT_ID="paycheck-advisor";
   const SESSION_KEY="checkstride_rest_session";
-  const blank={payday:"",paycheck:0,frequency:"biweekly",cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null};
+  const blank={payday:"",paycheck:0,frequency:"biweekly",cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null}};
   let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null;
 
   const $=id=>document.getElementById(id);
@@ -276,6 +292,70 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     }
     return rem>0?"12+ checks":checks===0?"Caught up":`${checks} check${checks===1?"":"s"}`;
   }
+
+  function getSmartMemory(){
+    const m=state.smartMemory&&typeof state.smartMemory==="object"?state.smartMemory:{};
+    return {
+      planWins:Number(m.planWins||0),
+      planMisses:Number(m.planMisses||0),
+      lastRecommendation:String(m.lastRecommendation||""),
+      lastOutcome:String(m.lastOutcome||""),
+      lastSnapshot:m.lastSnapshot||null
+    };
+  }
+  function paycheckStats(){
+    const rows=Array.isArray(state.paycheckHistory)?state.paycheckHistory.slice(-8):[];
+    const values=rows.map(x=>clampMoney(x?.income??x?.paycheck??x?.amount??0)).filter(x=>x>0);
+    if(!values.length)return{count:0,avg:clampMoney(state.paycheck),variance:0,stability:"unknown"};
+    const avg=values.reduce((a,b)=>a+b,0)/values.length;
+    const variance=Math.sqrt(values.reduce((s,x)=>s+Math.pow(x-avg,2),0)/values.length);
+    const pct=avg?variance/avg:0;
+    return{count:values.length,avg,variance,pct,stability:pct<.05?"stable":pct<.12?"moderate":"variable"};
+  }
+  function adaptiveCushion(){
+    const stats=paycheckStats(), base=clampMoney(state.cushion), overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0);
+    const historyCount=(state.paycheckHistory||[]).length;
+    if(historyCount<2)return{amount:base,reason:"Waiting for at least 2 completed paychecks before adapting your cushion."};
+    let factor=1;
+    if(stats.stability==="variable")factor+=.25;
+    else if(stats.stability==="moderate")factor+=.1;
+    if(overdue>0)factor+=.1;
+    const m=getSmartMemory(), total=m.planWins+m.planMisses;
+    if(total>=3&&m.planMisses/total>.4)factor+=.15;
+    const recommended=Math.round(Math.max(base, Math.min(stats.avg*.18, base*factor))*100)/100;
+    return{amount:recommended,reason:`Based on ${historyCount} paycheck${historyCount===1?"":"s"}, ${stats.stability} income, and recent plan results.`};
+  }
+  function smartRecommendation(){
+    const f=forecast(), first=f[0], conf=confidence(), overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0);
+    if(!first||!state.payday||clampMoney(state.paycheck)<=0){
+      return{action:"Finish setup so Checkstride can build a recommendation.",why:"I need your next payday and take-home pay before making a plan.",confidence:conf};
+    }
+    const criticalOverdue=state.bills.filter(b=>b.priority==="critical"&&clampMoney(b.overdue)>0).sort((a,b)=>clampMoney(b.overdue)-clampMoney(a.overdue))[0];
+    if(first.short>0){
+      return{action:`Protect essentials first and close the ${money(first.short)} shortage.`,why:`Bills plus your protected cushion are higher than this paycheck can safely cover. Flexible spending should wait.`,confidence:conf};
+    }
+    if(criticalOverdue){
+      return{action:`Use available catch-up money on ${criticalOverdue.name} first.`,why:`${criticalOverdue.name} is marked critical and has ${money(criticalOverdue.overdue)} overdue.`,confidence:conf};
+    }
+    if(overdue>0){
+      const target=state.bills.filter(b=>clampMoney(b.overdue)>0).sort((a,b)=>{
+        const p={critical:3,important:2,flexible:1}; return (p[b.priority]||0)-(p[a.priority]||0)||clampMoney(b.overdue)-clampMoney(a.overdue)
+      })[0];
+      return{action:target?`Put the next ${money(Math.min(first.catchup||0,clampMoney(target.overdue)))} of catch-up money toward ${target.name}.`:"Use available money to reduce overdue bills.",why:`You still have ${money(overdue)} overdue, so catching up is more important than expanding safe-to-spend.`,confidence:conf};
+    }
+    const ac=adaptiveCushion();
+    if(first.safe>ac.amount*2){
+      return{action:`You are on track. Keep ${money(ac.amount)} protected and treat the rest as your safe-to-spend ceiling.`,why:`No overdue balance or shortage is detected for this paycheck.`,confidence:conf};
+    }
+    return{action:`Hold the current plan and avoid adding new commitments before the next paycheck.`,why:`You are covering the bills, but your remaining margin is still relatively tight.`,confidence:conf};
+  }
+  function reliability(){
+    const m=getSmartMemory(), total=m.planWins+m.planMisses;
+    if(total<2)return{label:"Learning",text:"Not enough completed plan outcomes yet."};
+    const pct=Math.round((m.planWins/total)*100);
+    return{label:pct>=80?"Strong":pct>=60?"Moderate":"Needs calibration",text:`${pct}% of ${total} recorded paycheck plans worked as expected.`};
+  }
+
   function render(){
     const f=forecast(),first=f[0],overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0),conf=confidence();
     $("safeSpend").textContent=money(first?.safe||0);
@@ -287,6 +367,13 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     ["fastest","balanced","minimum"].forEach(k=>$("est-"+k).textContent=strategyEstimate(k));
     $("confidence").textContent=`${conf>=80?"High":conf>=50?"Medium":"Low"} · ${conf}/100`;
     $("extraMove").textContent=conf<50?"Add or verify your bills before using a catch-up recommendation.":overdue>0?"Put extra money toward overdue bills first":first?.short?`Close the ${money(first.short)} gap first`:"No urgent catch-up target";
+    const rec=smartRecommendation(), ac=adaptiveCushion(), rel=reliability();
+    $("coachAction").textContent=rec.action;
+    $("coachWhy").textContent=rec.why;
+    $("coachCushion").textContent=`${money(ac.amount)} · ${ac.reason}`;
+    $("coachReliability").textContent=rel.text;
+    $("coachLearning").textContent=rel.label;
+
     $("billCount").textContent=`${state.bills.length} tracked`;
     $("billList").innerHTML=state.bills.length?state.bills.map(b=>`<div class="row"><div><b>${escapeHtml(b.name)}</b><small>Due day ${b.dueDay} · ${b.priority}</small></div><div class="right"><b>${money(b.amount)}</b><button class="remove" data-remove="${b.id}">Remove</button></div></div>`).join(""):'<p class="empty">Add bills to see exactly what each paycheck needs to cover.</p>';
     $("forecastList").innerHTML=f.length?f.map(x=>`<div class="row"><div><b>${x.date.toLocaleDateString()}</b><small>${money(x.due)} bills · ${money(x.catchup)} catch-up</small></div><div class="right"><span style="display:block;color:var(--muted);font-size:11px">Safe</span><b>${money(x.safe)}</b></div></div>`).join(""):'<p class="empty">Your forecast will appear here once setup is complete.</p>';
@@ -323,6 +410,18 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     setMsg("billMsg","");state={...state,bills:[...state.bills,{id:crypto.randomUUID(),name,amount,dueDay:day,priority,overdue:0}]};$("billName").value="";$("billAmount").value="";scheduleSave();
   };
   $("billList").addEventListener("click",e=>{const btn=e.target.closest("[data-remove]");if(!btn)return;state={...state,bills:state.bills.filter(b=>b.id!==btn.dataset.remove)};scheduleSave()});
+
+  $("planWorked").onclick=()=>{
+    const rec=smartRecommendation(), m=getSmartMemory();
+    state={...state,smartMemory:{...m,planWins:m.planWins+1,lastRecommendation:rec.action,lastOutcome:"worked",lastSnapshot:{at:new Date().toISOString(),safe:forecast()[0]?.safe||0,overdue:state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0)}}};
+    scheduleSave();
+  };
+  $("planMissed").onclick=()=>{
+    const rec=smartRecommendation(), m=getSmartMemory();
+    state={...state,smartMemory:{...m,planMisses:m.planMisses+1,lastRecommendation:rec.action,lastOutcome:"missed",lastSnapshot:{at:new Date().toISOString(),safe:forecast()[0]?.safe||0,overdue:state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0)}}};
+    scheduleSave();
+  };
+
   document.querySelectorAll("#bottomNav button").forEach(btn=>btn.onclick=()=>{document.querySelectorAll("#bottomNav button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");$(btn.dataset.target).scrollIntoView({behavior:"smooth",block:"start"})});
 
   const manifest={
