@@ -484,7 +484,7 @@ input,select{min-height:46px}
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>({...b,amount:clampMoney(b.amount),overdue:clampMoney(b.overdue),dueDay:Math.min(31,Math.max(1,Math.trunc(Number(b.dueDay)||1)))})),version:40};
+      bills:data.bills.map(b=>({...b,amount:clampMoney(b.amount),overdue:clampMoney(b.overdue),dueDay:Math.min(31,Math.max(1,Math.trunc(Number(b.dueDay)||1)))})),version:41};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -873,9 +873,9 @@ input,select{min-height:46px}
     }
     const best=sims[0], second=sims[1];
     const gap=best&&second?Math.max(0,best.score-second.score):0;
-    let confidence=Math.round(Math.min(100,(confidence()+Math.min(25,cal.count*4)+Math.min(20,gap/10))/1.45));
-    if(ctx.drift!=="none")confidence=Math.max(0,confidence-15);
-    if(runway.status==="critical")confidence=Math.max(0,confidence-10);
+    let decisionScore=Math.round(Math.min(100,(confidence()+Math.min(25,cal.count*4)+Math.min(20,gap/10))/1.45));
+    if(ctx.drift!=="none")decisionScore=Math.max(0,decisionScore-15);
+    if(runway.status==="critical")decisionScore=Math.max(0,decisionScore-10);
     const names={fastest:"Fastest Catch-Up",balanced:"Balanced",minimum:"Minimum Stress"};
     let action=`Use ${names[best.key]} for the next 4-paycheck window.`;
     let why=`It currently gives the strongest mix of catch-up progress and protected cash across the next four checks.`;
@@ -886,7 +886,7 @@ input,select{min-height:46px}
       :runway.status==="tight"?"A tighter upcoming paycheck could force you to undo progress if too much cash is committed now."
       :"The main risk is using more cash now than the next few paychecks can comfortably absorb.";
     if(ctx.drift!=="none")risk+=` Recent behavior drift makes old patterns less trustworthy.`;
-    return{action,why,risk,confidence,best,runway};
+    return{action,why,risk,confidence:decisionScore,best,runway};
   }
   function rememberedContextInsight(){
     const key=contextKey(), dm=decisionMemory(), entry=dm.contexts[key];
@@ -1154,10 +1154,18 @@ input,select{min-height:46px}
     try{
       const j=await authRequest(mode==="signup"?"accounts:signUp":"accounts:signInWithPassword",{email:$("email").value.trim(),password:$("password").value,returnSecureToken:true});
       const s={idToken:j.idToken,refreshToken:j.refreshToken,localId:j.localId,email:j.email||$("email").value.trim()};
-      const loaded=await withTimeout(loadState(s),7000,"LOAD_TIMEOUT");session=s;state=loaded;localStorage.setItem(SESSION_KEY,JSON.stringify(s));hydrated=true;setCloud("Saved");render();show("app");switchPage(sessionStorage.getItem("checkstride_page")||"home");
+      const loaded=await withTimeout(loadState(s),7000,"LOAD_TIMEOUT");
+      session=s;state=loaded;localStorage.setItem(SESSION_KEY,JSON.stringify(s));hydrated=true;setCloud("Saved");
+      try{
+        render();show("app");switchPage(sessionStorage.getItem("checkstride_page")||"home");
+      }catch(renderError){
+        console.error("Checkstride render error",renderError);
+        show("app");
+        setCloud("Plan loaded — display recovery active","error");
+      }
     }catch(e){
       session=null;hydrated=false;const code=String(e?.message||"");
-      setMsg("authMsg",code.includes("TOO_MANY_ATTEMPTS")?"Too many attempts. Try again later.":code.includes("EMAIL_EXISTS")?"An account already uses that email.":code.includes("WEAK_PASSWORD")?"Use a stronger password.":code.includes("INVALID_LOGIN_CREDENTIALS")||code.includes("INVALID_PASSWORD")||code.includes("EMAIL_NOT_FOUND")?"Could not sign in. Check your email and password.":"Could not sign in right now.");
+      setMsg("authMsg",code.includes("TOO_MANY_ATTEMPTS")?"Too many attempts. Try again later.":code.includes("EMAIL_EXISTS")?"An account already uses that email.":code.includes("WEAK_PASSWORD")?"Use a stronger password.":code.includes("INVALID_LOGIN_CREDENTIALS")||code.includes("INVALID_PASSWORD")||code.includes("EMAIL_NOT_FOUND")?"Could not sign in. Check your email and password.":code.includes("LOAD_TIMEOUT")?"Signed in, but your plan took too long to load. Try again.":code.includes("LOAD_FAILED")?"Signed in, but Checkstride could not load your saved plan.":"Could not sign in right now.");
     }
   }
 
