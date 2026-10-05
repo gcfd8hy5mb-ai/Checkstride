@@ -627,6 +627,93 @@ input,select{
 .learning-dropdown-body>.card{margin:0 0 8px;box-shadow:none}
 .learning-dropdown-body>.card:last-child{margin-bottom:0}
 
+
+/* v53 UI/UX cleanup */
+.topbar{
+  min-height:52px;
+  padding:calc(env(safe-area-inset-top) + 4px) 2px 8px;
+  background:rgba(8,17,29,.97);
+}
+.topbar h1{font-size:21px}
+.page-head{padding:2px 2px 8px;margin:0}
+.page-head h2{font-size:20px}
+.page-head .pill{display:none}
+
+.card,.bills-summary,.snapshot-card,.home-summary,.setup-guide,.learning-dropdown,.utility-dropdown{
+  border-radius:16px;
+}
+.title-row h2{font-size:15px}
+.card{padding:12px}
+.home-greeting{padding-top:2px}
+.home-greeting h2{font-size:22px}
+.home-actions{margin-top:0}
+
+.bills-page-head{padding-top:0}
+.bills-page-head>div:first-child{margin-bottom:8px}
+.bills-page-head h2{font-size:19px}
+.bills-page-head p{font-size:10px}
+.add-bill-top{top:0;min-height:38px;padding:8px 11px}
+
+.bill-row-modern{padding:10px 9px;gap:7px}
+.bill-main b{font-size:11px}
+.bill-main small{font-size:9px}
+.bill-amount{font-size:11px}
+.bill-status{padding:5px 7px;font-size:8px}
+.bill-update-modern,.bill-remove-modern{font-size:8px;padding:5px 7px}
+
+.utility-dropdown{
+  margin:0 0 10px;
+  border:1px solid var(--border);
+  background:var(--card);
+  overflow:hidden;
+}
+.utility-dropdown>summary{
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  min-height:52px;
+  padding:12px 13px;
+  cursor:pointer;
+}
+.utility-dropdown>summary::-webkit-details-marker{display:none}
+.utility-dropdown>summary b{display:block;font-size:13px}
+.utility-dropdown>summary small{display:block;color:var(--muted);font-size:9px;margin-top:2px}
+.utility-dropdown>summary>span{color:var(--accent);font-size:10px;font-weight:700}
+.utility-dropdown[open]>summary>span{font-size:0}
+.utility-dropdown[open]>summary>span::after{content:"Close";font-size:10px}
+.utility-dropdown-body{padding:0 8px 8px}
+.utility-dropdown-body>.card{margin:0;background:transparent;border:0;padding:4px 0 0;box-shadow:none}
+
+.learning-dropdown{margin-bottom:8px}
+.learning-dropdown>summary{min-height:52px;padding:12px 13px}
+.learning-dropdown>summary b{font-size:13px}
+.learning-dropdown>summary small{font-size:9px}
+.learning-dropdown-body>.card{background:var(--surface);border-radius:12px}
+
+.account-card .ghost{width:100%;margin-top:8px}
+.danger-lite{border-color:rgba(214,90,100,.35)!important;color:#ff7d86!important}
+
+.bottom-nav{
+  width:min(calc(100% - 16px),500px);
+  grid-template-columns:repeat(4,1fr);
+  padding:4px;
+}
+.bottom-nav button{min-height:50px;font-size:9px}
+
+@media(max-width:640px){
+  .app{padding-left:10px;padding-right:10px}
+  .bill-row-modern{grid-template-columns:minmax(0,1fr) auto auto auto auto}
+  .bill-update-modern,.bill-remove-modern{padding:5px 6px}
+}
+@media(max-width:390px){
+  .bill-row-modern{grid-template-columns:minmax(0,1fr) auto auto}
+  .bill-update-modern,.bill-remove-modern{grid-row:2}
+  .bill-update-modern{grid-column:2}
+  .bill-remove-modern{grid-column:3}
+}
+
 </style>
 </head>
 <body>
@@ -656,19 +743,10 @@ input,select{
     <div id="authMsg" class="msg hidden"></div>
   </section>
 
-  <details class="compact-details appPageHidden" id="strideAdvanced">
-    <summary><div><b>Why this recommendation</b><small>Forecast reasoning and outcome diagnosis.</small></div><span>Show</span></summary>
-    <div class="details-body">
-    </div>
-  </details>
-
 </main>
 
 <main id="appView" class="app hidden">
-  <header class="topbar">
-    <div><h1>Checkstride</h1></div>
-    <button id="logout" class="ghost">Sign out</button>
-  </header>
+  <header class="topbar"><div><h1>Checkstride</h1></div></header>
 
 
   <section class="page-head" id="pageHead">
@@ -823,7 +901,6 @@ input,select{
 
 
 
-
   <section class="card section" id="reasoningSection">
     <div class="title-row"><h2>Why Stride picked this</h2><span id="reasoningConfidence">Learning</span></div>
     <div class="smart-rows">
@@ -901,6 +978,33 @@ input,select{
     </div>
   </details>
 
+  <details class="learning-dropdown" id="strideSystemDropdown">
+    <summary>
+      <div><b>Stride system</b><small>Mode, review triggers, and advanced behavior</small></div>
+      <span>Open</span>
+    </summary>
+    <div class="learning-dropdown-body">
+
+  <section class="card section" id="coach12Section">
+    <div class="title-row"><h2>Stride</h2><span id="coachModePill" class="pill">Guided</span></div>
+    <div class="ai-stack">
+      <div class="ai-banner"><strong id="coach12Action">Finish setup to activate Stride.</strong><p id="coach12Reason">Stride will combine forecasts, outcomes, goals, and context reliability into one plan.</p></div>
+      <div class="smart-row"><span>Mode</span><b id="coach12Mode">Guided — recommendations require your approval.</b></div>
+      <div class="smart-row"><span>Latest adjustment</span><b id="coach12Change">No completed outcome to compare yet.</b></div>
+      <div class="smart-row"><span>Next review</span><b id="coach12Trigger">Next paycheck completion or a meaningful plan change.</b></div>
+      <button id="toggleCoachMode" class="ghost">Switch to Auto-draft mode</button>
+    </div>
+  </section>
+
+  <details class="compact-details appPageHidden" id="strideAdvanced">
+    <summary><div><b>Why this recommendation</b><small>Forecast reasoning and outcome diagnosis.</small></div><span>Show</span></summary>
+    <div class="details-body">
+    </div>
+  </details>
+    </div>
+  </details>
+
+
 
   <section class="bills-page-head section" id="billsSection">
     <div>
@@ -939,7 +1043,7 @@ input,select{
     <div id="billList" class="bill-list-modern"></div>
 
     <details class="add-bill-panel" id="addBillPanel">
-      <summary>Add or manage bills</summary>
+      <summary>Add or edit a bill</summary>
       <div class="bill-form">
         <div class="field"><label>Bill name</label><input id="billName" placeholder="Rent" /></div>
         <div class="field"><label>Amount</label><input id="billAmount" type="number" min="0" step="0.01" /></div>
@@ -996,16 +1100,6 @@ input,select{
     </div>
     <div id="goalPlan" class="smart-rows"></div>
   </section>
-  <section class="card section" id="coach12Section">
-    <div class="title-row"><h2>Stride</h2><span id="coachModePill" class="pill">Guided</span></div>
-    <div class="ai-stack">
-      <div class="ai-banner"><strong id="coach12Action">Finish setup to activate Stride.</strong><p id="coach12Reason">Stride will combine forecasts, outcomes, goals, and context reliability into one plan.</p></div>
-      <div class="smart-row"><span>Mode</span><b id="coach12Mode">Guided — recommendations require your approval.</b></div>
-      <div class="smart-row"><span>Latest adjustment</span><b id="coach12Change">No completed outcome to compare yet.</b></div>
-      <div class="smart-row"><span>Next review</span><b id="coach12Trigger">Next paycheck completion or a meaningful plan change.</b></div>
-      <button id="toggleCoachMode" class="ghost">Switch to Auto-draft mode</button>
-    </div>
-  </section>
 
 
   <details class="compact-details appPageHidden" id="moreAdvanced">
@@ -1019,8 +1113,12 @@ input,select{
   </section>
     </div>
   </details>
+  <details class="utility-dropdown" id="completePaycheckDropdown">
+    <summary><div><b>Record paycheck outcome</b><small>Tell Stride what actually happened so it can learn.</small></div><span>Open</span></summary>
+    <div class="utility-dropdown-body">
 
-  <section class="card section" id="completeSection">
+
+  <section class="card section" id="completePaycheckDropdown">
     <div class="title-row"><h2>Complete this paycheck</h2><span id="completionHint">Record what actually happened</span></div>
     <div class="form-grid">
       <div class="field"><label>Actual take-home</label><input id="actualIncome" type="number" min="0" step="0.01" /></div>
@@ -1031,6 +1129,9 @@ input,select{
     <button id="completePaycheck" class="primary-btn">Complete paycheck & learn</button>
     <div id="completeMsg" class="msg hidden"></div>
   </section>
+    </div>
+  </details>
+
 
 
   <details class="compact-details appPageHidden" id="planAdvanced">
@@ -1043,6 +1144,12 @@ input,select{
   </section>
     </div>
   </details>
+
+  <section class="card account-card section" id="accountSection">
+    <div class="title-row"><h2>Account</h2><span id="accountEmail">Signed in</span></div>
+    <button id="logout" class="ghost danger-lite">Sign out</button>
+  </section>
+
 </main>
 
 <nav id="bottomNav" class="bottom-nav hidden" aria-label="Primary">
@@ -1057,7 +1164,7 @@ input,select{
   const API_KEY="AIzaSyDoLHFn-sHVa9LROJOg3TFA6m4xFZCfhos";
   const PROJECT_ID="paycheck-advisor";
   const SESSION_KEY="checkstride_rest_session";
-  const blank={payday:"",paycheck:0,frequency:"biweekly",cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
+  const blank={payday:"",paycheck:0,frequency:"biweekly",cushion:100,extraIncome:0,strategy:"balanced",bills:["billsSection","completePaycheckDropdown"],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
   let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null;
 
   const $=id=>document.getElementById(id);
@@ -1143,7 +1250,7 @@ input,select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:52};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:53};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -2026,7 +2133,7 @@ input,select{
         <div class="bill-main"><b>${escapeHtml(x.bill.name)}</b><small>${dueText}</small><small class="split-note">${escapeHtml(billSplitLabel(x.bill))}</small></div>
         <div class="bill-amount">${money(x.bill.amount)}</div>
         <button class="bill-status ${x.status}" data-bill-toggle="${x.bill.id}" data-paid="${x.status==="paid"?"1":"0"}">${label}</button>
-        <button type="button" class="bill-update-modern" data-bill-update="${x.bill.id}" aria-label="Update ${escapeHtml(x.bill.name)}">Update</button>
+        <button type="button" class="bill-update-modern" data-bill-update="${x.bill.id}" aria-label="Update ${escapeHtml(x.bill.name)}">Edit</button>
         <button type="button" class="bill-remove-modern" data-bill-remove="${x.bill.id}" onclick="window.checkstrideRemoveBill('${x.bill.id}',this)" aria-label="Remove ${escapeHtml(x.bill.name)}">Remove</button>
       </div>`;
     }).join(""):'<div class="empty">No bills in this view.</div>';
@@ -2096,11 +2203,10 @@ input,select{
     $("setupPaycheckStep").classList.toggle("done",s.paycheckDone);
     $("setupBillsStep").classList.toggle("done",s.billsDone);
     $("setupReviewStep").classList.toggle("done",s.reviewDone);
+    $("setupGuide").classList.toggle("hidden",s.count===3);
     $("setupGuide").classList.toggle("complete",s.count===3);
-    $("setupGuideTitle").textContent=s.count===3?"You’re set up":"Set up Checkstride";
-    $("setupGuideText").textContent=s.count===3
-      ?"Your plan is ready. Keep bills updated and complete each paycheck so Stride can learn."
-      :"Three quick steps and Checkstride will tell you what this paycheck can safely do.";
+    $("setupGuideTitle").textContent="Set up Checkstride";
+    $("setupGuideText").textContent="Three quick steps and Checkstride will tell you what this paycheck can safely do.";
   }
 
   function render(){
@@ -2215,6 +2321,7 @@ input,select{
     renderStatusCards();
     renderGreeting();
     renderSetupGuide();
+    if($("accountEmail"))$("accountEmail").textContent=session?.email||"Signed in";
     $("forecastList").innerHTML=f.length?f.map(x=>`<div class="row"><div><b>${x.date.toLocaleDateString()}</b><small>${money(x.due)} bills · ${money(x.catchup)} catch-up</small></div><div class="right"><span style="display:block;color:var(--muted);font-size:11px">Safe</span><b>${money(x.safe)}</b></div></div>`).join(""):'<p class="empty">Your forecast will appear here once setup is complete.</p>';
   }
   function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
@@ -2401,20 +2508,20 @@ input,select{
 
   const PAGE_GROUPS={
     home:["setupGuide","homeSection","homeActions","quickStats","billSnapshot","todayFocus"],
-    bills:["billsSection","completeSection"],
-    coach:["strideRecommendationDropdown","strideLearningDropdown","strideAdaptiveDropdown","coach12Section","strideAdvanced"],
-    more:["setupSection","autoplanSection","goalsSection","scenarioSection","planAdvanced","moreAdvanced"]
+    bills:["billsSection","completePaycheckDropdown"],
+    coach:["strideRecommendationDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown"],
+    more:["setupSection","autoplanSection","goalsSection","scenarioSection","planAdvanced","moreAdvanced","accountSection"]
   };
   const PAGE_COPY={
     home:["Today","Your money","Live"],
-    bills:["Bills","Bills & payments","Track"],
-    coach:["Stride","What should I do next?","Smart"],
-    more:["More","Setup & tools",""]
+    bills:["Bills","Bills & payments",""],
+    coach:["Stride","Your recommendation",""],
+    more:["More","Setup, goals & account",""]
   };
   function switchPage(page){
     document.querySelectorAll(".compact-details").forEach(d=>d.removeAttribute("open"));
     document.querySelectorAll(".learning-dropdown").forEach(d=>d.removeAttribute("open"));
-    document.querySelectorAll(".smart-stride-dropdown,.learning-dropdown").forEach(d=>d.removeAttribute("open"));
+    document.querySelectorAll(".smart-stride-dropdown,.learning-dropdown,.utility-dropdown").forEach(d=>d.removeAttribute("open"));
     const allIds=[...new Set(Object.values(PAGE_GROUPS).flat())];
     allIds.forEach(id=>{const el=$(id);if(el)el.classList.add("appPageHidden")});
     (PAGE_GROUPS[page]||PAGE_GROUPS.home).forEach(id=>{const el=$(id);if(el)el.classList.remove("appPageHidden")});
