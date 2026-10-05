@@ -57,7 +57,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
 .list{display:flex;flex-direction:column;gap:8px;margin-top:10px}.row{display:flex;justify-content:space-between;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:11px 12px}.row small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.row .right{text-align:right}.remove{border:0;background:transparent;color:var(--error);padding:4px 0;font-size:10px}
 .empty{color:var(--muted);font-size:12px;text-align:center;padding:16px 8px;margin:0}
 .section{scroll-margin-top:74px}
-.bottom-nav{position:fixed;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(92%,520px);display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:rgba(9,21,34,.96);border:1px solid var(--border);border-radius:18px;padding:7px;box-shadow:var(--shadow);backdrop-filter:blur(18px);z-index:30}
+.bottom-nav{position:fixed;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(92%,520px);display:grid;grid-template-columns:repeat(7,1fr);gap:6px;background:rgba(9,21,34,.96);border:1px solid var(--border);border-radius:18px;padding:7px;box-shadow:var(--shadow);backdrop-filter:blur(18px);z-index:30}
 .bottom-nav button{border:0;background:transparent;color:var(--muted);padding:10px 6px;border-radius:12px;font-size:11px}.bottom-nav button.active{background:#183047;color:var(--fg);font-weight:700}
 .status-saved{color:var(--ok)!important}.status-saving{color:var(--warn)!important}.status-error{color:var(--error)!important}
 @media(max-width:640px){.quick-grid,.form-grid,.strategy-grid{grid-template-columns:1fr}.bill-form{grid-template-columns:1fr 1fr}.bill-form>*:first-child,.bill-form>*:last-child{grid-column:1/-1}.hero strong{font-size:40px}.topbar small{display:none}}
@@ -124,6 +124,8 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
       <div class="smart-row"><span>Forecast confidence</span><b id="confidence">Low · 0/100</b></div>
       <div class="smart-row"><span>Extra-income move</span><b id="extraMove">Add or verify your bills before using a catch-up recommendation.</b></div>
       <div class="smart-row"><span>Recommendation memory</span><b>Uses your selected strategy and never changes it automatically.</b></div>
+      <div class="smart-row"><span>Prediction calibration</span><b id="predictionCalibration">Waiting for completed paychecks.</b></div>
+      <div class="smart-row"><span>Spending pattern</span><b id="spendingPattern">Waiting for completed paychecks.</b></div>
     </div>
   </section>
 
@@ -155,6 +157,30 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     <div id="billList" class="list"></div>
   </section>
 
+
+
+  <section class="card section" id="adaptiveSection">
+    <div class="title-row"><h2>Adaptive multi-paycheck plan</h2><span id="adaptiveMode">Learning</span></div>
+    <div class="smart-rows">
+      <div class="smart-row"><span>Catch-up pace</span><b id="adaptivePace">Balanced until enough history is available.</b></div>
+      <div class="smart-row"><span>4-check trend</span><b id="adaptiveTrend">Waiting for completed paycheck history.</b></div>
+      <div class="smart-row"><span>Next 4 checks</span><b id="adaptiveNext4">Complete at least 2 paychecks to unlock adaptive pacing.</b></div>
+      <div class="smart-row"><span>Adjustment logic</span><b id="adaptiveWhy">Checkstride will become more aggressive only when recent paychecks are stable and recommendations are landing close to actual results.</b></div>
+    </div>
+  </section>
+
+  <section class="card section" id="completeSection">
+    <div class="title-row"><h2>Complete this paycheck</h2><span id="completionHint">Record what actually happened</span></div>
+    <div class="form-grid">
+      <div class="field"><label>Actual take-home</label><input id="actualIncome" type="number" min="0" step="0.01" /></div>
+      <div class="field"><label>Actual extra income</label><input id="actualExtra" type="number" min="0" step="0.01" /></div>
+      <div class="field"><label>Unexpected spending</label><input id="unexpectedSpend" type="number" min="0" step="0.01" /></div>
+      <div class="field"><label>Amount left before next check</label><input id="actualLeft" type="number" min="0" step="0.01" /></div>
+    </div>
+    <button id="completePaycheck" class="primary-btn">Complete paycheck & learn</button>
+    <div id="completeMsg" class="msg hidden"></div>
+  </section>
+
   <section class="card section" id="forecastSection">
     <h2>Next 4 paychecks</h2>
     <div id="forecastList" class="list"></div>
@@ -166,6 +192,8 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
   <button data-target="setupSection">Setup</button>
   <button data-target="coachSection">Coach</button>
   <button data-target="billsSection">Bills</button>
+  <button data-target="adaptiveSection">Adaptive</button>
+  <button data-target="completeSection">Complete</button>
   <button data-target="forecastSection">Forecast</button>
 </nav>
 
@@ -174,7 +202,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
   const API_KEY="AIzaSyDoLHFn-sHVa9LROJOg3TFA6m4xFZCfhos";
   const PROJECT_ID="paycheck-advisor";
   const SESSION_KEY="checkstride_rest_session";
-  const blank={payday:"",paycheck:0,frequency:"biweekly",cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null}};
+  const blank={payday:"",paycheck:0,frequency:"biweekly",cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null}}};
   let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null;
 
   const $=id=>document.getElementById(id);
@@ -356,6 +384,133 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     return{label:pct>=80?"Strong":pct>=60?"Moderate":"Needs calibration",text:`${pct}% of ${total} recorded paycheck plans worked as expected.`};
   }
 
+
+  function predictionHistory(){
+    const m=getSmartMemory();
+    return Array.isArray(m.predictions)?m.predictions:[];
+  }
+  function calibration(){
+    const rows=predictionHistory().slice(-10);
+    if(!rows.length)return{count:0,error:0,grade:"Learning"};
+    const errs=rows.map(x=>Math.abs(Number(x.predictedLeft||0)-Number(x.actualLeft||0)));
+    const avg=errs.reduce((a,b)=>a+b,0)/errs.length;
+    const base=rows.map(x=>Math.max(1,Number(x.actualIncome||0))).reduce((a,b)=>a+b,0)/rows.length;
+    const pct=avg/base;
+    return{count:rows.length,error:avg,grade:pct<.05?"Strong":pct<.1?"Good":pct<.2?"Fair":"Needs calibration"};
+  }
+  function recurringSpendInsight(){
+    const m=getSmartMemory(), p=m.spendingPatterns&&typeof m.spendingPatterns==="object"?m.spendingPatterns:{};
+    const arr=Array.isArray(p.unexpected)?p.unexpected.slice(-6):[];
+    if(arr.length<2)return{avg:0,text:"Waiting for more completed paychecks."};
+    const avg=arr.reduce((a,b)=>a+b,0)/arr.length;
+    const recent=arr.slice(-3), recentAvg=recent.reduce((a,b)=>a+b,0)/recent.length;
+    const trend=recentAvg>avg*1.15?"rising":recentAvg<avg*.85?"falling":"stable";
+    return{avg,text:`Unexpected spending averages ${money(avg)} and is ${trend} recently.`};
+  }
+  function outcomeAdjustedCushion(){
+    const base=adaptiveCushion(), cal=calibration(), spend=recurringSpendInsight();
+    let amt=base.amount;
+    if(spend.avg>0)amt=Math.max(amt,spend.avg*1.1);
+    if(cal.count>=3&&cal.grade==="Needs calibration")amt*=1.1;
+    return{amount:Math.round(amt*100)/100,reason:spend.avg>0?`${base.reason} Also accounting for your recent unexpected-spending pattern.`:base.reason};
+  }
+  function advancedRecommendation(){
+    const base=smartRecommendation(), cal=calibration(), spend=recurringSpendInsight(), ac=outcomeAdjustedCushion();
+    let why=base.why;
+    if(cal.count>=2)why+=` Prediction calibration: ${cal.grade.toLowerCase()} over ${cal.count} completed paycheck${cal.count===1?"":"s"}.`;
+    if(spend.avg>0)why+=` ${spend.text}`;
+    return{...base,why,adaptiveCushion:ac.amount};
+  }
+  function advancePayday(dateStr,frequency){
+    const d=nextPayday(dateStr,frequency,1);
+    if(Number.isNaN(d.getTime()))return dateStr;
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+
+
+  function recentOutcomes(){
+    return (state.paycheckHistory||[]).slice(-6).map(x=>({
+      income:clampMoney(x?.income),
+      predictedLeft:clampMoney(x?.predictedLeft),
+      actualLeft:clampMoney(x?.actualLeft),
+      unexpected:clampMoney(x?.unexpectedSpend)
+    }));
+  }
+  function outcomeTrend(){
+    const rows=recentOutcomes();
+    if(rows.length<2)return{trend:"learning",text:"Waiting for completed paycheck history.",stability:"unknown"};
+    const incomes=rows.map(x=>x.income).filter(x=>x>0);
+    const avgIncome=incomes.reduce((a,b)=>a+b,0)/Math.max(1,incomes.length);
+    const spread=incomes.length?Math.sqrt(incomes.reduce((s,x)=>s+Math.pow(x-avgIncome,2),0)/incomes.length):0;
+    const incomePct=avgIncome?spread/avgIncome:0;
+    const misses=rows.map(x=>Math.abs(x.predictedLeft-x.actualLeft));
+    const avgMiss=misses.reduce((a,b)=>a+b,0)/misses.length;
+    const missPct=avgIncome?avgMiss/avgIncome:1;
+    const unexpectedAvg=rows.reduce((a,b)=>a+b.unexpected,0)/rows.length;
+    let trend="steady";
+    if(rows.length>=3){
+      const last3=rows.slice(-3).reduce((a,b)=>a+b.actualLeft,0)/Math.min(3,rows.length);
+      const earlier=rows.slice(0,Math.max(1,rows.length-3)).reduce((a,b)=>a+b.actualLeft,0)/Math.max(1,rows.length-3);
+      trend=last3>earlier*1.15?"improving":last3<earlier*.85?"tightening":"steady";
+    }
+    const stability=incomePct<.06&&missPct<.08?"high":incomePct<.15&&missPct<.15?"medium":"low";
+    return{
+      trend,stability,avgIncome,avgMiss,unexpectedAvg,
+      text:`${trend[0].toUpperCase()+trend.slice(1)} · ${stability} stability · average prediction miss ${money(avgMiss)}`
+    };
+  }
+  function adaptivePlan(){
+    const rows=recentOutcomes(), trend=outcomeTrend(), overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0);
+    const cal=calibration(), m=getSmartMemory();
+    let aggression="balanced", reason="Building history before changing catch-up pace.";
+    if(rows.length>=2){
+      if(overdue<=0){
+        aggression="maintain";
+        reason="You are caught up, so Checkstride is protecting stability instead of forcing extra catch-up.";
+      }else if(trend.stability==="high"&&trend.trend!=="tightening"&&cal.grade!=="Needs calibration"){
+        aggression="fast";
+        reason="Recent paychecks are stable and predictions are landing close enough to safely accelerate catch-up.";
+      }else if(trend.stability==="low"||trend.trend==="tightening"||cal.grade==="Needs calibration"){
+        aggression="protect";
+        reason="Recent outcomes are less predictable, so Checkstride is protecting more cash before pushing catch-up.";
+      }else{
+        aggression="balanced";
+        reason="Recent outcomes support steady catch-up without increasing risk.";
+      }
+    }
+    return{aggression,reason,trend};
+  }
+  function adaptiveCushionForMode(mode){
+    const base=outcomeAdjustedCushion().amount;
+    if(mode==="fast")return Math.max(0,base*.8);
+    if(mode==="protect")return base*1.2;
+    return base;
+  }
+  function adaptiveFourCheckPlan(){
+    const plan=adaptivePlan(), paycheck=clampMoney(state.paycheck), extra=clampMoney(state.extraIncome);
+    if(!state.payday||paycheck<=0)return[];
+    let overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0), out=[];
+    const cushion=adaptiveCushionForMode(plan.aggression);
+    for(let i=0;i<4;i++){
+      const a=nextPayday(state.payday,state.frequency,i),b=nextPayday(state.payday,state.frequency,i+1);
+      const due=state.bills.reduce((s,x)=>s+dueBetween(x,a,b),0),income=paycheck+(i===0?extra:0);
+      let available=Math.max(0,income-due-cushion);
+      if(plan.aggression==="fast")available*=1;
+      if(plan.aggression==="balanced")available*=.82;
+      if(plan.aggression==="protect")available*=.55;
+      if(plan.aggression==="maintain")available*=.25;
+      const catchup=Math.min(overdue,available);overdue=Math.max(0,overdue-catchup);
+      out.push({date:a,due,income,cushion,catchup,remainingOverdue:overdue,safe:Math.max(0,income-due-catchup-cushion)});
+    }
+    return out;
+  }
+  function adaptivePlanSummary(){
+    const plan=adaptivePlan(), rows=adaptiveFourCheckPlan();
+    if(!rows.length)return"Complete at least 2 paychecks to unlock adaptive pacing.";
+    const totalCatch=rows.reduce((s,x)=>s+x.catchup,0), endOverdue=rows[rows.length-1]?.remainingOverdue||0;
+    return `${money(totalCatch)} planned catch-up across 4 checks · ${money(endOverdue)} overdue remaining · ${plan.aggression} mode`;
+  }
+
   function render(){
     const f=forecast(),first=f[0],overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0),conf=confidence();
     $("safeSpend").textContent=money(first?.safe||0);
@@ -367,12 +522,27 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     ["fastest","balanced","minimum"].forEach(k=>$("est-"+k).textContent=strategyEstimate(k));
     $("confidence").textContent=`${conf>=80?"High":conf>=50?"Medium":"Low"} · ${conf}/100`;
     $("extraMove").textContent=conf<50?"Add or verify your bills before using a catch-up recommendation.":overdue>0?"Put extra money toward overdue bills first":first?.short?`Close the ${money(first.short)} gap first`:"No urgent catch-up target";
+    const cal2=calibration(), sp2=recurringSpendInsight();
+    $("predictionCalibration").textContent=cal2.count?`${cal2.grade} · ${cal2.count} completed paycheck${cal2.count===1?"":"s"} · avg miss ${money(cal2.error)}`:"Waiting for completed paychecks.";
+    $("spendingPattern").textContent=sp2.text;
+    const ap=adaptivePlan(), ot=outcomeTrend();
+    $("adaptiveMode").textContent=ap.aggression==="fast"?"Accelerated":ap.aggression==="protect"?"Protect cash":ap.aggression==="maintain"?"Maintain":"Balanced";
+    $("adaptivePace").textContent=ap.aggression==="fast"?"Accelerate catch-up while preserving the adaptive cushion.":ap.aggression==="protect"?"Slow catch-up and protect more cash until outcomes stabilize.":ap.aggression==="maintain"?"No overdue pressure detected; maintain stability.":"Steady catch-up with a moderate safety margin.";
+    $("adaptiveTrend").textContent=ot.text;
+    $("adaptiveNext4").textContent=adaptivePlanSummary();
+    $("adaptiveWhy").textContent=ap.reason;
+
+
     const rec=smartRecommendation(), ac=adaptiveCushion(), rel=reliability();
-    $("coachAction").textContent=rec.action;
-    $("coachWhy").textContent=rec.why;
-    $("coachCushion").textContent=`${money(ac.amount)} · ${ac.reason}`;
-    $("coachReliability").textContent=rel.text;
-    $("coachLearning").textContent=rel.label;
+    const adv=advancedRecommendation(), cal=calibration(), spendInsight=recurringSpendInsight(), adj=outcomeAdjustedCushion();
+    $("coachAction").textContent=adv.action;
+    $("coachWhy").textContent=adv.why;
+    $("coachCushion").textContent=`${money(adj.amount)} · ${adj.reason}`;
+    $("coachReliability").textContent=cal.count?`${cal.grade} · average prediction miss ${money(cal.error)}`:rel.text;
+    $("coachLearning").textContent=cal.count?cal.grade:rel.label;
+    $("completionHint").textContent=state.smartMemory?.lastCompletedPaycheck?`Last completed ${new Date(state.smartMemory.lastCompletedPaycheck).toLocaleDateString()}`:"Record what actually happened";
+    if(document.activeElement!==$("actualIncome")&&!$("actualIncome").value)$("actualIncome").value=clampMoney(state.paycheck)||"";
+    if(document.activeElement!==$("actualExtra")&&!$("actualExtra").value)$("actualExtra").value=clampMoney(state.extraIncome)||"";
 
     $("billCount").textContent=`${state.bills.length} tracked`;
     $("billList").innerHTML=state.bills.length?state.bills.map(b=>`<div class="row"><div><b>${escapeHtml(b.name)}</b><small>Due day ${b.dueDay} · ${b.priority}</small></div><div class="right"><b>${money(b.amount)}</b><button class="remove" data-remove="${b.id}">Remove</button></div></div>`).join(""):'<p class="empty">Add bills to see exactly what each paycheck needs to cover.</p>';
@@ -410,6 +580,27 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     setMsg("billMsg","");state={...state,bills:[...state.bills,{id:crypto.randomUUID(),name,amount,dueDay:day,priority,overdue:0}]};$("billName").value="";$("billAmount").value="";scheduleSave();
   };
   $("billList").addEventListener("click",e=>{const btn=e.target.closest("[data-remove]");if(!btn)return;state={...state,bills:state.bills.filter(b=>b.id!==btn.dataset.remove)};scheduleSave()});
+
+
+  $("completePaycheck").onclick=()=>{
+    const actualIncome=clampMoney($("actualIncome").value), actualExtra=clampMoney($("actualExtra").value), unexpected=clampMoney($("unexpectedSpend").value), actualLeft=clampMoney($("actualLeft").value);
+    if(actualIncome<=0){setMsg("completeMsg","Enter the actual take-home pay for this paycheck.");return}
+    const f=forecast(), first=f[0], predictedLeft=clampMoney(first?.safe||0);
+    const m=getSmartMemory(), preds=predictionHistory();
+    const nextPred=[...preds,{at:new Date().toISOString(),predictedLeft,actualLeft,actualIncome:actualIncome+actualExtra,unexpectedSpend:unexpected,overdue:state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0),strategy:state.strategy}].slice(-24);
+    const patterns=m.spendingPatterns&&typeof m.spendingPatterns==="object"?m.spendingPatterns:{};
+    const unexpectedArr=[...(Array.isArray(patterns.unexpected)?patterns.unexpected:[]),unexpected].slice(-12);
+    const worked=Math.abs(predictedLeft-actualLeft)<=Math.max(50,(actualIncome+actualExtra)*.08);
+    state={...state,
+      paycheckHistory:[...(state.paycheckHistory||[]),{date:state.payday,income:actualIncome+actualExtra,predictedLeft,actualLeft,unexpectedSpend:unexpected,strategy:state.strategy}].slice(-52),
+      payday:advancePayday(state.payday,state.frequency),
+      extraIncome:0,
+      smartMemory:{...m,planWins:m.planWins+(worked?1:0),planMisses:m.planMisses+(worked?0:1),lastOutcome:worked?"worked":"missed",lastRecommendation:advancedRecommendation().action,lastCompletedPaycheck:new Date().toISOString(),predictions:nextPred,spendingPatterns:{...patterns,unexpected:unexpectedArr},adaptivePlan:{...adaptivePlan(),lastUpdated:new Date().toISOString()}}
+    };
+    $("actualIncome").value="";$("actualExtra").value="";$("unexpectedSpend").value="";$("actualLeft").value="";
+    const nextMode=adaptivePlan().aggression; setMsg("completeMsg",worked?`Paycheck recorded. The plan was close, so confidence increased. Adaptive mode: ${nextMode}.`:`Paycheck recorded. Checkstride adjusted the next multi-paycheck plan. Adaptive mode: ${nextMode}.`);
+    scheduleSave();
+  };
 
   $("planWorked").onclick=()=>{
     const rec=smartRecommendation(), m=getSmartMemory();
