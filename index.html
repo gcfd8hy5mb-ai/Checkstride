@@ -18,6 +18,11 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
 .small{font-size:12px;color:var(--muted);line-height:1.45}.list{display:flex;flex-direction:column;gap:8px}.item{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px}.tag{font-size:10px;padding:4px 7px;border-radius:999px;background:#1f2937;margin-left:5px}.overdue{background:#3f1d1d;color:#fecaca}.critical{background:#422006;color:#fde68a}.important{background:#0f365f;color:#bfdbfe}.flexible{background:#243046;color:#d8e0ea}
 .plan{background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}.notice{padding:12px;border-radius:12px;background:#091827;border:1px solid #334155;margin-top:10px}.authbar{display:flex;justify-content:flex-end;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}.authbar span{font-size:12px;color:var(--muted)}
 .timeline{display:flex;flex-direction:column;gap:10px}.paycard{background:#091827;border:1px solid var(--line);border-radius:14px;padding:13px}.paytop{display:flex;justify-content:space-between;gap:12px}.paycard b{font-size:15px}.paycard .money{font-weight:800}.empty{padding:16px;text-align:center;color:var(--muted);background:#091827;border:1px dashed #2a4157;border-radius:12px}
+.paid-btn{border:1px solid #0f766e;background:#0b3a3a;color:#c7fff7;border-radius:10px;padding:8px 10px;font-weight:700;font-size:12px}
+.paid-btn.done{background:#123026;color:#9ff5d8;border-color:#166534}
+.history-row{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px}
+.history-row .meta{font-size:11px;color:var(--muted);margin-top:3px}
+.mini-btn{border:1px solid #334155;background:#13263a;color:#fff;border-radius:9px;padding:6px 8px;font-size:11px}
 .footer{position:fixed;left:0;right:0;bottom:0;background:rgba(7,17,31,.96);border-top:1px solid #1f2937;padding:10px 14px calc(env(safe-area-inset-bottom) + 10px)}.footer>div{max-width:760px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}.footer button{width:100%}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}.modal.show{display:flex}.modalbox{width:min(430px,100%);background:#0d1b2a;border:1px solid var(--line);border-radius:20px;padding:18px}.modalbox .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .auth-gate{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);background:radial-gradient(circle at 50% 15%,#0d3a63 0,#07111f 42%,#050b14 100%)}
@@ -130,6 +135,12 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
   </div>
 
   <div class="card">
+    <h2>Payment history</h2>
+    <div class="small" style="margin-bottom:10px">Mark bills paid as you go. Checkstride uses that history so paid bills are not planned again for the same due cycle.</div>
+    <div id="paymentHistory" class="list"></div>
+  </div>
+
+  <div class="card">
     <h2>What if?</h2>
     <div class="row"><div><label>Extra income</label><input id="whatIfIncome" type="number" step="0.01" inputmode="decimal" placeholder="0"></div><div><label>Extra spending</label><input id="whatIfSpend" type="number" step="0.01" inputmode="decimal" placeholder="0"></div></div>
     <button id="whatIfBtn" class="secondary" style="width:100%;margin-top:12px">Calculate</button>
@@ -163,7 +174,7 @@ measurementId:"G-B4W5L2SN0H"
 };
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
-let bills=[],currentUser=null,timer=null,obStep=1,obBills=[];
+let bills=[],paymentHistory=[],currentUser=null,timer=null,obStep=1,obBills=[];
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n||0));
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const parseDate=s=>s?new Date(s+'T00:00:00'):null;
@@ -171,6 +182,29 @@ const iso=d=>{const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth
 const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
 const daysUntil=s=>!s?0:Math.max(0,Math.ceil((parseDate(s)-today())/86400000));
 const rank=p=>p==='critical'?0:p==='important'?1:2;
+const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+const dueKey=d=>iso(d);
+function currentCycleDueDate(b){
+  const now=today();
+  return billDueDateForMonth(b,now.getFullYear(),now.getMonth());
+}
+function isOccurrencePaid(b,d){
+  const key=dueKey(d);
+  return paymentHistory.some(p=>p.billId===b.id&&p.dueKey===key);
+}
+function markOccurrencePaid(b,d,amount){
+  const key=dueKey(d);
+  if(isOccurrencePaid(b,d)) return;
+  paymentHistory.unshift({
+    id:uid(), billId:b.id, billName:b.name, amount:Number(amount||b.amount||0),
+    dueKey:key, paidAt:new Date().toISOString()
+  });
+  schedule(); recalc();
+}
+function undoPayment(id){
+  paymentHistory=paymentHistory.filter(p=>p.id!==id);
+  schedule(); recalc();
+}
 
 function nextPaydays(startStr,freq,count=4){
   const start=parseDate(startStr); if(!start) return [];
@@ -199,14 +233,21 @@ function upcomingOccurrences(b,start,end){
   while(cur<=last){const d=billDueDateForMonth(b,cur.getFullYear(),cur.getMonth());if(d>=start&&d<=end)out.push(d);cur.setMonth(cur.getMonth()+1)}
   return out;
 }
-function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,onboardingComplete:true,version:2}}
+function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,paymentHistory,onboardingComplete:true,version:3}}
 function normalizeBill(b){
-  if(b.dueDay) return {...b,dueDay:Number(b.dueDay)};
+  if(b.dueDay) return {...b,id:b.id||uid(),dueDay:Number(b.dueDay)};
   let dueDay=1;
   if(b.date){const d=parseDate(b.date);if(d)dueDay=d.getDate()}
-  return {name:b.name||'Bill',amount:Number(b.amount||0),overdue:Number(b.overdue||0),dueDay,priority:b.priority||'important'};
+  return {id:b.id||uid(),name:b.name||'Bill',amount:Number(b.amount||0),overdue:Number(b.overdue||0),dueDay,priority:b.priority||'important'};
 }
-function apply(d){if(!d)return;$('payday').value=d.payday||'';$('paycheck').value=d.paycheck||'';$('payFrequency').value=d.payFrequency||'biweekly';$('cushion').value=d.cushion||'';$('extraIncome').value=d.extraIncome||'';$('strategy').value=d.strategy||'balanced';bills=(Array.isArray(d.bills)?d.bills:[]).map(normalizeBill);recalc()}
+function apply(d){
+  if(!d)return;
+  $('payday').value=d.payday||'';$('paycheck').value=d.paycheck||'';$('payFrequency').value=d.payFrequency||'biweekly';
+  $('cushion').value=d.cushion||'';$('extraIncome').value=d.extraIncome||'';$('strategy').value=d.strategy||'balanced';
+  bills=(Array.isArray(d.bills)?d.bills:[]).map(normalizeBill);
+  paymentHistory=Array.isArray(d.paymentHistory)?d.paymentHistory:[];
+  recalc();
+}
 function saveLocal(){if(currentUser)localStorage.setItem('checkstrideV2_'+currentUser.uid,JSON.stringify(state()))}
 function badge(t,on=false){$('cloudBadge').textContent=t;$('cloudBadge').className='badge'+(on?' online':'')}
 async function saveCloud(){if(!currentUser)return;await setDoc(doc(db,'users',currentUser.uid,'state','main'),{...state(),updatedAt:serverTimestamp()},{merge:true});badge('Synced',true)}
@@ -218,17 +259,22 @@ function renderBills(){
   if(!bills.length){box.className='small';box.textContent='No recurring bills added yet.';return}
   box.className='list';box.innerHTML='';
   bills.slice().sort((a,b)=>rank(a.priority)-rank(b.priority)||a.dueDay-b.dueDay).forEach(b=>{
-    const i=bills.indexOf(b),row=document.createElement('div');row.className='item';
-    row.innerHTML=`<div><strong>${esc(b.name)}</strong><span class="tag ${b.priority}">${b.priority.toUpperCase()}</span>${Number(b.overdue)>0?'<span class="tag overdue">OVERDUE</span>':''}<div class="small">Due monthly on day ${b.dueDay} · overdue ${money(b.overdue)}</div></div><div><span>${money(b.amount)}</span> <button class="danger remove" data-i="${i}">×</button></div>`;
+    const i=bills.indexOf(b), cycle=currentCycleDueDate(b), paid=isOccurrencePaid(b,cycle),row=document.createElement('div');row.className='item';
+    row.innerHTML=`<div><strong>${esc(b.name)}</strong><span class="tag ${b.priority}">${b.priority.toUpperCase()}</span>${Number(b.overdue)>0?'<span class="tag overdue">OVERDUE</span>':''}<div class="small">Due monthly on day ${b.dueDay} · overdue ${money(b.overdue)}</div></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><span>${money(b.amount)}</span><button class="paid-btn ${paid?'done':''}" data-pay="${i}">${paid?'Paid ✓':'Mark paid'}</button><button class="danger remove" data-i="${i}">×</button></div>`;
     box.appendChild(row)
   });
-  box.querySelectorAll('.remove').forEach(x=>x.onclick=()=>{bills.splice(Number(x.dataset.i),1);schedule();recalc()})
+  box.querySelectorAll('.remove').forEach(x=>x.onclick=()=>{bills.splice(Number(x.dataset.i),1);schedule();recalc()});
+  box.querySelectorAll('[data-pay]').forEach(x=>x.onclick=()=>{
+    const b=bills[Number(x.dataset.pay)], d=currentCycleDueDate(b);
+    if(isOccurrencePaid(b,d)) return;
+    markOccurrencePaid(b,d,b.amount);
+  });
 }
 function buildForecast(extraFirst=0,spendFirst=0){
   const paydays=nextPaydays($('payday').value,$('payFrequency').value,4);
   const basePay=Number($('paycheck').value||0),baseCushion=Number($('cushion').value||0),extraIncome=Number($('extraIncome').value||0);
   if(!paydays.length||basePay<=0)return {checks:[],remainingOverdue:bills.reduce((s,b)=>s+Number(b.overdue||0),0),caughtUp:null};
-  let arrears=bills.map(b=>({name:b.name,priority:b.priority,amount:Number(b.overdue||0)})).filter(x=>x.amount>0);
+  let arrears=bills.map(b=>({billId:b.id,name:b.name,priority:b.priority,amount:Number(b.overdue||0)})).filter(x=>x.amount>0);
   const checks=[];
   for(let idx=0;idx<paydays.length;idx++){
     const payDate=paydays[idx],prev=idx===0?today():new Date(paydays[idx-1].getTime()+86400000),nextBoundary=idx<3?paydays[idx+1]:new Date(payDate.getTime()+31*86400000);
@@ -238,7 +284,7 @@ function buildForecast(extraFirst=0,spendFirst=0){
     const obligations=[];
     arrears.forEach(a=>obligations.push({...a,type:'overdue'}));
     bills.forEach(b=>{
-      upcomingOccurrences(b,payDate,nextBoundary).forEach(d=>{obligations.push({name:b.name,priority:b.priority,amount:Number(b.amount||0),type:'due',due:d})})
+      upcomingOccurrences(b,payDate,nextBoundary).forEach(d=>{if(!isOccurrencePaid(b,d))obligations.push({billId:b.id,name:b.name,priority:b.priority,amount:Number(b.amount||0),type:'due',due:d})})
     });
     obligations.sort((a,b)=>Number(a.type!=='overdue')-Number(b.type!=='overdue')||rank(a.priority)-rank(b.priority)||((a.due?.getTime()||0)-(b.due?.getTime()||0)));
     const nextArrears=[];
@@ -248,8 +294,8 @@ function buildForecast(extraFirst=0,spendFirst=0){
       if($('strategy').value==='stress'&&o.priority!=='critical')cap=Math.min(target,Math.max(50,target*.5));
       if($('strategy').value==='balanced'&&o.priority==='flexible')cap=Math.min(target,Math.max(25,target*.5));
       const pay=Math.min(available,cap); available-=pay; dueTotal+=target;
-      if(pay>0)items.push({name:o.name,pay,priority:o.priority,type:o.type,due:o.due,remaining:target-pay});
-      if(target-pay>0)nextArrears.push({name:o.name,priority:o.priority,amount:target-pay});
+      if(pay>0)items.push({billId:o.billId,name:o.name,pay,priority:o.priority,type:o.type,due:o.due,remaining:target-pay});
+      if(target-pay>0)nextArrears.push({billId:o.billId,name:o.name,priority:o.priority,amount:target-pay});
     }
     arrears=nextArrears;
     checks.push({date:payDate,income,cushion,items,safe:Math.max(0,available),short:arrears.reduce((s,a)=>s+a.amount,0),dueTotal});
@@ -257,8 +303,21 @@ function buildForecast(extraFirst=0,spendFirst=0){
   const caught=checks.find(c=>c.short<=0);
   return {checks,remainingOverdue:arrears.reduce((s,a)=>s+a.amount,0),caughtUp:caught?caught.date:null}
 }
+function renderPaymentHistory(){
+  const box=$('paymentHistory');
+  if(!paymentHistory.length){box.innerHTML='<div class="empty">No payments recorded yet.</div>';return}
+  box.innerHTML='';
+  paymentHistory.slice(0,25).forEach(p=>{
+    const row=document.createElement('div');row.className='history-row';
+    const paidDate=new Date(p.paidAt);
+    row.innerHTML=`<div><b>${esc(p.billName)}</b><div class="meta">${money(p.amount)} · due ${esc(p.dueKey)} · paid ${paidDate.toLocaleDateString()}</div></div><button class="mini-btn" data-undo="${esc(p.id)}">Undo</button>`;
+    box.appendChild(row);
+  });
+  box.querySelectorAll('[data-undo]').forEach(x=>x.onclick=()=>undoPayment(x.dataset.undo));
+}
 function recalc(){
   renderBills();
+  renderPaymentHistory();
   const f=buildForecast(),first=f.checks[0];
   const paycheck=Number($('paycheck').value||0)+Number($('extraIncome').value||0);
   $('paycheckKpi').textContent=money(paycheck);
@@ -272,7 +331,16 @@ function recalc(){
   else{
     s.textContent=first.short<=0?`This check can cover its planned obligations while keeping ${money(first.cushion)} protected.`:`After this check, ${money(first.short)} will carry forward. Checkstride will keep prioritizing it on future checks.`;
     p.innerHTML='';
-    first.items.forEach((x,i)=>{const n=document.createElement('div');n.className='plan';n.innerHTML=`<b>${i+1}. Pay ${esc(x.name)} — ${money(x.pay)}</b><div class="small">${x.type==='overdue'?'Overdue balance':'Upcoming bill'} · ${x.priority} priority${x.remaining>0?' · '+money(x.remaining)+' carries forward':''}</div>`;p.appendChild(n)})
+    first.items.forEach((x,i)=>{
+      const n=document.createElement('div');n.className='plan';
+      const paidBtn=(x.type==='due'&&x.billId&&x.due)?`<button class="paid-btn" data-plan-pay="${esc(x.billId)}" data-plan-due="${iso(x.due)}" data-plan-amt="${x.pay}" style="margin-top:8px">Mark paid</button>`:'';
+      n.innerHTML=`<b>${i+1}. Pay ${esc(x.name)} — ${money(x.pay)}</b><div class="small">${x.type==='overdue'?'Overdue balance':'Upcoming bill'} · ${x.priority} priority${x.remaining>0?' · '+money(x.remaining)+' carries forward':''}</div>${paidBtn}`;
+      p.appendChild(n)
+    });
+    p.querySelectorAll('[data-plan-pay]').forEach(btn=>btn.onclick=()=>{
+      const b=bills.find(z=>z.id===btn.dataset.planPay); if(!b)return;
+      markOccurrencePaid(b,parseDate(btn.dataset.planDue),Number(btn.dataset.planAmt||b.amount));
+    });
   }
   const t=$('timeline');t.innerHTML='';
   if(!f.checks.length)t.innerHTML='<div class="empty">Set a payday and paycheck amount to see future checks.</div>';
@@ -281,15 +349,15 @@ function recalc(){
 function showOnboarding(){obStep=1;obBills=[];$('onboarding').classList.add('show');renderOb()}
 function hideOnboarding(){$('onboarding').classList.remove('show')}
 function renderOb(){document.querySelectorAll('.step').forEach(x=>x.classList.toggle('active',Number(x.dataset.step)===obStep));for(let i=1;i<=4;i++)$('prog'+i).classList.toggle('active',i<=obStep);$('obBack').style.visibility=obStep===1?'hidden':'visible';$('obNext').textContent=obStep===4?'Open my plan':'Continue';const box=$('obBillList');if(!obBills.length)box.textContent='No bills added yet.';else box.innerHTML=obBills.map((b,i)=>`<div class="item"><div><b>${esc(b.name)}</b><div class="small">${money(b.amount)} · due day ${b.dueDay}</div></div><button class="danger ob-remove" data-i="${i}">×</button></div>`).join('');box.querySelectorAll?.('.ob-remove').forEach(x=>x.onclick=()=>{obBills.splice(Number(x.dataset.i),1);renderOb()})}
-$('obAddBill').onclick=()=>{const name=$('obBillName').value.trim(),amount=Number($('obBillAmount').value||0),dueDay=Number($('obBillDueDay').value||0);if(!name||amount<=0||dueDay<1||dueDay>31)return alert('Enter a bill name, amount, and due day from 1 to 31.');obBills.push({name,amount,overdue:0,dueDay,priority:$('obBillPriority').value});$('obBillName').value='';$('obBillAmount').value='';$('obBillDueDay').value='';renderOb()};
+$('obAddBill').onclick=()=>{const name=$('obBillName').value.trim(),amount=Number($('obBillAmount').value||0),dueDay=Number($('obBillDueDay').value||0);if(!name||amount<=0||dueDay<1||dueDay>31)return alert('Enter a bill name, amount, and due day from 1 to 31.');obBills.push({id:uid(),name,amount,overdue:0,dueDay,priority:$('obBillPriority').value});$('obBillName').value='';$('obBillAmount').value='';$('obBillDueDay').value='';renderOb()};
 $('obBack').onclick=()=>{if(obStep>1){obStep--;renderOb()}};
 $('obNext').onclick=async()=>{if(obStep===1){if(!$('obPayday').value||Number($('obPaycheck').value||0)<=0)return alert('Enter your next payday and expected take-home pay.');obStep=2;renderOb();return}if(obStep===2){obStep=3;renderOb();return}if(obStep===3){$('payday').value=$('obPayday').value;$('paycheck').value=$('obPaycheck').value;$('payFrequency').value=$('obFrequency').value;$('cushion').value=$('obCushion').value||'';$('strategy').value=$('obStrategy').value;bills=obBills.slice();recalc();saveLocal();try{await saveCloud()}catch{badge('Sync error')}obStep=4;renderOb();return}if(obStep===4){hideOnboarding();recalc()}};
 
-$('addBillBtn').onclick=()=>{const name=$('billName').value.trim(),amount=Number($('billAmount').value||0),overdue=Number($('billOverdue').value||0),dueDay=Number($('billDueDay').value||0);if(!name||amount<=0||dueDay<1||dueDay>31)return alert('Enter a bill name, amount, and monthly due day from 1 to 31.');bills.push({name,amount,overdue,dueDay,priority:$('billPriority').value});['billName','billAmount','billOverdue','billDueDay'].forEach(id=>$(id).value='');schedule();recalc()};
+$('addBillBtn').onclick=()=>{const name=$('billName').value.trim(),amount=Number($('billAmount').value||0),overdue=Number($('billOverdue').value||0),dueDay=Number($('billDueDay').value||0);if(!name||amount<=0||dueDay<1||dueDay>31)return alert('Enter a bill name, amount, and monthly due day from 1 to 31.');bills.push({id:uid(),name,amount,overdue,dueDay,priority:$('billPriority').value});['billName','billAmount','billOverdue','billDueDay'].forEach(id=>$(id).value='');schedule();recalc()};
 ['payday','paycheck','payFrequency','cushion','extraIncome','strategy'].forEach(id=>$(id).oninput=()=>{schedule();recalc()});
 $('whatIfBtn').onclick=()=>{const f=buildForecast(Number($('whatIfIncome').value||0),Number($('whatIfSpend').value||0));if(!f.checks.length)return $('whatIfResult').textContent='Set your pay schedule first.';$('whatIfResult').textContent=f.caughtUp?`With that change, the plan is caught up by ${iso(f.caughtUp)}.`:`After 4 checks, about ${money(f.remainingOverdue)} would still be carrying forward.`};
 $('saveBtn').onclick=async()=>{schedule();try{await saveCloud();alert('Saved to Checkstride cloud.')}catch{alert('Saved on this device. Cloud sync failed.')}};
-$('resetBtn').onclick=()=>{if(!confirm('Reset this plan?'))return;bills=[];['payday','paycheck','cushion','extraIncome'].forEach(id=>$(id).value='');$('payFrequency').value='biweekly';$('strategy').value='balanced';schedule();recalc()};
+$('resetBtn').onclick=()=>{if(!confirm('Reset this plan and payment history?'))return;bills=[];paymentHistory=[];['payday','paycheck','cushion','extraIncome'].forEach(id=>$(id).value='');$('payFrequency').value='biweekly';$('strategy').value='balanced';schedule();recalc()};
 $('gateSignIn').onclick=()=>{$('authModal').classList.add('show');$('authStatus').textContent=''};
 $('gateCreate').onclick=()=>{$('authModal').classList.add('show');$('authStatus').textContent='Create your Checkstride account below.'};
 $('closeAuth').onclick=()=>$('authModal').classList.remove('show');
