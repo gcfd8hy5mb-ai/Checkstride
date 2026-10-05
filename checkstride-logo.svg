@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Checkstride logo</title>
+  <desc id="desc">Sharp navy C with rising teal progress arrow</desc>
+  <defs>
+    <linearGradient id="navy" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B2A55"/>
+      <stop offset="1" stop-color="#0E3A70"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#0D7F8B"/>
+      <stop offset="1" stop-color="#14B8C4"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#ffffff"/>
+  <path d="M342 98H196c-72 0-130 58-130 130v56c0 72 58 130 130 130h146l50-50H198c-45 0-82-37-82-82v-52c0-45 37-82 82-82h94z" fill="url(#navy)"/>
+  <path d="M132 326l54-38v-61l-54 38z" fill="#7BA9C4"/>
+  <path d="M209 271l61-43v-72l-61 43z" fill="#4A91A9"/>
+  <path d="M294 213l62-44v-75l-62 44z" fill="#198F98"/>
+  <path d="M108 344c70-42 138-83 205-125 31-20 60-40 91-61l-28-37 87-10-18 86-27-36c-31 22-62 43-94 64-67 44-136 87-208 129z" fill="url(#teal)"/>
+</svg>
