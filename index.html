@@ -494,6 +494,7 @@ input,select{
   white-space:nowrap;
 }
 .bill-remove-modern:active{background:rgba(214,90,100,.18)}
+.bill-remove-modern.armed{background:#d65a64;color:#fff;border-color:#d65a64}
 @media(max-width:640px){
   .bill-row-modern{grid-template-columns:minmax(0,1fr) auto auto auto}
   .bill-remove-modern{padding:6px 7px}
@@ -1035,7 +1036,7 @@ input,select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:48};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:49};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -1777,6 +1778,33 @@ input,select{
     scheduleSave();
   }
 
+  window.checkstrideRemoveBill=(id,button)=>{
+    const bill=state.bills.find(b=>b.id===id);
+    if(!bill)return;
+
+    if(button?.dataset?.armed!=="1"){
+      if(button){
+        button.dataset.armed="1";
+        button.textContent="Tap again";
+        button.classList.add("armed");
+        setTimeout(()=>{
+          if(button && document.body.contains(button)){
+            button.dataset.armed="0";
+            button.textContent="Remove";
+            button.classList.remove("armed");
+          }
+        },3000);
+      }
+      return;
+    }
+
+    removeBillById(id);
+    renderBillsPage();
+    renderSnapshot();
+    renderHomeUpcoming();
+    renderStatusCards();
+  };
+
   function renderSnapshot(){
     const snap=snapshotData(snapshotView);
     if(!$("billSnapshot"))return;
@@ -1861,7 +1889,7 @@ input,select{
         <div class="bill-main"><b>${escapeHtml(x.bill.name)}</b><small>${dueText}</small><small class="split-note">${escapeHtml(billSplitLabel(x.bill))}</small></div>
         <div class="bill-amount">${money(x.bill.amount)}</div>
         <button class="bill-status ${x.status}" data-bill-toggle="${x.bill.id}" data-paid="${x.status==="paid"?"1":"0"}">${label}</button>
-        <button type="button" class="bill-remove-modern" data-bill-remove="${x.bill.id}" aria-label="Remove ${escapeHtml(x.bill.name)}">Remove</button>
+        <button type="button" class="bill-remove-modern" data-bill-remove="${x.bill.id}" onclick="window.checkstrideRemoveBill('${x.bill.id}',this)" aria-label="Remove ${escapeHtml(x.bill.name)}">Remove</button>
       </div>`;
     }).join(""):'<div class="empty">No bills in this view.</div>';
   }
@@ -2100,23 +2128,6 @@ input,select{
   $("billList").onclick=e=>{
     const target=e.target instanceof Element?e.target:null;
     if(!target)return;
-
-    const removeBtn=target.closest("[data-bill-remove]");
-    if(removeBtn){
-      e.preventDefault();
-      e.stopPropagation();
-      const id=removeBtn.dataset.billRemove;
-      const bill=state.bills.find(b=>b.id===id);
-      if(!bill)return;
-      if(window.confirm(`Remove ${bill.name}? This will also remove its payment history.`)){
-        removeBillById(id);
-        renderBillsPage();
-        renderSnapshot();
-        renderHomeUpcoming();
-        renderStatusCards();
-      }
-      return;
-    }
 
     const toggle=target.closest("[data-bill-toggle]");
     if(toggle){
