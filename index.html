@@ -422,7 +422,7 @@ function upcomingOccurrences(b,start,end){
   while(cur<=last){const d=billDueDateForMonth(b,cur.getFullYear(),cur.getMonth());if(d>=start&&d<=end)out.push(d);cur.setMonth(cur.getMonth()+1)}
   return out;
 }
-function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,paymentHistory,paycheckHistory,onboardingComplete:true,version:10}}
+function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,paymentHistory,paycheckHistory,onboardingComplete:true,version:11}}
 function normalizeBill(b){
   if(b.dueDay) return {...b,id:b.id||uid(),dueDay:Number(b.dueDay)};
   let dueDay=1;
@@ -555,7 +555,7 @@ function renderPaycheckHistory(){
     row.innerHTML=`<div class="check-row-top"><div><b>${esc(h.payday||'Paycheck')}</b><div class="small">${h.paymentCount||0} planned payment${(h.paymentCount||0)===1?'':'s'} · ${h.unpaidCarried||0} carried forward</div></div><div class="money">${money(h.safeSpend||0)} safe</div></div><div class="small" style="margin-top:6px">Income ${money(h.income||0)} · bills planned ${money(h.plannedBills||0)} · closed ${new Date(h.closedAt).toLocaleDateString()}</div>`;
     box.appendChild(row);
   });
-  $('showMorePaychecks').style.display=paycheckHistory.length>3?'inline-block':'none';
+  if($('showMorePaychecks')) $('showMorePaychecks').style.display=paycheckHistory.length>3?'inline-block':'none';
 }
 function renderPaymentHistory(){
   const box=$('paymentHistory');
@@ -567,7 +567,7 @@ function renderPaymentHistory(){
     row.innerHTML=`<div><b>${esc(p.billName)}</b><div class="meta">${money(p.amount)} · due ${esc(p.dueKey)} · paid ${paidDate.toLocaleDateString()}</div></div><button class="mini-btn" data-undo="${esc(p.id)}">Undo</button>`;
     box.appendChild(row);
   });
-  $('showMorePayments').style.display=paymentHistory.length>3?'inline-block':'none';
+  if($('showMorePayments')) $('showMorePayments').style.display=paymentHistory.length>3?'inline-block':'none';
   box.querySelectorAll('[data-undo]').forEach(x=>x.onclick=()=>undoPayment(x.dataset.undo));
 }
 function recalc(){
@@ -787,13 +787,13 @@ function toggleSection(bodyId,btnId,showText='Show',hideText='Hide'){
 }
 $('toggleForecast').onclick=()=>toggleSection('forecastBody','toggleForecast');
 $('toggleCloseout').onclick=()=>toggleSection('closeoutBody','toggleCloseout');
-$('togglePaymentHistory').onclick=()=>toggleSection('paymentHistoryBody','togglePaymentHistory');
-$('toggleWhatIf').onclick=()=>toggleSection('whatIfBody','toggleWhatIf');
-$('showMorePaychecks').onclick=()=>{
+if($('togglePaymentHistory')) $('togglePaymentHistory').onclick=()=>toggleSection('paymentHistoryBody','togglePaymentHistory');
+if($('toggleWhatIf')) $('toggleWhatIf').onclick=()=>toggleSection('whatIfBody','toggleWhatIf');
+if($('showMorePaychecks')) $('showMorePaychecks').onclick=()=>{
   $('paycheckHistory').classList.toggle('history-mini');
   $('showMorePaychecks').textContent=$('paycheckHistory').classList.contains('history-mini')?'Show more':'Show less';
 };
-$('showMorePayments').onclick=()=>{
+if($('showMorePayments')) $('showMorePayments').onclick=()=>{
   $('paymentHistory').classList.toggle('history-mini');
   $('showMorePayments').textContent=$('paymentHistory').classList.contains('history-mini')?'Show more':'Show less';
 };
