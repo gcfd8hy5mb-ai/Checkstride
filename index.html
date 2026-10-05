@@ -132,6 +132,22 @@ button:disabled{opacity:.55;cursor:not-allowed}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
 
+
+.smart-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.smart-card{background:linear-gradient(180deg,#0a1a2a,#091725);border:1px solid var(--line-soft);border-radius:16px;padding:13px}
+.smart-card span{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.smart-card b{display:block;font-size:18px;margin-top:4px}
+.smart-card p{margin:5px 0 0;font-size:11px;color:var(--muted);line-height:1.4}
+.reason-box{margin-top:8px;background:#081522;border:1px solid #1d3347;border-radius:12px;padding:9px 10px;font-size:11px;color:#b9cad9;line-height:1.4}
+.reason-box strong{color:#f7fbff}
+.change-list{display:flex;flex-direction:column;gap:8px}
+.change-item{display:flex;justify-content:space-between;gap:12px;background:#091827;border:1px solid var(--line-soft);border-radius:12px;padding:10px 11px}
+.change-item span{font-size:11px;color:var(--muted)}
+.change-item b{font-size:12px;text-align:right}
+.smart-banner{background:linear-gradient(135deg,#0b2942,#0d3b3d);border:1px solid #256783;border-radius:16px;padding:14px;margin-bottom:10px}
+.smart-banner strong{display:block;font-size:15px}.smart-banner span{display:block;font-size:12px;color:#c8dcea;line-height:1.45;margin-top:4px}
+@media(max-width:560px){.smart-grid{grid-template-columns:1fr 1fr}}
+
 </style>
 </head>
 <body>
@@ -319,6 +335,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
     <div class="drawer-label">Plan</div>
     <button class="nav-btn" data-scroll="planCard">Current paycheck</button>
     <button class="nav-btn" data-scroll="billsCard">Bills</button>
+    <button class="nav-btn" data-scroll="smartPlanCard">Smart plan</button>
     <button class="nav-btn" data-scroll="whatIfCard">What if?</button>
   </div>
   <div class="drawer-group">
@@ -329,7 +346,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
     <div class="drawer-label">Account</div>
     <button id="drawerSignOut" class="nav-btn">Sign out</button>
   </div>
-  <div class="small" style="opacity:.55;margin-top:18px">Checkstride v1.0 beta · build 12</div>
+  <div class="small" style="opacity:.55;margin-top:18px">Checkstride v1.0 beta · build 22</div>
 </aside>
 
 <div id="mobileTabs" class="mobile-tabs" style="display:none">
@@ -408,6 +425,54 @@ const iso=d=>{const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth
 const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
 const daysUntil=s=>!s?0:Math.max(0,Math.ceil((parseDate(s)-today())/86400000));
 const rank=p=>p==='critical'?0:p==='important'?1:2;
+function priorityReason(item){
+  const parts=[];
+  if(item.priority==='critical') parts.push('critical bill');
+  else if(item.priority==='important') parts.push('important bill');
+  else parts.push('flexible bill');
+  if(item.type==='overdue') parts.push('already overdue');
+  else if(item.due) {
+    const days=Math.ceil((item.due-today())/86400000);
+    if(days<=0) parts.push('due now');
+    else if(days<=3) parts.push(`due in ${days} day${days===1?'':'s'}`);
+    else parts.push('due before the next paycheck');
+  }
+  if(Number(item.remaining||0)>0) parts.push('only partly covered');
+  return parts.join(' · ');
+}
+function explainPriority(item,index){
+  if(item.type==='overdue' && item.priority==='critical') return 'This is first because it is both critical and overdue.';
+  if(item.type==='overdue') return 'This is being pulled forward because it is already overdue.';
+  if(item.priority==='critical') return 'This is prioritized because missing it could affect housing, transportation, utilities, or insurance.';
+  if(item.priority==='important') return 'This is scheduled after critical bills because it is important but less urgent.';
+  return 'This stays later in the plan because it is more flexible than higher-priority bills.';
+}
+function catchupEstimateText(f){
+  if(!f || !f.checks?.length) return {main:'—',sub:'No estimate yet.'};
+  if(f.remainingOverdue<=0 && f.caughtUp) return {main:iso(f.caughtUp),sub:'Projected date your overdue balance reaches $0.'};
+  if(f.remainingOverdue<=0) return {main:'This check',sub:'Your current plan covers the overdue balance.'};
+  return {main:'4+ checks',sub:`About ${money(f.remainingOverdue)} still remains after the current forecast.`};
+}
+function buildChangeSummary(){
+  const box=$('changeSummary');
+  if(!box)return;
+  const prev=paycheckHistory?.[0];
+  const nowOverdue=bills.reduce((s,b)=>s+cleanMoney(b.overdue),0);
+  const nowBills=bills.length;
+  if(!prev){
+    box.innerHTML='<div class="empty-state"><strong>No prior paycheck to compare yet</strong><span>After you complete a paycheck, Checkstride will show what changed here.</span></div>';
+    return;
+  }
+  const changes=[];
+  const incomeNow=cleanMoney($('paycheck').value)+cleanMoney($('extraIncome').value);
+  const incomeDiff=incomeNow-cleanMoney(prev.income);
+  changes.push({label:'Income',value:(incomeDiff===0?'No change':`${incomeDiff>0?'+':''}${money(incomeDiff)}`)});
+  changes.push({label:'Bills tracked',value:String(nowBills)});
+  changes.push({label:'Overdue balance',value:money(nowOverdue)});
+  changes.push({label:'Safe to spend',value:money(Number($('safeSpend').textContent.replace(/[^0-9.-]/g,''))||0)});
+  box.innerHTML=changes.map(c=>`<div class="change-item"><span>${esc(c.label)}</span><b>${esc(c.value)}</b></div>`).join('');
+}
+
 const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
 const dueKey=d=>iso(d);
 function currentCycleDueDate(b){
@@ -482,7 +547,7 @@ function upcomingOccurrences(b,start,end){
   while(cur<=last){const d=billDueDateForMonth(b,cur.getFullYear(),cur.getMonth());if(d>=start&&d<=end)out.push(d);cur.setMonth(cur.getMonth()+1)}
   return out;
 }
-function state(){return {payday:$('payday').value,paycheck:cleanMoney($('paycheck').value),payFrequency:$('payFrequency').value,cushion:cleanMoney($('cushion').value),extraIncome:cleanMoney($('extraIncome').value),strategy:$('strategy').value,bills:bills.map(normalizeBill),paymentHistory,paycheckHistory,onboardingComplete:true,version:18}}
+function state(){return {payday:$('payday').value,paycheck:cleanMoney($('paycheck').value),payFrequency:$('payFrequency').value,cushion:cleanMoney($('cushion').value),extraIncome:cleanMoney($('extraIncome').value),strategy:$('strategy').value,bills:bills.map(normalizeBill),paymentHistory,paycheckHistory,onboardingComplete:true,version:22}}
 
 function cleanMoney(v){
   const n=Number(v);
@@ -697,6 +762,40 @@ function renderPaymentHistory(){
   if($('showMorePayments')) $('showMorePayments').style.display=filtered.length>3?'inline-block':'none';
   box.querySelectorAll('[data-undo]').forEach(x=>x.onclick=()=>undoPayment(x.dataset.undo));
 }
+
+function renderSmartPlan(f,first){
+  if(!$('smartCatchup'))return;
+  const est=catchupEstimateText(f);
+  $('smartCatchup').textContent=est.main;
+  $('smartCatchupSub').textContent=est.sub;
+
+  const overdue=bills.reduce((s,b)=>s+cleanMoney(b.overdue),0);
+  let move='Stay on plan', moveSub='Keep marking bills paid as you go.';
+  if(!first){
+    move='Finish setup'; moveSub='Add your paycheck and bills to generate recommendations.';
+  }else if(first.short>0){
+    move='Protect essentials'; moveSub=`Your current plan is short by ${money(first.short)}. Critical bills should stay first.`;
+  }else if(overdue>0){
+    move='Attack overdue'; moveSub=`You have ${money(overdue)} overdue. Extra income should go there first.`;
+  }else if(first.safe>0){
+    move='Keep the cushion'; moveSub=`You are on track. ${money(first.safe)} is currently safe to spend.`;
+  }
+  $('smartMove').textContent=move;
+  $('smartMoveSub').textContent=moveSub;
+
+  const banner=$('smartBanner');
+  if(!first){
+    banner.innerHTML='<strong>Build your plan</strong><span>Add your next payday, paycheck, and at least one bill.</span>';
+  }else if(first.short>0){
+    banner.innerHTML=`<strong>This paycheck is tight</strong><span>${money(first.short)} is projected to carry forward. Checkstride is keeping critical bills first.</span>`;
+  }else if(overdue>0){
+    banner.innerHTML=`<strong>You are in catch-up mode</strong><span>Your current plan can cover this check while continuing to reduce overdue balances.</span>`;
+  }else{
+    banner.innerHTML=`<strong>You are on track</strong><span>This paycheck covers planned obligations while protecting your cushion.</span>`;
+  }
+  buildChangeSummary();
+}
+
 function recalc(){
   updateFirstUseHint();
   renderBillStatus();
@@ -710,6 +809,7 @@ function recalc(){
   $('dueKpi').textContent=first?money(first.dueTotal):'$0.00';
   $('safeSpend').textContent=first?money(first.safe):'$0.00';
   const d=daysUntil($('payday').value);$('countdown').textContent=$('payday').value?`${d} day${d===1?'':'s'} until next payday.`:'Set your next payday below.';
+  renderSmartPlan(f,f.checks?.[0]);
   $('caughtUpKpi').textContent=f.caughtUp?iso(f.caughtUp):(f.checks.length&&f.remainingOverdue>0?'4+ checks':'—');
   const overdueTotal=bills.reduce((s,b)=>s+Number(b.overdue||0),0);
   $('heroStatus').textContent=!first?'Plan not ready':first.short>0?'Needs attention':overdueTotal>0?'Catching up':'On track';
@@ -757,7 +857,7 @@ function recalc(){
     first.items.forEach((x,i)=>{
       const n=document.createElement('div');n.className='plan-card';
       const paidBtn=(x.type==='due'&&x.billId&&x.due)?`<button class="paid-btn" data-plan-pay="${esc(x.billId)}" data-plan-due="${iso(x.due)}" data-plan-amt="${x.pay}">Mark paid</button>`:'';
-      n.innerHTML=`<div class="plan-card-top"><div><div class="plan-card-title">${i+1}. ${esc(x.name)}</div><div class="plan-card-meta">${x.type==='overdue'?'Overdue balance':'Upcoming bill'} · ${x.priority} priority${x.remaining>0?' · '+money(x.remaining)+' carries forward':''}</div></div><div class="plan-card-amount">${money(x.pay)}</div></div>${paidBtn}`;
+      n.innerHTML=`<div class="plan-card-top"><div><div class="plan-card-title">${i+1}. ${esc(x.name)}</div><div class="plan-card-meta">${x.type==='overdue'?'Overdue balance':'Upcoming bill'} · ${x.priority} priority${x.remaining>0?' · '+money(x.remaining)+' carries forward':''}</div></div><div class="plan-card-amount">${money(x.pay)}</div></div><div class="reason-box"><strong>Why this is here:</strong> ${esc(explainPriority(x,i))}<br>${esc(priorityReason(x))}</div>${paidBtn}`;
       p.appendChild(n)
     });
     p.querySelectorAll('[data-plan-pay]').forEach(btn=>btn.onclick=()=>{
@@ -1190,7 +1290,7 @@ onAuthStateChanged(auth,async user=>{
     hideOnboarding();closeDrawer();$('authGate').style.display='flex';$('appShell').style.display='none';$('footer').style.display='none';$('mobileTabs').style.display='none';badge('Local only')
   }
 });
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}
+
 </script>
 
 <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
