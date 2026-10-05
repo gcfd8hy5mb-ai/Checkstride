@@ -503,6 +503,13 @@ input,select{
   .bill-remove-modern{grid-column:3}
 }
 
+
+/* v47 bill timing + paycheck splitting */
+.bill-helper{padding:0 10px 11px;color:var(--muted);font-size:10px;line-height:1.4}
+.split-note{display:block;color:var(--accent);font-size:9px;margin-top:3px}
+.snapshot-bill .name small.split-note{color:var(--accent)}
+.bill-row-modern .bill-main small.split-note{color:var(--accent)}
+
 </style>
 </head>
 <body>
@@ -716,11 +723,24 @@ input,select{
       <div class="bill-form">
         <div class="field"><label>Bill name</label><input id="billName" placeholder="Rent" /></div>
         <div class="field"><label>Amount</label><input id="billAmount" type="number" min="0" step="0.01" /></div>
-        <div class="field"><label>Due day</label><input id="billDay" type="number" min="1" max="31" value="1" /></div>
+        <div class="field"><label>Due timing</label>
+          <select id="billDueMode">
+            <option value="date">I know the due date</option>
+            <option value="monthly">Monthly — date unknown</option>
+          </select>
+        </div>
+        <div class="field" id="billDayField"><label>Due day</label><input id="billDay" type="number" min="1" max="31" value="1" /></div>
+        <div class="field"><label>Paycheck split</label>
+          <select id="billSplitMode">
+            <option value="auto">Stride recommended</option>
+            <option value="even">Split evenly</option>
+            <option value="full">Full bill on one check</option>
+          </select>
+        </div>
         <div class="field"><label>Priority</label><select id="billPriority"><option value="critical">Critical</option><option value="important" selected>Important</option><option value="flexible">Flexible</option></select></div>
         <button id="addBill" class="primary-btn">Add bill</button>
       </div>
-      <div id="billMsg" class="msg hidden"></div>
+      <div id="billMsg" class="msg hidden"></div><div class="bill-helper">If you don’t know the exact due date, choose <b>Monthly — date unknown</b>. Stride will reserve the bill across your paychecks instead of forcing you to guess a date.</div>
     </details>
   </section>
 
@@ -933,7 +953,7 @@ input,select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>({...b,amount:clampMoney(b.amount),overdue:clampMoney(b.overdue),dueDay:Math.min(31,Math.max(1,Math.trunc(Number(b.dueDay)||1)))})),version:46};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:47};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -974,7 +994,7 @@ input,select{
     let overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0),out=[];
     for(let i=0;i<4;i++){
       const a=nextPayday(state.payday,state.frequency,i),b=nextPayday(state.payday,state.frequency,i+1);
-      const due=state.bills.reduce((s,x)=>s+dueBetween(x,a,b),0),income=paycheck+(i===0?extra:0);
+      const due=state.bills.reduce((s,x)=>s+billAmountInWindow(x,a,b),0),income=paycheck+(i===0?extra:0);
       let available=Math.max(0,income-due-cushion);if(state.strategy==="minimum")available*=.65;
       const catchup=Math.min(overdue,available);overdue=Math.max(0,overdue-catchup);
       const safe=Math.max(0,income-due-catchup-cushion),short=Math.max(0,due+cushion+catchup-income);
@@ -992,7 +1012,7 @@ input,select{
     const cushion=key==="fastest"?baseCushion*.35:key==="minimum"?baseCushion*1.5:baseCushion;
     for(let i=0;i<12&&rem>0;i++){
       const a=nextPayday(state.payday,state.frequency,i),b=nextPayday(state.payday,state.frequency,i+1);
-      const due=state.bills.reduce((s,x)=>s+dueBetween(x,a,b),0);
+      const due=state.bills.reduce((s,x)=>s+billAmountInWindow(x,a,b),0);
       let avail=Math.max(0,paycheck+(i===0?extra:0)-due-cushion);if(key==="minimum")avail*=.65;
       rem=Math.max(0,rem-avail);checks++;
     }
@@ -1171,7 +1191,7 @@ input,select{
     const cushion=adaptiveCushionForMode(plan.aggression);
     for(let i=0;i<4;i++){
       const a=nextPayday(state.payday,state.frequency,i),b=nextPayday(state.payday,state.frequency,i+1);
-      const due=state.bills.reduce((s,x)=>s+dueBetween(x,a,b),0),income=paycheck+(i===0?extra:0);
+      const due=state.bills.reduce((s,x)=>s+billAmountInWindow(x,a,b),0),income=paycheck+(i===0?extra:0);
       let available=Math.max(0,income-due-cushion);
       if(plan.aggression==="fast")available*=1;
       if(plan.aggression==="balanced")available*=.82;
@@ -1299,7 +1319,7 @@ input,select{
       const cushion=key==="fastest"?baseCushion*.7:key==="minimum"?baseCushion*1.25:baseCushion;
       for(let i=0;i<4;i++){
         const a=nextPayday(state.payday,state.frequency,i),b=nextPayday(state.payday,state.frequency,i+1);
-        const due=state.bills.reduce((s,x)=>s+dueBetween(x,a,b),0),income=paycheck+(i===0?extra:0);
+        const due=state.bills.reduce((s,x)=>s+billAmountInWindow(x,a,b),0),income=paycheck+(i===0?extra:0);
         let avail=Math.max(0,income-due-cushion);
         if(key==="minimum")avail*=.6;
         const catchup=Math.min(overdue,avail);overdue=Math.max(0,overdue-catchup);
@@ -1504,6 +1524,90 @@ input,select{
     d.setDate(d.getDate()-14);return d;
   }
 
+
+  function normalizedBill(bill){
+    return {
+      ...bill,
+      dueMode:bill?.dueMode==="monthly"?"monthly":"date",
+      dueDay:bill?.dueMode==="monthly"?0:Math.min(31,Math.max(1,Math.trunc(Number(bill?.dueDay)||1))),
+      splitMode:["auto","even","full"].includes(bill?.splitMode)?bill.splitMode:"auto"
+    };
+  }
+
+  function paychecksInMonth(year,month){
+    if(!state.payday)return[];
+    const dates=[];
+    // Walk backward and forward around next payday to cover the target month.
+    for(let i=-4;i<=8;i++){
+      let d;
+      if(i>=0)d=nextPayday(state.payday,state.frequency,i);
+      else{
+        d=new Date(state.payday+"T12:00:00");
+        const steps=-i;
+        for(let s=0;s<steps;s++)d=previousPayday(
+          `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`,
+          state.frequency
+        );
+      }
+      if(!Number.isNaN(d.getTime())&&d.getFullYear()===year&&d.getMonth()===month){
+        const key=d.toISOString().slice(0,10);
+        if(!dates.some(x=>x.toISOString().slice(0,10)===key))dates.push(d);
+      }
+    }
+    return dates.sort((a,b)=>a-b);
+  }
+
+  function monthlyBillAllocation(bill,periodStart){
+    const b=normalizedBill(bill), amount=clampMoney(b.amount);
+    if(b.dueMode!=="monthly"||Number.isNaN(periodStart.getTime()))return 0;
+    const checks=paychecksInMonth(periodStart.getFullYear(),periodStart.getMonth());
+    if(!checks.length)return 0;
+
+    const thisKey=periodStart.toISOString().slice(0,10);
+    const idx=checks.findIndex(d=>d.toISOString().slice(0,10)===thisKey);
+    if(idx<0)return 0;
+
+    if(b.splitMode==="full"){
+      return idx===0?amount:0;
+    }
+
+    // "even" always divides across checks in the month.
+    if(b.splitMode==="even"){
+      return Math.round((amount/checks.length)*100)/100;
+    }
+
+    // Stride recommended:
+    // - unknown-date monthly bills are distributed across all checks
+    // - if a check is forecast to be tighter, bias slightly away from it
+    const base=amount/checks.length;
+    if(checks.length===1)return amount;
+
+    // Lightweight weighting: later checks get a tiny bit less burden to preserve runway.
+    const weights=checks.map((_,i)=>1-(i*0.08));
+    const totalW=weights.reduce((a,b)=>a+b,0);
+    return Math.round((amount*(weights[idx]/totalW))*100)/100;
+  }
+
+  function billAmountInWindow(bill,start,end){
+    const b=normalizedBill(bill);
+    if(b.dueMode==="monthly"){
+      return monthlyBillAllocation(b,start);
+    }
+    return dueBetween(b,start,end);
+  }
+
+  function billSplitLabel(bill){
+    const b=normalizedBill(bill);
+    if(b.dueMode==="monthly"){
+      if(b.splitMode==="full")return "Monthly · full on first check";
+      if(b.splitMode==="even")return "Monthly · split evenly";
+      return "Monthly · Stride split";
+    }
+    if(b.splitMode==="full")return "Full on due-date check";
+    if(b.splitMode==="even")return "Split evenly when possible";
+    return "Stride recommended";
+  }
+
   function billDueDateInWindow(bill,start,end){
     if(Number.isNaN(start.getTime())||Number.isNaN(end.getTime())||end<=start)return null;
     let y=start.getFullYear(),m=start.getMonth();
@@ -1535,9 +1639,17 @@ input,select{
       const today=new Date();
       key=monthKeyFor(today);
       range=today.toLocaleDateString(undefined,{month:"long",year:"numeric"});
-      rows=state.bills.map(b=>({bill:b,due:null}));
+      rows=state.bills.map(b=>({bill:normalizedBill(b),due:null}));
     }else if(!Number.isNaN(start.getTime())&&!Number.isNaN(end.getTime())){
-      rows=state.bills.map(b=>({bill:b,due:billDueDateInWindow(b,start,end)})).filter(x=>x.due);
+      rows=state.bills.map(raw=>{
+        const b=normalizedBill(raw);
+        if(b.dueMode==="monthly"){
+          const alloc=monthlyBillAllocation(b,start);
+          return alloc>0?{bill:{...b,amount:alloc,_originalAmount:b.amount},due:null}:null;
+        }
+        const due=billDueDateInWindow(b,start,end);
+        return due?{bill:b,due}:null;
+      }).filter(Boolean);
       range=`${start.toLocaleDateString(undefined,{month:"short",day:"numeric"})} – ${end.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`;
     }
 
@@ -1593,10 +1705,15 @@ input,select{
     $("snapshotProgress").style.width=`${snap.pct}%`;
     $("snapshotProgressText").textContent=`${snap.pct}% paid`;
     if($("snapshotBillCount"))$("snapshotBillCount").textContent=`${snap.rows.length} bill${snap.rows.length===1?"":"s"}`;
-    document.querySelectorAll("[data-snapshot]").forEach(b=>b.classList.toggle("active",b.dataset.snapshot===snapshotView));
+  
+  if($("billDueMode"))$("billDueMode").onchange=()=>{
+    $("billDayField").classList.toggle("hidden",$("billDueMode").value==="monthly");
+  };
+
+  document.querySelectorAll("[data-snapshot]").forEach(b=>b.classList.toggle("active",b.dataset.snapshot===snapshotView));
     $("snapshotList").innerHTML=snap.rows.length?snap.rows.slice(0,5).map(x=>`
       <div class="snapshot-bill">
-        <div class="name"><b>${escapeHtml(x.bill.name)}</b><small>${x.due?`Due ${x.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:escapeHtml(x.bill.priority)}</small></div>
+        <div class="name"><b>${escapeHtml(x.bill.name)}</b><small>${x.due?`Due ${x.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:(normalizedBill(x.bill).dueMode==="monthly"?"Monthly bill":escapeHtml(x.bill.priority))}</small><small class="split-note">${escapeHtml(billSplitLabel(x.bill))}</small></div>
         <div class="amount">${money(x.bill.amount)}</div>
         <button type="button" class="paid-toggle ${x.paid?"paid":""}" data-snapshot-paid="${x.bill.id}" data-paid="${x.paid?"1":"0"}">${x.paid?"Paid":"Mark paid"}</button>
       </div>`).join(""):'<div class="snapshot-empty">No bills in this view yet.</div>';
@@ -1650,9 +1767,9 @@ input,select{
 
     $("billList").innerHTML=filtered.length?filtered.map(x=>{
       const label=x.status==="paid"?"Paid":x.status==="overdue"?"Overdue":x.status==="due"?"Due Soon":"Upcoming";
-      const dueText=x.due?`Due ${x.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:`Due day ${x.bill.dueDay}`;
+      const dueText=x.due?`Due ${x.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:(normalizedBill(x.bill).dueMode==="monthly"?"Monthly · date unknown":`Due day ${x.bill.dueDay}`);
       return `<div class="bill-row-modern">
-        <div class="bill-main"><b>${escapeHtml(x.bill.name)}</b><small>${dueText}</small></div>
+        <div class="bill-main"><b>${escapeHtml(x.bill.name)}</b><small>${dueText}</small><small class="split-note">${escapeHtml(billSplitLabel(x.bill))}</small></div>
         <div class="bill-amount">${money(x.bill.amount)}</div>
         <button class="bill-status ${x.status}" data-bill-toggle="${x.bill.id}" data-paid="${x.status==="paid"?"1":"0"}">${label}</button>
         <button type="button" class="bill-remove-modern" data-bill-remove="${x.bill.id}" aria-label="Remove ${escapeHtml(x.bill.name)}">Remove</button>
@@ -1682,9 +1799,10 @@ input,select{
   function renderStatusCards(){
     const today=new Date(), day=today.getDate();
     let overdueCount=0,overdueAmount=0,dueSoonCount=0,dueSoonAmount=0,upcomingCount=0,upcomingAmount=0;
-    state.bills.forEach(b=>{
-      const amt=clampMoney(b.amount);
+    state.bills.forEach(raw=>{
+      const b=normalizedBill(raw), amt=clampMoney(b.amount);
       if(clampMoney(b.overdue)>0){overdueCount++;overdueAmount+=clampMoney(b.overdue);return}
+      if(b.dueMode==="monthly"){upcomingCount++;upcomingAmount+=amt;return}
       let delta=Number(b.dueDay)-day;
       if(delta<0)delta+=daysInMonth(today.getFullYear(),today.getMonth());
       if(delta<=5){dueSoonCount++;dueSoonAmount+=amt}else{upcomingCount++;upcomingAmount+=amt}
@@ -1859,10 +1977,13 @@ input,select{
 
   ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>$(id).addEventListener("change",e=>{state={...state,[id]:["paycheck","extraIncome","cushion"].includes(id)?Number(e.target.value):e.target.value};scheduleSave()}));
   document.querySelectorAll(".strategy").forEach(el=>el.onclick=()=>{state={...state,strategy:el.dataset.strategy};$("strategy").value=state.strategy;scheduleSave()});
-  $("addBill").onclick=()=>{const name=$("billName").value.trim(),amount=clampMoney($("billAmount").value),day=Math.trunc(Number($("billDay").value)),priority=$("billPriority").value;
-    if(!name||amount<=0||day<1||day>31)return setMsg("billMsg","Enter a bill name, amount, and due day from 1–31.");
+  $("addBill").onclick=()=>{const name=$("billName").value.trim(),amount=clampMoney($("billAmount").value),dueMode=$("billDueMode").value,day=Math.trunc(Number($("billDay").value)),splitMode=$("billSplitMode").value,priority=$("billPriority").value;
+    if(!name||amount<=0)return setMsg("billMsg","Enter a bill name and amount.");
+    if(dueMode==="date"&&(day<1||day>31))return setMsg("billMsg","Enter a due day from 1–31, or choose Monthly — date unknown.");
     if(state.bills.some(b=>b.name.trim().toLowerCase()===name.toLowerCase()))return setMsg("billMsg","That bill is already in your list.");
-    setMsg("billMsg","");state={...state,bills:[...state.bills,{id:crypto.randomUUID(),name,amount,dueDay:day,priority,overdue:0}]};$("billName").value="";$("billAmount").value="";scheduleSave();
+    setMsg("billMsg","");
+    state={...state,bills:[...state.bills,{id:crypto.randomUUID(),name,amount,dueMode,dueDay:dueMode==="date"?day:0,splitMode,priority,overdue:0}]};
+    $("billName").value="";$("billAmount").value="";$("billDueMode").value="date";$("billDayField").classList.remove("hidden");$("billSplitMode").value="auto";scheduleSave();
   };
   $("billList").onclick=e=>{
     const target=e.target instanceof Element?e.target:null;
