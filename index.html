@@ -9,28 +9,27 @@
 :root{--navy:#0B2A55;--teal:#10A7AE;--bg:#07111f;--panel:#0d1b2a;--panel2:#13263a;--text:#f7fbff;--muted:#96a7b8;--line:#20364d;--danger:#7f1d1d}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(#07111f,#0b1523);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
 .app{max-width:760px;margin:auto;padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 96px)}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.brand{display:flex;align-items:center;gap:10px}.brand img{width:48px;height:48px;object-fit:contain;border-radius:10px;background:#fff}.brand h1{margin:0;font-size:22px}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.brand{display:flex;align-items:center;gap:10px}.brand img{width:48px;height:48px;object-fit:contain}.brand h1{margin:0;font-size:22px}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
 .badge{font-size:11px;padding:7px 10px;border-radius:999px;border:1px solid var(--line);color:#cfe9ff;background:#0b2238}.badge.online{border-color:#0f766e;color:#baf5ee}
-.card{background:rgba(13,27,42,.97);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}.card h2{font-size:16px;margin:0 0 10px}
+.card{background:rgba(13,27,42,.97);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}.card h2{font-size:16px;margin:0 0 10px}.card h3{font-size:14px;margin:14px 0 8px}
 .hero{background:linear-gradient(145deg,#0b2a55,#0b2238 60%,#0f6b73);border-color:#1f6f8b}.hero .label{font-size:13px;color:#b9d7ef}.hero .big{font-size:34px;font-weight:900;margin-top:4px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row3{display:grid;grid-template-columns:1.2fr .8fr .8fr;gap:10px}.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.kpi{background:#091827;border:1px solid var(--line);border-radius:14px;padding:14px}.kpi span{display:block;color:var(--muted);font-size:11px}.kpi b{font-size:20px}
 label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,button{font:inherit}input,select{width:100%;background:#091827;color:#fff;border:1px solid #2a4157;border-radius:12px;padding:13px 12px}button{cursor:pointer}.primary,.secondary,.danger{border:0;border-radius:14px;padding:13px 14px;font-weight:700}.primary{background:linear-gradient(135deg,#0E3A70,var(--teal));color:#fff}.secondary{background:#13263a;color:#fff;border:1px solid #2a4157}.danger{background:#3f1d1d;color:#fecaca;border:1px solid var(--danger)}
-.small{font-size:12px;color:var(--muted);line-height:1.45}.list{display:flex;flex-direction:column;gap:8px}.item{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px}.tag{font-size:10px;padding:4px 7px;border-radius:999px;background:#1f2937;margin-left:5px}.overdue{background:#3f1d1d;color:#fecaca}.critical{background:#422006;color:#fde68a}.important{background:#0f365f;color:#bfdbfe}
+.small{font-size:12px;color:var(--muted);line-height:1.45}.list{display:flex;flex-direction:column;gap:8px}.item{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px}.tag{font-size:10px;padding:4px 7px;border-radius:999px;background:#1f2937;margin-left:5px}.overdue{background:#3f1d1d;color:#fecaca}.critical{background:#422006;color:#fde68a}.important{background:#0f365f;color:#bfdbfe}.flexible{background:#243046;color:#d8e0ea}
 .plan{background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}.notice{padding:12px;border-radius:12px;background:#091827;border:1px solid #334155;margin-top:10px}.authbar{display:flex;justify-content:flex-end;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}.authbar span{font-size:12px;color:var(--muted)}
+.timeline{display:flex;flex-direction:column;gap:10px}.paycard{background:#091827;border:1px solid var(--line);border-radius:14px;padding:13px}.paytop{display:flex;justify-content:space-between;gap:12px}.paycard b{font-size:15px}.paycard .money{font-weight:800}.empty{padding:16px;text-align:center;color:var(--muted);background:#091827;border:1px dashed #2a4157;border-radius:12px}
 .footer{position:fixed;left:0;right:0;bottom:0;background:rgba(7,17,31,.96);border-top:1px solid #1f2937;padding:10px 14px calc(env(safe-area-inset-bottom) + 10px)}.footer>div{max-width:760px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}.footer button{width:100%}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}.modal.show{display:flex}.modalbox{width:min(430px,100%);background:#0d1b2a;border:1px solid var(--line);border-radius:20px;padding:18px}.modalbox .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .auth-gate{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);background:radial-gradient(circle at 50% 15%,#0d3a63 0,#07111f 42%,#050b14 100%)}
 .auth-gate-card{width:min(430px,100%);text-align:center;background:rgba(13,27,42,.94);border:1px solid #1f4964;border-radius:26px;padding:30px 22px 24px;box-shadow:0 24px 70px rgba(0,0,0,.38)}
 .auth-logo{width:106px;height:106px;object-fit:contain;margin:0 auto 14px;display:block}.auth-gate-card h1{font-size:34px;margin:0 0 6px}.auth-tagline{margin:0 auto 26px;color:#a8bacb;font-size:16px;line-height:1.45}.auth-gate-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}.auth-gate-actions button{min-height:52px}.auth-note{margin:18px 6px 0}
-
 .onboard{position:fixed;inset:0;z-index:45;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(env(safe-area-inset-top) + 24px) 18px calc(env(safe-area-inset-bottom) + 24px);background:radial-gradient(circle at 50% 10%,#0d3a63 0,#07111f 42%,#050b14 100%)}
-.onboard.show{display:flex}.onboard-card{width:min(520px,100%);background:rgba(13,27,42,.97);border:1px solid #1f4964;border-radius:24px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.38)}
-.onboard-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}.onboard-head img{width:52px;height:52px;object-fit:contain}.onboard-head h2{margin:0;font-size:24px}.progress{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 20px}.progress i{height:5px;border-radius:999px;background:#173047}.progress i.active{background:linear-gradient(90deg,#0E3A70,var(--teal))}
-.step{display:none}.step.active{display:block}.step h3{margin:0 0 6px;font-size:22px}.step p{margin:0 0 18px;color:var(--muted);line-height:1.45}.onboard-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.bill-seed{display:grid;grid-template-columns:1.3fr .7fr;gap:10px;margin-bottom:10px}.welcome-done{text-align:center;padding:14px 4px 2px}.welcome-done .bigcheck{font-size:46px;margin-bottom:8px}
+.onboard.show{display:flex}.onboard-card{width:min(520px,100%);background:rgba(13,27,42,.97);border:1px solid #1f4964;border-radius:24px;padding:22px}.onboard-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}.onboard-head img{width:52px;height:52px}.onboard-head h2{margin:0;font-size:24px}.progress{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 20px}.progress i{height:5px;border-radius:999px;background:#173047}.progress i.active{background:linear-gradient(90deg,#0E3A70,var(--teal))}.step{display:none}.step.active{display:block}.step h3{margin:0 0 6px;font-size:22px}.step p{margin:0 0 18px;color:var(--muted);line-height:1.45}.onboard-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.bill-seed{display:grid;grid-template-columns:1.3fr .7fr;gap:10px;margin-bottom:10px}.welcome-done{text-align:center;padding:14px 4px 2px}.welcome-done .bigcheck{font-size:46px;margin-bottom:8px}
 @media(max-width:560px){.row,.row3,.bill-seed{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+
 <div id="authGate" class="auth-gate">
   <div class="auth-gate-card">
     <img src="./checkstride-logo.svg" alt="Checkstride" class="auth-logo">
@@ -43,81 +42,109 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
     <p class="small auth-note">Sign in to securely access your paycheck plan and sync it across devices.</p>
   </div>
 </div>
+
 <div id="onboarding" class="onboard">
   <div class="onboard-card">
-    <div class="onboard-head"><img src="./checkstride-logo.svg" alt=""><div><h2>Set up Checkstride</h2><div class="small">A quick setup to build your first paycheck plan.</div></div></div>
+    <div class="onboard-head"><img src="./checkstride-logo.svg" alt=""><div><h2>Set up Checkstride</h2><div class="small">Build your first multi-paycheck plan.</div></div></div>
     <div class="progress"><i id="prog1" class="active"></i><i id="prog2"></i><i id="prog3"></i><i id="prog4"></i></div>
-
     <section class="step active" data-step="1">
-      <h3>When do you get paid?</h3><p>Start with the next paycheck Checkstride should plan around.</p>
+      <h3>How do you get paid?</h3><p>Checkstride uses your pay schedule to build future checks automatically.</p>
       <label>Next payday</label><input id="obPayday" type="date">
       <label>Expected take-home pay</label><input id="obPaycheck" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
+      <label>Pay frequency</label>
+      <select id="obFrequency"><option value="weekly">Weekly</option><option value="biweekly" selected>Every 2 weeks</option><option value="semimonthly">Twice monthly</option><option value="monthly">Monthly</option></select>
     </section>
-
     <section class="step" data-step="2">
-      <h3>What bills need this check?</h3><p>Add the bills you already know are coming up. You can add more later.</p>
+      <h3>Add recurring bills</h3><p>Use the monthly due day so Checkstride can place each bill on future paychecks.</p>
       <div class="bill-seed"><input id="obBillName" placeholder="Bill name"><input id="obBillAmount" type="number" step="0.01" inputmode="decimal" placeholder="Amount"></div>
-      <div class="bill-seed"><input id="obBillDate" type="date"><select id="obBillPriority"><option value="critical">Critical</option><option value="important">Important</option><option value="flexible">Flexible</option></select></div>
-      <button id="obAddBill" class="secondary" style="width:100%">+ Add this bill</button>
+      <div class="bill-seed"><input id="obBillDueDay" type="number" min="1" max="31" inputmode="numeric" placeholder="Due day (1-31)"><select id="obBillPriority"><option value="critical">Critical</option><option value="important">Important</option><option value="flexible">Flexible</option></select></div>
+      <button id="obAddBill" class="secondary" style="width:100%">+ Add recurring bill</button>
       <div id="obBillList" class="small" style="margin-top:12px">No bills added yet.</div>
     </section>
-
     <section class="step" data-step="3">
-      <h3>Protect some breathing room</h3><p>Choose how much money you want left untouched for everyday spending.</p>
-      <label>Spending cushion</label><input id="obCushion" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
+      <h3>Protect some breathing room</h3><p>Choose how much money you want left untouched on each paycheck.</p>
+      <label>Spending cushion per paycheck</label><input id="obCushion" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
       <label>Catch-up style</label><select id="obStrategy"><option value="balanced">Balanced</option><option value="fast">Fastest Catch-Up</option><option value="stress">Minimum Stress</option></select>
     </section>
-
     <section class="step" data-step="4">
-      <div class="welcome-done"><div class="bigcheck">✓</div><h3>Your first plan is ready</h3><p>Checkstride will now show what this paycheck needs to do, what to pay first, and what is safe to spend.</p></div>
+      <div class="welcome-done"><div class="bigcheck">✓</div><h3>Your plan is ready</h3><p>Checkstride now plans upcoming bills across future paychecks and carries shortages forward.</p></div>
     </section>
-
     <div class="onboard-actions"><button id="obBack" class="secondary">Back</button><button id="obNext" class="primary">Continue</button></div>
   </div>
 </div>
+
 <div id="appShell" class="app" style="display:none">
-<div class="header">
-  <div class="brand"><img src="./checkstride-logo.svg" alt="" onerror="this.style.display='none'"><div><h1>Checkstride</h1><p>Know what this paycheck needs to do.</p></div></div>
-  <div id="cloudBadge" class="badge">Local only</div>
+  <div class="header">
+    <div class="brand"><img src="./checkstride-logo.svg" alt=""><div><h1>Checkstride</h1><p>Know what this paycheck needs to do.</p></div></div>
+    <div id="cloudBadge" class="badge">Local only</div>
+  </div>
+  <div class="authbar"><span id="authLabel"></span><button id="signOutBtn" class="secondary">Sign out</button></div>
+
+  <div class="card hero"><div class="label">Safe to spend from this paycheck</div><div id="safeSpend" class="big">$0.00</div><div id="countdown" class="small">Set your next payday below.</div></div>
+
+  <div class="kpis">
+    <div class="kpi"><span>Expected paycheck</span><b id="paycheckKpi">$0.00</b></div>
+    <div class="kpi"><span>Overdue balance</span><b id="overdueKpi">$0.00</b></div>
+    <div class="kpi"><span>Bills before next check</span><b id="dueKpi">$0.00</b></div>
+    <div class="kpi"><span>Estimated caught up</span><b id="caughtUpKpi">—</b></div>
+  </div>
+
+  <div class="card">
+    <h2>Pay schedule</h2>
+    <div class="row">
+      <div><label>Next payday</label><input id="payday" type="date"></div>
+      <div><label>Take-home pay</label><input id="paycheck" type="number" step="0.01" inputmode="decimal"></div>
+    </div>
+    <div class="row">
+      <div><label>Pay frequency</label><select id="payFrequency"><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option><option value="semimonthly">Twice monthly</option><option value="monthly">Monthly</option></select></div>
+      <div><label>Spending cushion / check</label><input id="cushion" type="number" step="0.01" inputmode="decimal"></div>
+    </div>
+    <div class="row">
+      <div><label>Extra income this check</label><input id="extraIncome" type="number" step="0.01" inputmode="decimal"></div>
+      <div><label>Catch-up strategy</label><select id="strategy"><option value="balanced">Balanced</option><option value="fast">Fastest Catch-Up</option><option value="stress">Minimum Stress</option></select></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Recurring bills</h2>
+    <div class="row"><div><label>Bill name</label><input id="billName" placeholder="Electric"></div><div><label>Amount</label><input id="billAmount" type="number" step="0.01" inputmode="decimal"></div></div>
+    <div class="row3">
+      <div><label>Monthly due day</label><input id="billDueDay" type="number" min="1" max="31" inputmode="numeric" placeholder="1-31"></div>
+      <div><label>Overdue now</label><input id="billOverdue" type="number" step="0.01" inputmode="decimal" placeholder="0"></div>
+      <div><label>Priority</label><select id="billPriority"><option value="critical">Critical</option><option value="important">Important</option><option value="flexible">Flexible</option></select></div>
+    </div>
+    <button id="addBillBtn" class="primary" style="width:100%;margin-top:12px">Add recurring bill</button>
+    <div id="billList" class="small" style="margin-top:12px">No bills added yet.</div>
+  </div>
+
+  <div class="card">
+    <h2>This paycheck</h2>
+    <div id="planSummary" class="notice">Add your paycheck and bills to generate a plan.</div>
+    <div id="planSteps" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <h2>Next 4 paychecks</h2>
+    <div class="small" style="margin-bottom:10px">Upcoming recurring bills are assigned to the paycheck before they are due. Any shortage carries into the following check.</div>
+    <div id="timeline" class="timeline"></div>
+  </div>
+
+  <div class="card">
+    <h2>What if?</h2>
+    <div class="row"><div><label>Extra income</label><input id="whatIfIncome" type="number" step="0.01" inputmode="decimal" placeholder="0"></div><div><label>Extra spending</label><input id="whatIfSpend" type="number" step="0.01" inputmode="decimal" placeholder="0"></div></div>
+    <button id="whatIfBtn" class="secondary" style="width:100%;margin-top:12px">Calculate</button>
+    <div id="whatIfResult" class="small" style="margin-top:10px"></div>
+  </div>
 </div>
 
-<div class="authbar"><span id="authLabel">Not signed in</span><button id="authBtn" class="secondary">Sign in / Create account</button><button id="signOutBtn" class="secondary" style="display:none">Sign out</button></div>
+<div id="footer" class="footer" style="display:none"><div><button id="resetBtn" class="danger">Reset plan</button><button id="saveBtn" class="primary">Save plan</button></div></div>
 
-<div class="card hero"><div class="label">Safe to spend until next payday</div><div id="safeSpend" class="big">$0.00</div><div id="countdown" class="small">Set your next payday below.</div></div>
-
-<div class="kpis">
-<div class="kpi"><span>Expected paycheck</span><b id="paycheckKpi">$0.00</b></div>
-<div class="kpi"><span>Overdue balance</span><b id="overdueKpi">$0.00</b></div>
-<div class="kpi"><span>Due before payday</span><b id="dueKpi">$0.00</b></div>
-<div class="kpi"><span>Estimated caught up</span><b id="caughtUpKpi">—</b></div>
-</div>
-
-<div class="card"><h2>1. Paycheck setup</h2>
-<div class="row"><div><label>Next payday</label><input id="payday" type="date"></div><div><label>Expected take-home pay</label><input id="paycheck" type="number" step="0.01"></div></div>
-<div class="row"><div><label>Keep as spending cushion</label><input id="cushion" type="number" step="0.01"></div><div><label>Extra income / overtime</label><input id="extraIncome" type="number" step="0.01"></div></div>
-<label>Catch-up style</label><select id="strategy"><option value="balanced">Balanced</option><option value="fast">Fastest Catch-Up</option><option value="stress">Minimum Stress</option></select>
-</div>
-
-<div class="card"><h2>2. Add bills</h2>
-<div class="row3"><div><label>Bill</label><input id="billName"></div><div><label>Amount due</label><input id="billAmount" type="number" step="0.01"></div><div><label>Amount overdue</label><input id="billOverdue" type="number" step="0.01"></div></div>
-<div class="row"><div><label>Due date</label><input id="billDate" type="date"></div><div><label>Priority</label><select id="billPriority"><option value="critical">Critical</option><option value="important">Important</option><option value="flexible">Flexible</option></select></div></div>
-<div style="height:10px"></div><button id="addBillBtn" class="primary">Add Bill</button><div style="height:12px"></div><div id="billList" class="small">No bills added yet.</div>
-</div>
-
-<div class="card"><h2>3. Catch-Up Plan</h2><div id="planSummary" class="notice">Add your paycheck and bills to generate a plan.</div><div id="planSteps" style="margin-top:10px"></div></div>
-
-<div class="card"><h2>4. What-if calculator</h2>
-<div class="row"><div><label>Extra overtime / side income</label><input id="whatIfIncome" type="number" step="0.01"></div><div><label>Extra spending</label><input id="whatIfSpend" type="number" step="0.01"></div></div>
-<div style="height:10px"></div><button id="whatIfBtn" class="secondary">Run Scenario</button><div id="whatIfResult" class="small" style="margin-top:10px"></div>
-</div>
-</div>
-
-<div class="footer"><div><button id="resetBtn" class="secondary">Reset</button><button id="saveBtn" class="primary">Save Plan</button></div></div>
-
-<div id="authModal" class="modal"><div class="modalbox"><h2>Checkstride account</h2><div class="small">Sign in to sync across devices.</div>
-<label>Email</label><input id="authEmail" type="email"><label>Password</label><input id="authPassword" type="password">
-<div class="actions"><button id="signInNow" class="secondary">Sign in</button><button id="createNow" class="primary">Create account</button></div>
-<div id="authStatus" class="small" style="margin-top:10px"></div><div style="height:8px"></div><button id="closeAuth" class="secondary" style="width:100%">Close</button>
+<div id="authModal" class="modal"><div class="modalbox">
+  <h2 style="margin-top:0">Checkstride account</h2>
+  <label>Email</label><input id="authEmail" type="email" autocomplete="email">
+  <label>Password</label><input id="authPassword" type="password" autocomplete="current-password">
+  <div class="actions"><button id="signInNow" class="secondary">Sign in</button><button id="createNow" class="primary">Create account</button></div>
+  <div id="authStatus" class="small" style="margin-top:10px"></div><div style="height:8px"></div><button id="closeAuth" class="secondary" style="width:100%">Close</button>
 </div></div>
 
 <script type="module">
@@ -136,57 +163,148 @@ measurementId:"G-B4W5L2SN0H"
 };
 
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
-let bills=[],currentUser=null,timer=null;
+let bills=[],currentUser=null,timer=null,obStep=1,obBills=[];
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n||0));
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const parseDate=s=>s?new Date(s+'T00:00:00'):null;
+const iso=d=>{const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`};
 const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
-const daysUntil=s=>!s?0:Math.max(0,Math.ceil((new Date(s+'T00:00:00')-today())/86400000));
+const daysUntil=s=>!s?0:Math.max(0,Math.ceil((parseDate(s)-today())/86400000));
 const rank=p=>p==='critical'?0:p==='important'?1:2;
-const overdue=b=>Number(b.overdue||0)>0||(b.date&&new Date(b.date+'T00:00:00')<today());
-const dueBefore=b=>!$('payday').value||!b.date||b.date<=$('payday').value;
-const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 
-function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,onboardingComplete:true}}
-function apply(d){if(!d)return;$('payday').value=d.payday||'';$('paycheck').value=d.paycheck||'';$('cushion').value=d.cushion||'';$('extraIncome').value=d.extraIncome||'';$('strategy').value=d.strategy||'balanced';bills=Array.isArray(d.bills)?d.bills:[];recalc()}
-function saveLocal(){localStorage.setItem('checkstrideV1',JSON.stringify(state()))}
-function loadLocal(){try{return JSON.parse(localStorage.getItem('checkstrideV1')||'null')}catch{return null}}
+function nextPaydays(startStr,freq,count=4){
+  const start=parseDate(startStr); if(!start) return [];
+  const arr=[new Date(start)];
+  while(arr.length<count){
+    const p=new Date(arr[arr.length-1]);
+    if(freq==='weekly') p.setDate(p.getDate()+7);
+    else if(freq==='biweekly') p.setDate(p.getDate()+14);
+    else if(freq==='monthly') p.setMonth(p.getMonth()+1);
+    else {
+      const d=p.getDate(), y=p.getFullYear(), m=p.getMonth();
+      if(d<15) p.setDate(15);
+      else {p.setMonth(m+1);p.setDate(1);}
+    }
+    arr.push(p);
+  }
+  return arr;
+}
+function billDueDateForMonth(b,y,m){
+  const last=new Date(y,m+1,0).getDate(), day=Math.min(Math.max(1,Number(b.dueDay||1)),last);
+  return new Date(y,m,day);
+}
+function upcomingOccurrences(b,start,end){
+  const out=[]; let cur=new Date(start.getFullYear(),start.getMonth(),1);
+  const last=new Date(end.getFullYear(),end.getMonth(),1);
+  while(cur<=last){const d=billDueDateForMonth(b,cur.getFullYear(),cur.getMonth());if(d>=start&&d<=end)out.push(d);cur.setMonth(cur.getMonth()+1)}
+  return out;
+}
+function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,onboardingComplete:true,version:2}}
+function normalizeBill(b){
+  if(b.dueDay) return {...b,dueDay:Number(b.dueDay)};
+  let dueDay=1;
+  if(b.date){const d=parseDate(b.date);if(d)dueDay=d.getDate()}
+  return {name:b.name||'Bill',amount:Number(b.amount||0),overdue:Number(b.overdue||0),dueDay,priority:b.priority||'important'};
+}
+function apply(d){if(!d)return;$('payday').value=d.payday||'';$('paycheck').value=d.paycheck||'';$('payFrequency').value=d.payFrequency||'biweekly';$('cushion').value=d.cushion||'';$('extraIncome').value=d.extraIncome||'';$('strategy').value=d.strategy||'balanced';bills=(Array.isArray(d.bills)?d.bills:[]).map(normalizeBill);recalc()}
+function saveLocal(){if(currentUser)localStorage.setItem('checkstrideV2_'+currentUser.uid,JSON.stringify(state()))}
 function badge(t,on=false){$('cloudBadge').textContent=t;$('cloudBadge').className='badge'+(on?' online':'')}
 async function saveCloud(){if(!currentUser)return;await setDoc(doc(db,'users',currentUser.uid,'state','main'),{...state(),updatedAt:serverTimestamp()},{merge:true});badge('Synced',true)}
 function schedule(){saveLocal();if(!currentUser)return;badge('Saving…',true);clearTimeout(timer);timer=setTimeout(()=>saveCloud().catch(()=>badge('Sync error')),600)}
-async function loadCloud(){const ref=doc(db,'users',currentUser.uid,'state','main'),snap=await getDoc(ref);if(snap.exists()){const d=snap.data();apply(d);badge('Synced',true);return true}badge('New account',true);return false}
+async function loadCloud(){const snap=await getDoc(doc(db,'users',currentUser.uid,'state','main'));if(snap.exists()){apply(snap.data());badge('Synced',true);return true}badge('New account',true);return false}
 
-function renderBills(){const box=$('billList');if(!bills.length){box.className='small';box.textContent='No bills added yet.';return}box.className='list';box.innerHTML='';
-bills.slice().sort((a,b)=>rank(a.priority)-rank(b.priority)||(a.date||'').localeCompare(b.date||'')).forEach(b=>{const i=bills.indexOf(b),row=document.createElement('div');row.className='item';row.innerHTML=`<div><strong>${esc(b.name)}</strong>${overdue(b)?'<span class="tag overdue">OVERDUE</span>':''}<span class="tag ${b.priority}">${b.priority.toUpperCase()}</span><div class="small">${b.date?'Due '+b.date:'No due date'} · overdue ${money(b.overdue)}</div></div><div><span>${money(b.amount)}</span> <button class="danger remove" data-i="${i}">×</button></div>`;box.appendChild(row)});
-box.querySelectorAll('.remove').forEach(x=>x.onclick=()=>{bills.splice(Number(x.dataset.i),1);schedule();recalc()})}
-
-function plan(extra=0,spend=0){const income=Number($('paycheck').value||0)+Number($('extraIncome').value||0)+extra,cushion=Math.max(0,Number($('cushion').value||0)+spend),strategy=$('strategy').value;let available=Math.max(0,income-cushion),steps=[],unpaid=0;
-const sorted=bills.slice().sort((a,b)=>Number(!overdue(a))-Number(!overdue(b))||rank(a.priority)-rank(b.priority)||(a.date||'9999').localeCompare(b.date||'9999'));
-for(const b of sorted){let target=Math.max(Number(b.overdue||0),dueBefore(b)?Number(b.amount||0):0);if(target<=0)continue;let cap=target;if(strategy==='stress'&&b.priority!=='critical')cap=Math.min(target,Math.max(50,target*.5));if(strategy==='balanced'&&b.priority==='flexible')cap=Math.min(target,Math.max(25,target*.5));const pay=Math.min(available,cap);if(pay>0){steps.push({name:b.name,pay,priority:b.priority,remaining:Math.max(0,target-pay)});available-=pay}unpaid+=Math.max(0,target-pay)}
-return {income,cushion,steps,unpaid,totalOverdue:bills.reduce((s,b)=>s+Number(b.overdue||0),0),dueNow:bills.filter(dueBefore).reduce((s,b)=>s+Number(b.amount||0),0)}}
-
-function recalc(){const r=plan();$('paycheckKpi').textContent=money(r.income);$('overdueKpi').textContent=money(r.totalOverdue);$('dueKpi').textContent=money(r.dueNow);$('safeSpend').textContent=money(Math.max(0,r.income-r.cushion-r.steps.reduce((s,x)=>s+x.pay,0)));const d=daysUntil($('payday').value);$('countdown').textContent=$('payday').value?`${d} day${d===1?'':'s'} until next payday.`:'Set your next payday below.';$('caughtUpKpi').textContent=r.unpaid<=0&&bills.length?($('payday').value||'This check'):(r.unpaid>0&&r.income>r.cushion?`~${Math.ceil(r.unpaid/Math.max(1,r.income-r.cushion))+1} checks`:'—');
-const s=$('planSummary'),p=$('planSteps');if(!bills.length||r.income<=0){s.textContent='Add your paycheck and bills to generate a plan.';p.innerHTML='';renderBills();return}s.textContent=r.unpaid<=0?`This paycheck can cover the catch-up plan while keeping ${money(r.cushion)} as your cushion.`:`You still have ${money(r.unpaid)} that cannot fit into this paycheck. Checkstride prioritizes what to pay first.`;p.innerHTML='';r.steps.forEach((x,i)=>{const d=document.createElement('div');d.className='plan';d.innerHTML=`<b>${i+1}. Pay ${esc(x.name)} — ${money(x.pay)}</b><div class="small">${x.priority} priority${x.remaining>0?' · '+money(x.remaining)+' still remaining':''}</div>`;p.appendChild(d)});renderBills()}
-
-let obStep=1,obBills=[];
+function renderBills(){
+  const box=$('billList');
+  if(!bills.length){box.className='small';box.textContent='No recurring bills added yet.';return}
+  box.className='list';box.innerHTML='';
+  bills.slice().sort((a,b)=>rank(a.priority)-rank(b.priority)||a.dueDay-b.dueDay).forEach(b=>{
+    const i=bills.indexOf(b),row=document.createElement('div');row.className='item';
+    row.innerHTML=`<div><strong>${esc(b.name)}</strong><span class="tag ${b.priority}">${b.priority.toUpperCase()}</span>${Number(b.overdue)>0?'<span class="tag overdue">OVERDUE</span>':''}<div class="small">Due monthly on day ${b.dueDay} · overdue ${money(b.overdue)}</div></div><div><span>${money(b.amount)}</span> <button class="danger remove" data-i="${i}">×</button></div>`;
+    box.appendChild(row)
+  });
+  box.querySelectorAll('.remove').forEach(x=>x.onclick=()=>{bills.splice(Number(x.dataset.i),1);schedule();recalc()})
+}
+function buildForecast(extraFirst=0,spendFirst=0){
+  const paydays=nextPaydays($('payday').value,$('payFrequency').value,4);
+  const basePay=Number($('paycheck').value||0),baseCushion=Number($('cushion').value||0),extraIncome=Number($('extraIncome').value||0);
+  if(!paydays.length||basePay<=0)return {checks:[],remainingOverdue:bills.reduce((s,b)=>s+Number(b.overdue||0),0),caughtUp:null};
+  let arrears=bills.map(b=>({name:b.name,priority:b.priority,amount:Number(b.overdue||0)})).filter(x=>x.amount>0);
+  const checks=[];
+  for(let idx=0;idx<paydays.length;idx++){
+    const payDate=paydays[idx],prev=idx===0?today():new Date(paydays[idx-1].getTime()+86400000),nextBoundary=idx<3?paydays[idx+1]:new Date(payDate.getTime()+31*86400000);
+    let income=basePay+(idx===0?extraIncome+extraFirst:0);
+    let cushion=Math.max(0,baseCushion+(idx===0?spendFirst:0));
+    let available=Math.max(0,income-cushion),items=[],dueTotal=0;
+    const obligations=[];
+    arrears.forEach(a=>obligations.push({...a,type:'overdue'}));
+    bills.forEach(b=>{
+      upcomingOccurrences(b,payDate,nextBoundary).forEach(d=>{obligations.push({name:b.name,priority:b.priority,amount:Number(b.amount||0),type:'due',due:d})})
+    });
+    obligations.sort((a,b)=>Number(a.type!=='overdue')-Number(b.type!=='overdue')||rank(a.priority)-rank(b.priority)||((a.due?.getTime()||0)-(b.due?.getTime()||0)));
+    const nextArrears=[];
+    for(const o of obligations){
+      let target=o.amount;
+      let cap=target;
+      if($('strategy').value==='stress'&&o.priority!=='critical')cap=Math.min(target,Math.max(50,target*.5));
+      if($('strategy').value==='balanced'&&o.priority==='flexible')cap=Math.min(target,Math.max(25,target*.5));
+      const pay=Math.min(available,cap); available-=pay; dueTotal+=target;
+      if(pay>0)items.push({name:o.name,pay,priority:o.priority,type:o.type,due:o.due,remaining:target-pay});
+      if(target-pay>0)nextArrears.push({name:o.name,priority:o.priority,amount:target-pay});
+    }
+    arrears=nextArrears;
+    checks.push({date:payDate,income,cushion,items,safe:Math.max(0,available),short:arrears.reduce((s,a)=>s+a.amount,0),dueTotal});
+  }
+  const caught=checks.find(c=>c.short<=0);
+  return {checks,remainingOverdue:arrears.reduce((s,a)=>s+a.amount,0),caughtUp:caught?caught.date:null}
+}
+function recalc(){
+  renderBills();
+  const f=buildForecast(),first=f.checks[0];
+  const paycheck=Number($('paycheck').value||0)+Number($('extraIncome').value||0);
+  $('paycheckKpi').textContent=money(paycheck);
+  $('overdueKpi').textContent=money(bills.reduce((s,b)=>s+Number(b.overdue||0),0));
+  $('dueKpi').textContent=first?money(first.dueTotal):'$0.00';
+  $('safeSpend').textContent=first?money(first.safe):'$0.00';
+  const d=daysUntil($('payday').value);$('countdown').textContent=$('payday').value?`${d} day${d===1?'':'s'} until next payday.`:'Set your next payday below.';
+  $('caughtUpKpi').textContent=f.caughtUp?iso(f.caughtUp):(f.checks.length&&f.remainingOverdue>0?'4+ checks':'—');
+  const s=$('planSummary'),p=$('planSteps');
+  if(!first||!bills.length){s.textContent='Add your paycheck and recurring bills to generate a plan.';p.innerHTML=''}
+  else{
+    s.textContent=first.short<=0?`This check can cover its planned obligations while keeping ${money(first.cushion)} protected.`:`After this check, ${money(first.short)} will carry forward. Checkstride will keep prioritizing it on future checks.`;
+    p.innerHTML='';
+    first.items.forEach((x,i)=>{const n=document.createElement('div');n.className='plan';n.innerHTML=`<b>${i+1}. Pay ${esc(x.name)} — ${money(x.pay)}</b><div class="small">${x.type==='overdue'?'Overdue balance':'Upcoming bill'} · ${x.priority} priority${x.remaining>0?' · '+money(x.remaining)+' carries forward':''}</div>`;p.appendChild(n)})
+  }
+  const t=$('timeline');t.innerHTML='';
+  if(!f.checks.length)t.innerHTML='<div class="empty">Set a payday and paycheck amount to see future checks.</div>';
+  else f.checks.forEach((c,i)=>{const box=document.createElement('div');box.className='paycard';box.innerHTML=`<div class="paytop"><div><b>${i===0?'Current':'Paycheck '+(i+1)} · ${iso(c.date)}</b><div class="small">${c.items.length} planned payment${c.items.length===1?'':'s'}</div></div><div class="money">${money(c.safe)} safe</div></div><div class="small" style="margin-top:8px">Income ${money(c.income)} · cushion ${money(c.cushion)}${c.short>0?' · '+money(c.short)+' carries forward':' · fully covered'}</div>`;t.appendChild(box)})
+}
 function showOnboarding(){obStep=1;obBills=[];$('onboarding').classList.add('show');renderOb()}
 function hideOnboarding(){$('onboarding').classList.remove('show')}
-function renderOb(){document.querySelectorAll('.step').forEach(x=>x.classList.toggle('active',Number(x.dataset.step)===obStep));for(let i=1;i<=4;i++)$('prog'+i).classList.toggle('active',i<=obStep);$('obBack').style.visibility=obStep===1?'hidden':'visible';$('obNext').textContent=obStep===4?'Open my plan':'Continue';const box=$('obBillList');if(!obBills.length)box.textContent='No bills added yet.';else box.innerHTML=obBills.map((b,i)=>`<div class="item"><div><b>${esc(b.name)}</b><div class="small">${money(b.amount)}${b.date?' · due '+b.date:''}</div></div><button class="danger ob-remove" data-i="${i}">×</button></div>`).join('');box.querySelectorAll?.('.ob-remove').forEach(x=>x.onclick=()=>{obBills.splice(Number(x.dataset.i),1);renderOb()})}
-$('obAddBill').onclick=()=>{const name=$('obBillName').value.trim(),amount=Number($('obBillAmount').value||0);if(!name||amount<=0)return alert('Enter a bill name and amount.');obBills.push({name,amount,overdue:0,date:$('obBillDate').value||'',priority:$('obBillPriority').value});$('obBillName').value='';$('obBillAmount').value='';$('obBillDate').value='';renderOb()};
+function renderOb(){document.querySelectorAll('.step').forEach(x=>x.classList.toggle('active',Number(x.dataset.step)===obStep));for(let i=1;i<=4;i++)$('prog'+i).classList.toggle('active',i<=obStep);$('obBack').style.visibility=obStep===1?'hidden':'visible';$('obNext').textContent=obStep===4?'Open my plan':'Continue';const box=$('obBillList');if(!obBills.length)box.textContent='No bills added yet.';else box.innerHTML=obBills.map((b,i)=>`<div class="item"><div><b>${esc(b.name)}</b><div class="small">${money(b.amount)} · due day ${b.dueDay}</div></div><button class="danger ob-remove" data-i="${i}">×</button></div>`).join('');box.querySelectorAll?.('.ob-remove').forEach(x=>x.onclick=()=>{obBills.splice(Number(x.dataset.i),1);renderOb()})}
+$('obAddBill').onclick=()=>{const name=$('obBillName').value.trim(),amount=Number($('obBillAmount').value||0),dueDay=Number($('obBillDueDay').value||0);if(!name||amount<=0||dueDay<1||dueDay>31)return alert('Enter a bill name, amount, and due day from 1 to 31.');obBills.push({name,amount,overdue:0,dueDay,priority:$('obBillPriority').value});$('obBillName').value='';$('obBillAmount').value='';$('obBillDueDay').value='';renderOb()};
 $('obBack').onclick=()=>{if(obStep>1){obStep--;renderOb()}};
-$('obNext').onclick=async()=>{if(obStep===1){if(!$('obPayday').value||Number($('obPaycheck').value||0)<=0)return alert('Enter your next payday and expected take-home pay.');obStep=2;renderOb();return}if(obStep===2){obStep=3;renderOb();return}if(obStep===3){$('payday').value=$('obPayday').value;$('paycheck').value=$('obPaycheck').value;$('cushion').value=$('obCushion').value||'';$('strategy').value=$('obStrategy').value;bills=obBills.slice();recalc();saveLocal();try{await saveCloud()}catch{badge('Sync error')}obStep=4;renderOb();return}if(obStep===4){hideOnboarding();recalc()}};
+$('obNext').onclick=async()=>{if(obStep===1){if(!$('obPayday').value||Number($('obPaycheck').value||0)<=0)return alert('Enter your next payday and expected take-home pay.');obStep=2;renderOb();return}if(obStep===2){obStep=3;renderOb();return}if(obStep===3){$('payday').value=$('obPayday').value;$('paycheck').value=$('obPaycheck').value;$('payFrequency').value=$('obFrequency').value;$('cushion').value=$('obCushion').value||'';$('strategy').value=$('obStrategy').value;bills=obBills.slice();recalc();saveLocal();try{await saveCloud()}catch{badge('Sync error')}obStep=4;renderOb();return}if(obStep===4){hideOnboarding();recalc()}};
 
-$('addBillBtn').onclick=()=>{const name=$('billName').value.trim(),amount=Number($('billAmount').value||0),overdueAmt=Number($('billOverdue').value||0);if(!name||amount<=0)return alert('Enter a bill name and amount.');bills.push({name,amount,overdue:overdueAmt,date:$('billDate').value||'',priority:$('billPriority').value});$('billName').value=$('billAmount').value=$('billOverdue').value=$('billDate').value='';schedule();recalc()};
-['payday','paycheck','cushion','extraIncome','strategy'].forEach(id=>$(id).oninput=()=>{schedule();recalc()});
-$('whatIfBtn').onclick=()=>{const r=plan(Number($('whatIfIncome').value||0),Number($('whatIfSpend').value||0));$('whatIfResult').textContent=r.unpaid<=0?'With that change, this paycheck could fully cover the catch-up plan.':`With that change, about ${money(r.unpaid)} would still remain after this paycheck.`};
-$('saveBtn').onclick=async()=>{schedule();if(currentUser){try{await saveCloud();alert('Saved to Checkstride cloud.')}catch{alert('Saved locally. Cloud sync failed.')}}else alert('Saved on this device. Sign in to sync across devices.')};
-$('resetBtn').onclick=()=>{if(!confirm('Reset this plan?'))return;bills=[];['payday','paycheck','cushion','extraIncome'].forEach(id=>$(id).value='');$('strategy').value='balanced';schedule();recalc()};
-
-$('authBtn').onclick=()=>$('authModal').classList.add('show');$('closeAuth').onclick=()=>$('authModal').classList.remove('show');
-$('gateSignIn').onclick=()=>{$('authModal').classList.add('show');$('authStatus').textContent='';};
-$('gateCreate').onclick=()=>{$('authModal').classList.add('show');$('authStatus').textContent='Create your Checkstride account below.';};
+$('addBillBtn').onclick=()=>{const name=$('billName').value.trim(),amount=Number($('billAmount').value||0),overdue=Number($('billOverdue').value||0),dueDay=Number($('billDueDay').value||0);if(!name||amount<=0||dueDay<1||dueDay>31)return alert('Enter a bill name, amount, and monthly due day from 1 to 31.');bills.push({name,amount,overdue,dueDay,priority:$('billPriority').value});['billName','billAmount','billOverdue','billDueDay'].forEach(id=>$(id).value='');schedule();recalc()};
+['payday','paycheck','payFrequency','cushion','extraIncome','strategy'].forEach(id=>$(id).oninput=()=>{schedule();recalc()});
+$('whatIfBtn').onclick=()=>{const f=buildForecast(Number($('whatIfIncome').value||0),Number($('whatIfSpend').value||0));if(!f.checks.length)return $('whatIfResult').textContent='Set your pay schedule first.';$('whatIfResult').textContent=f.caughtUp?`With that change, the plan is caught up by ${iso(f.caughtUp)}.`:`After 4 checks, about ${money(f.remainingOverdue)} would still be carrying forward.`};
+$('saveBtn').onclick=async()=>{schedule();try{await saveCloud();alert('Saved to Checkstride cloud.')}catch{alert('Saved on this device. Cloud sync failed.')}};
+$('resetBtn').onclick=()=>{if(!confirm('Reset this plan?'))return;bills=[];['payday','paycheck','cushion','extraIncome'].forEach(id=>$(id).value='');$('payFrequency').value='biweekly';$('strategy').value='balanced';schedule();recalc()};
+$('gateSignIn').onclick=()=>{$('authModal').classList.add('show');$('authStatus').textContent=''};
+$('gateCreate').onclick=()=>{$('authModal').classList.add('show');$('authStatus').textContent='Create your Checkstride account below.'};
+$('closeAuth').onclick=()=>$('authModal').classList.remove('show');
 $('signInNow').onclick=async()=>{try{await signInWithEmailAndPassword(auth,$('authEmail').value.trim(),$('authPassword').value);$('authModal').classList.remove('show')}catch(e){$('authStatus').textContent=e.message.replace('Firebase: ','')}};
 $('createNow').onclick=async()=>{try{await createUserWithEmailAndPassword(auth,$('authEmail').value.trim(),$('authPassword').value);$('authModal').classList.remove('show')}catch(e){$('authStatus').textContent=e.message.replace('Firebase: ','')}};
 $('signOutBtn').onclick=()=>signOut(auth);
 
-onAuthStateChanged(auth,async user=>{currentUser=user;if(user){$('authGate').style.display='none';$('appShell').style.display='block';$('authLabel').textContent=user.email||'Signed in';$('authBtn').style.display='none';$('signOutBtn').style.display='inline-block';badge('Loading cloud…',true);try{const hasCloud=await loadCloud();if(!hasCloud)showOnboarding()}catch{badge('Cloud error')}}else{hideOnboarding();$('authGate').style.display='flex';$('appShell').style.display='none';$('authLabel').textContent='Not signed in';$('authBtn').style.display='inline-block';$('signOutBtn').style.display='none';badge('Local only');recalc()}});
+onAuthStateChanged(auth,async user=>{
+  currentUser=user;
+  if(user){
+    $('authGate').style.display='none';$('appShell').style.display='block';$('footer').style.display='block';$('authLabel').textContent=user.email||'Signed in';badge('Loading cloud…',true);
+    try{const hasCloud=await loadCloud();if(!hasCloud)showOnboarding()}catch{badge('Cloud error')}
+  }else{
+    hideOnboarding();$('authGate').style.display='flex';$('appShell').style.display='none';$('footer').style.display='none';badge('Local only')
+  }
+});
 </script>
 </body></html>
