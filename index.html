@@ -7,33 +7,37 @@
 <title>Checkstride</title>
 <style>
 :root{--navy:#0B2A55;--teal:#10A7AE;--bg:#07111f;--panel:#0d1b2a;--panel2:#13263a;--text:#f7fbff;--muted:#96a7b8;--line:#20364d;--danger:#7f1d1d}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(#07111f,#0b1523);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+*{box-sizing:border-box}body{margin:0;background:
+radial-gradient(circle at top right,rgba(24,183,176,.08),transparent 30%),
+linear-gradient(#07111f,#0b1523);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 body.menu-open{overflow:hidden}
-.app{max-width:760px;margin:auto;padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 96px)}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;position:sticky;top:0;z-index:20;padding:8px 0;background:linear-gradient(180deg,rgba(7,17,31,.98),rgba(7,17,31,.90),rgba(7,17,31,0))}
-.brand{display:flex;align-items:center;gap:10px}.brand img{width:44px;height:44px;object-fit:contain}.brand h1{margin:0;font-size:20px;letter-spacing:-.2px}.brand p{margin:2px 0 0;color:var(--muted);font-size:11px}
-.header-actions{display:flex;align-items:center;gap:8px}.icon-btn{width:42px;height:42px;border-radius:13px;border:1px solid #28445e;background:#0c1d2e;color:#fff;font-size:20px;display:grid;place-items:center}
+.app{max-width:760px;margin:auto;padding:calc(env(safe-area-inset-top) + 10px) 14px calc(env(safe-area-inset-bottom) + 98px)}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;position:sticky;top:0;z-index:20;padding:8px 0 10px;background:linear-gradient(180deg,rgba(7,17,31,.99),rgba(7,17,31,.94),rgba(7,17,31,.10));backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.brand{display:flex;align-items:center;gap:10px}.brand img{width:44px;height:44px;object-fit:contain}.brand h1{margin:0;font-size:20px;letter-spacing:-.35px;font-weight:800}.brand p{margin:2px 0 0;color:var(--muted);font-size:10.5px;letter-spacing:.01em}
+.header-actions{display:flex;align-items:center;gap:8px}.icon-btn{width:44px;height:44px;border-radius:14px;border:1px solid #28445e;background:linear-gradient(180deg,#10243a,#0b1b2c);color:#fff;font-size:19px;display:grid;place-items:center;box-shadow:0 5px 16px rgba(0,0,0,.16);touch-action:manipulation}
 .badge{font-size:11px;padding:7px 10px;border-radius:999px;border:1px solid var(--line);color:#cfe9ff;background:#0b2238}.badge.online{border-color:#0f766e;color:#baf5ee}
-.card{background:rgba(13,27,42,.97);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:14px}.card h2{font-size:17px;margin:0 0 10px;letter-spacing:-.15px}.card h3{font-size:14px;margin:14px 0 8px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}.section-head h2{margin:0}.text-btn{border:0;background:transparent;color:#9edcf1;font-weight:700;padding:4px 0}.hidden-section{display:none}
-.hero{background:linear-gradient(145deg,#0b2a55,#0b2238 60%,#0f6b73);border-color:#1f6f8b;padding:18px}.hero .label{font-size:12px;color:#b9d7ef;text-transform:uppercase;letter-spacing:.08em}.hero .big{font-size:40px;font-weight:900;margin-top:4px;letter-spacing:-1.4px}.hero-meta{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-top:10px}.hero-meta .small{max-width:70%}.hero-chip{font-size:11px;font-weight:800;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);white-space:nowrap}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row3{display:grid;grid-template-columns:1.2fr .8fr .8fr;gap:10px}.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.kpi{background:#091827;border:1px solid var(--line);border-radius:16px;padding:14px;min-height:86px}.kpi span{display:block;color:var(--muted);font-size:11px}.kpi b{display:block;font-size:21px;margin-top:6px}.kpi.attention{border-color:#6b3f15;background:#1a1510}.kpi.good{border-color:#164e63;background:#081b24}
+.card{background:linear-gradient(180deg,rgba(14,30,46,.98),rgba(11,24,38,.98));border:1px solid var(--line-soft);border-radius:20px;padding:15px;margin-bottom:12px;box-shadow:var(--shadow)}.card h2{font-size:17px;margin:0 0 10px;letter-spacing:-.25px;font-weight:800}.card h3{font-size:14px;margin:14px 0 8px;font-weight:750}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}.section-head:not(:last-child){padding-bottom:2px}.section-head h2{margin:0}.text-btn{border:0;background:transparent;color:#9edcf1;font-weight:700;padding:4px 0}.hidden-section{display:none}
+.hero{background:
+radial-gradient(circle at 85% 20%,rgba(24,183,176,.22),transparent 28%),
+linear-gradient(145deg,#0c2d5a,#0b2238 60%,#0e5e66);border-color:#256783;padding:18px;box-shadow:0 16px 36px rgba(0,0,0,.28)}.hero .label{font-size:12px;color:#b9d7ef;text-transform:uppercase;letter-spacing:.08em}.hero .big{font-size:42px;font-weight:900;margin-top:4px;letter-spacing:-1.7px;line-height:1.03}.hero-meta{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-top:10px}.hero-meta .small{max-width:70%}.hero-chip{font-size:10.5px;font-weight:800;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);white-space:nowrap;letter-spacing:.02em}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row3{display:grid;grid-template-columns:1.2fr .8fr .8fr;gap:10px}.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.kpi{background:linear-gradient(180deg,#0a1b2c,#091725);border:1px solid var(--line-soft);border-radius:16px;padding:14px;min-height:86px;box-shadow:0 5px 18px rgba(0,0,0,.12)}.kpi span{display:block;color:var(--muted);font-size:11px}.kpi b{display:block;font-size:21px;margin-top:6px}.kpi.attention{border-color:#6b3f15;background:#1a1510}.kpi.good{border-color:#164e63;background:#081b24}
 label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,button{font:inherit}input,select{width:100%;background:#091827;color:#fff;border:1px solid #2a4157;border-radius:12px;padding:13px 12px}button{cursor:pointer}.primary,.secondary,.danger{border:0;border-radius:14px;padding:13px 14px;font-weight:700}.primary{background:linear-gradient(135deg,#0E3A70,var(--teal));color:#fff}.secondary{background:#13263a;color:#fff;border:1px solid #2a4157}.danger{background:#3f1d1d;color:#fecaca;border:1px solid var(--danger)}
 .small{font-size:12px;color:var(--muted);line-height:1.45}.list{display:flex;flex-direction:column;gap:8px}.item{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px}.tag{font-size:10px;padding:4px 7px;border-radius:999px;background:#1f2937;margin-left:5px}.overdue{background:#3f1d1d;color:#fecaca}.critical{background:#422006;color:#fde68a}.important{background:#0f365f;color:#bfdbfe}.flexible{background:#243046;color:#d8e0ea}
 .plan{background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}.notice{padding:12px;border-radius:12px;background:#091827;border:1px solid #334155;margin-top:10px}.authbar{display:flex;justify-content:flex-end;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}.authbar span{font-size:12px;color:var(--muted)}
 .timeline{display:flex;flex-direction:column;gap:10px}.paycard{background:#091827;border:1px solid var(--line);border-radius:14px;padding:13px}.paytop{display:flex;justify-content:space-between;gap:12px}.paycard b{font-size:15px}.paycard .money{font-weight:800}.empty{padding:16px;text-align:center;color:var(--muted);background:#091827;border:1px dashed #2a4157;border-radius:12px}
-.paid-btn{border:1px solid #0f766e;background:#0b3a3a;color:#c7fff7;border-radius:10px;padding:8px 10px;font-weight:700;font-size:12px}
+.paid-btn{border:1px solid #167a74;background:linear-gradient(180deg,#0b3c3c,#092f31);color:#c7fff7;border-radius:11px;padding:9px 11px;font-weight:800;font-size:12px;min-height:38px;touch-action:manipulation}
 .paid-btn.done{background:#123026;color:#9ff5d8;border-color:#166534}
 .history-row{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px}
 .history-row .meta{font-size:11px;color:var(--muted);margin-top:3px}
-.mini-btn{border:1px solid #334155;background:#13263a;color:#fff;border-radius:9px;padding:6px 8px;font-size:11px}
+.mini-btn{border:1px solid #334155;background:#13263a;color:#fff;border-radius:10px;padding:8px 10px;font-size:11px;min-height:36px;font-weight:700;touch-action:manipulation}
 .status-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .status-card{background:#091827;border:1px solid var(--line);border-radius:14px;padding:13px}
 .status-card b{font-size:18px}.status-card span{display:block;font-size:11px;color:var(--muted);margin-top:3px}
 .status-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
-.status-item{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px}
-.status-chip{font-size:10px;padding:5px 7px;border-radius:999px;font-weight:800;white-space:nowrap}
+.status-item{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#091827;border:1px solid var(--line-soft);border-radius:13px;padding:12px}
+.status-chip{font-size:9.5px;padding:6px 8px;border-radius:999px;font-weight:850;white-space:nowrap;letter-spacing:.03em}
 .status-paid{background:#123026;color:#9ff5d8}.status-due{background:#0f365f;color:#bfdbfe}.status-soon{background:#422006;color:#fde68a}.status-overdue{background:#3f1d1d;color:#fecaca}.status-upcoming{background:#243046;color:#d8e0ea}
-.alert-box{border-radius:14px;padding:13px;background:#0c1d2e;border:1px solid #31516d;margin-bottom:10px}.alert-box strong{display:block;margin-bottom:4px}
+.alert-box{border-radius:14px;padding:13px;background:linear-gradient(180deg,#0c1f31,#0a1b2b);border:1px solid #31516d;margin-bottom:10px}.alert-box strong{display:block;margin-bottom:4px}
 .closeout{background:linear-gradient(145deg,#0b2238,#0d2f46);border:1px solid #22577a;border-radius:16px;padding:15px}
 .closeout h3{margin:0 0 6px;font-size:17px}.closeout-actions{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
 .check-history{display:flex;flex-direction:column;gap:8px;margin-top:10px}.check-row{background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px}
@@ -47,12 +51,33 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
 .onboard{position:fixed;inset:0;z-index:45;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(env(safe-area-inset-top) + 24px) 18px calc(env(safe-area-inset-bottom) + 24px);background:radial-gradient(circle at 50% 10%,#0d3a63 0,#07111f 42%,#050b14 100%)}
 .onboard.show{display:flex}.onboard-card{width:min(520px,100%);background:rgba(13,27,42,.97);border:1px solid #1f4964;border-radius:24px;padding:22px}.onboard-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}.onboard-head img{width:52px;height:52px}.onboard-head h2{margin:0;font-size:24px}.progress{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 20px}.progress i{height:5px;border-radius:999px;background:#173047}.progress i.active{background:linear-gradient(90deg,#0E3A70,var(--teal))}.step{display:none}.step.active{display:block}.step h3{margin:0 0 6px;font-size:22px}.step p{margin:0 0 18px;color:var(--muted);line-height:1.45}.onboard-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.bill-seed{display:grid;grid-template-columns:1.3fr .7fr;gap:10px;margin-bottom:10px}.welcome-done{text-align:center;padding:14px 4px 2px}.welcome-done .bigcheck{font-size:46px;margin-bottom:8px}
 .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:59;display:none}.drawer-backdrop.show{display:block}
-.drawer{position:fixed;top:0;right:-88%;width:min(86%,390px);height:100dvh;background:#0a1624;border-left:1px solid #24384d;z-index:60;transition:right .22s ease;padding:calc(env(safe-area-inset-top) + 18px) 16px calc(env(safe-area-inset-bottom) + 18px);overflow:auto}.drawer.show{right:0}
-.drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.drawer-head h2{margin:0;font-size:20px}.drawer-group{margin:16px 0}.drawer-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}.drawer button.nav-btn{width:100%;text-align:left;margin-bottom:8px;background:#0e2032;border:1px solid #223a50;color:#fff;border-radius:13px;padding:13px 14px;font-weight:700}
-.mobile-tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(7,17,31,.98);border-top:1px solid #1f2937;z-index:30;padding:8px 10px calc(env(safe-area-inset-bottom) + 8px)}.mobile-tabs>div{max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.tab-btn{border:0;background:transparent;color:#8396a8;border-radius:12px;padding:8px 4px;font-size:10px;font-weight:700}.tab-btn strong{display:block;font-size:17px;line-height:1.05;margin-bottom:4px}.tab-btn.active{background:#10253a;color:#fff}
-.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quick-actions button{min-height:50px}
+.drawer{position:fixed;top:0;right:-88%;width:min(86%,390px);height:100dvh;background:linear-gradient(180deg,#0b1827,#091522);border-left:1px solid #24384d;z-index:60;transition:right .22s ease;padding:calc(env(safe-area-inset-top) + 18px) 16px calc(env(safe-area-inset-bottom) + 18px);overflow:auto;box-shadow:-16px 0 40px rgba(0,0,0,.28)}.drawer.show{right:0}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.drawer-head h2{margin:0;font-size:20px}.drawer-group{margin:16px 0}.drawer-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}.drawer button.nav-btn{width:100%;text-align:left;margin-bottom:8px;background:#0e2032;border:1px solid #223a50;color:#fff;border-radius:13px;padding:14px 14px;font-weight:750;min-height:48px;touch-action:manipulation}
+.mobile-tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(7,17,31,.96);border-top:1px solid #1f2937;z-index:30;padding:8px 10px calc(env(safe-area-inset-bottom) + 8px);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 -8px 24px rgba(0,0,0,.18)}.mobile-tabs>div{max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.tab-btn{border:0;background:transparent;color:#7f93a7;border-radius:12px;padding:8px 4px;font-size:10px;font-weight:750;min-height:50px;touch-action:manipulation}.tab-btn strong{display:block;font-size:17px;line-height:1.05;margin-bottom:4px}.tab-btn.active{background:#10253a;color:#fff;box-shadow:inset 0 0 0 1px #1f405c}
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quick-actions button{min-height:48px}
+.section-collapse{overflow:hidden;transition:max-height .22s ease,opacity .18s ease}.section-collapse.closed{max-height:0!important;opacity:0;margin:0!important;padding:0!important;border:0!important}
+.compact-card{background:#091827;border:1px solid var(--line);border-radius:16px;padding:13px}
+.card-subtle{background:#0b1928;border:1px solid #1f3347;border-radius:16px;padding:13px}
+.bill-card{background:linear-gradient(180deg,#0a1a2a,#091725);border:1px solid var(--line-soft);border-radius:16px;padding:13px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.10)}
+.bill-card-main{min-width:0}.bill-card-title{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.bill-card-title strong{font-size:15px}.bill-card-meta{font-size:11px;color:var(--muted);margin-top:5px}
+.bill-card-actions{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}.bill-amount{font-weight:800;font-size:15px}
+.plan-card{background:linear-gradient(180deg,#0a1a2a,#091725);border:1px solid var(--line-soft);border-radius:16px;padding:14px;margin-bottom:8px;box-shadow:0 4px 14px rgba(0,0,0,.10)}.plan-card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.plan-card-title{font-weight:800;font-size:15px}.plan-card-amount{font-weight:900;font-size:16px;white-space:nowrap}.plan-card-meta{font-size:11px;color:var(--muted);margin-top:5px}.plan-card .paid-btn{margin-top:10px}
+.paycard{padding:14px}.paytop b{font-size:14px}.paycard .money{font-size:14px}
+.section-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:-2px 0 10px}.section-summary .small{margin:0}
+.collapse-btn{border:1px solid #29445c;background:#10243a;color:#d8e8f7;border-radius:10px;padding:8px 10px;font-weight:800;font-size:11px;min-height:36px;touch-action:manipulation}
+.inline-stat{font-size:12px;color:#c9d8e7;background:#0a1826;border:1px solid #24384d;border-radius:999px;padding:6px 9px;white-space:nowrap}
+.sticky-plan{position:sticky;top:70px;z-index:12}
+.scroll-anchor{scroll-margin-top:88px}
+.history-mini .check-row:nth-child(n+4),.history-mini .history-row:nth-child(n+4){display:none}
+.mobile-spacer{height:4px}
+
 @media(max-width:560px){.row,.row3,.bill-seed{grid-template-columns:1fr}.app{padding-bottom:calc(env(safe-area-inset-bottom) + 90px)}.footer{display:none!important}.authbar{display:none}.hero .big{font-size:38px}.hero-meta{align-items:center}.hero-meta .small{max-width:62%}}
 @media(min-width:561px){.mobile-tabs{display:none}}
+
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #4da3ff;outline-offset:2px}
+button{font-family:inherit}
+*{-webkit-tap-highlight-color:transparent}
+
 </style>
 </head>
 <body>
@@ -105,7 +130,7 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
     <div class="brand"><img src="./checkstride-logo.svg" alt=""><div><h1>Checkstride</h1><p>Know what this paycheck needs to do.</p></div></div>
     <div class="header-actions">
       <div id="cloudBadge" class="badge">Local only</div>
-      <button id="menuBtn" class="icon-btn" aria-label="Open menu">☰</button>
+      <button id="menuBtn" class="icon-btn" aria-label="Open menu">≡</button>
     </div>
   </div>
   <div class="authbar"><span id="authLabel"></span><button id="signOutBtn" class="secondary">Sign out</button></div>
@@ -165,7 +190,7 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
     </div>
   </div>
 
-  <div class="card" id="billsCard">
+  <div class="card" id="billsCard" class="card scroll-anchor">
     <div class="section-head"><h2>Recurring bills</h2><button id="toggleBillForm" class="text-btn">Add</button></div>
     <div id="billForm" class="hidden-section">
     <div class="row"><div><label>Bill name</label><input id="billName" placeholder="Electric"></div><div><label>Amount</label><input id="billAmount" type="number" step="0.01" inputmode="decimal"></div></div>
@@ -179,20 +204,23 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
     <div id="billList" class="small" style="margin-top:12px">No bills added yet.</div>
   </div>
 
-  <div class="card" id="planCard">
+  <div class="card" id="planCard" class="card scroll-anchor">
     <h2>This paycheck</h2>
     <div id="planSummary" class="notice">Add your paycheck and bills to generate a plan.</div>
     <div id="planSteps" style="margin-top:10px"></div>
   </div>
 
   <div class="card">
-    <h2>Next 4 paychecks</h2>
+    <div class="section-head"><h2>Next 4 paychecks</h2><button id="toggleForecast" class="collapse-btn">Hide</button></div>
+    <div id="forecastBody">
     <div class="small" style="margin-bottom:10px">Upcoming recurring bills are assigned to the paycheck before they are due. Any shortage carries into the following check.</div>
     <div id="timeline" class="timeline"></div>
+    </div>
   </div>
 
   <div class="card">
-    <h2>Paycheck closeout</h2>
+    <div class="section-head"><h2>Paycheck closeout</h2><button id="toggleCloseout" class="collapse-btn">Hide</button></div>
+    <div id="closeoutBody">
     <div class="closeout">
       <h3>Finished with this paycheck?</h3>
       <div id="closeoutSummary" class="small">Checkstride will save a snapshot, carry any unpaid current-cycle bills forward, and advance to your next payday.</div>
@@ -204,17 +232,18 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
     <div id="paycheckHistory" class="check-history"></div>
   </div>
 
-  <div class="card" id="historyCard">
+  <div class="card" id="historyCard" class="card scroll-anchor">
     <h2>Payment history</h2>
     <div class="small" style="margin-bottom:10px">Mark bills paid as you go. Checkstride uses that history so paid bills are not planned again for the same due cycle.</div>
     <div id="paymentHistory" class="list"></div>
   </div>
 
-  <div class="card" id="whatIfCard">
+  <div class="card" id="whatIfCard" class="card scroll-anchor">
     <h2>What if?</h2>
     <div class="row"><div><label>Extra income</label><input id="whatIfIncome" type="number" step="0.01" inputmode="decimal" placeholder="0"></div><div><label>Extra spending</label><input id="whatIfSpend" type="number" step="0.01" inputmode="decimal" placeholder="0"></div></div>
     <button id="whatIfBtn" class="secondary" style="width:100%;margin-top:12px">Calculate</button>
     <div id="whatIfResult" class="small" style="margin-top:10px"></div>
+    </div>
   </div>
 </div>
 
@@ -222,7 +251,7 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
 
 <div id="drawerBackdrop" class="drawer-backdrop"></div>
 <aside id="drawer" class="drawer" aria-hidden="true">
-  <div class="drawer-head"><h2>Checkstride</h2><button id="closeMenuBtn" class="icon-btn">×</button></div>
+  <div class="drawer-head"><h2>Checkstride</h2><button id="closeMenuBtn" class="icon-btn" aria-label="Close menu">×</button></div>
   <div class="drawer-group">
     <div class="drawer-label">Plan</div>
     <button class="nav-btn" data-scroll="planCard">Current paycheck</button>
@@ -243,7 +272,7 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
   <div>
     <button class="tab-btn active" data-scroll="appShell"><strong>⌂</strong>Home</button>
     <button class="tab-btn" data-scroll="planCard"><strong>✓</strong>Plan</button>
-    <button class="tab-btn" data-scroll="billsCard"><strong>$</strong>Bills</button>
+    <button class="tab-btn" data-scroll="billsCard"><strong>▤</strong>Bills</button>
     <button class="tab-btn" data-scroll="historyCard"><strong>↺</strong>History</button>
   </div>
 </div>
@@ -351,7 +380,7 @@ function upcomingOccurrences(b,start,end){
   while(cur<=last){const d=billDueDateForMonth(b,cur.getFullYear(),cur.getMonth());if(d>=start&&d<=end)out.push(d);cur.setMonth(cur.getMonth()+1)}
   return out;
 }
-function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,paymentHistory,paycheckHistory,onboardingComplete:true,version:6}}
+function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,paymentHistory,paycheckHistory,onboardingComplete:true,version:8}}
 function normalizeBill(b){
   if(b.dueDay) return {...b,id:b.id||uid(),dueDay:Number(b.dueDay)};
   let dueDay=1;
@@ -410,8 +439,21 @@ function renderBills(){
   if(!bills.length){box.className='small';box.textContent='No recurring bills added yet.';return}
   box.className='list';box.innerHTML='';
   bills.slice().sort((a,b)=>rank(a.priority)-rank(b.priority)||a.dueDay-b.dueDay).forEach(b=>{
-    const i=bills.indexOf(b), cycle=currentCycleDueDate(b), paid=isOccurrencePaid(b,cycle),row=document.createElement('div');row.className='item';
-    row.innerHTML=`<div><strong>${esc(b.name)}</strong><span class="tag ${b.priority}">${b.priority.toUpperCase()}</span>${Number(b.overdue)>0?'<span class="tag overdue">OVERDUE</span>':''}<div class="small">Due monthly on day ${b.dueDay} · overdue ${money(b.overdue)}</div></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><span>${money(b.amount)}</span><button class="paid-btn ${paid?'done':''}" data-pay="${i}">${paid?'Paid ✓':'Mark paid'}</button><button class="danger remove" data-i="${i}">×</button></div>`;
+    const i=bills.indexOf(b), cycle=currentCycleDueDate(b), paid=isOccurrencePaid(b,cycle), status=billStatus(b), row=document.createElement('div');
+    row.className='bill-card';
+    row.innerHTML=`<div class="bill-card-main">
+      <div class="bill-card-title">
+        <strong>${esc(b.name)}</strong>
+        <span class="tag ${b.priority}">${b.priority.toUpperCase()}</span>
+        ${status.key==='overdue'?'<span class="tag overdue">OVERDUE</span>':''}
+      </div>
+      <div class="bill-card-meta">Due day ${b.dueDay} · ${status.label}${Number(b.overdue)>0?' · '+money(b.overdue)+' overdue':''}</div>
+    </div>
+    <div class="bill-card-actions">
+      <span class="bill-amount">${money(b.amount)}</span>
+      <button class="paid-btn ${paid?'done':''}" data-pay="${i}">${paid?'Paid ✓':'Mark paid'}</button>
+      <button class="danger remove" data-i="${i}" aria-label="Remove bill">×</button>
+    </div>`;
     box.appendChild(row)
   });
   box.querySelectorAll('.remove').forEach(x=>x.onclick=()=>{bills.splice(Number(x.dataset.i),1);schedule();recalc()});
@@ -466,6 +508,7 @@ function renderPaycheckHistory(){
     row.innerHTML=`<div class="check-row-top"><div><b>${esc(h.payday||'Paycheck')}</b><div class="small">${h.paymentCount||0} planned payment${(h.paymentCount||0)===1?'':'s'} · ${h.unpaidCarried||0} carried forward</div></div><div class="money">${money(h.safeSpend||0)} safe</div></div><div class="small" style="margin-top:6px">Income ${money(h.income||0)} · bills planned ${money(h.plannedBills||0)} · closed ${new Date(h.closedAt).toLocaleDateString()}</div>`;
     box.appendChild(row);
   });
+  $('showMorePaychecks').style.display=paycheckHistory.length>3?'inline-block':'none';
 }
 function renderPaymentHistory(){
   const box=$('paymentHistory');
@@ -477,6 +520,7 @@ function renderPaymentHistory(){
     row.innerHTML=`<div><b>${esc(p.billName)}</b><div class="meta">${money(p.amount)} · due ${esc(p.dueKey)} · paid ${paidDate.toLocaleDateString()}</div></div><button class="mini-btn" data-undo="${esc(p.id)}">Undo</button>`;
     box.appendChild(row);
   });
+  $('showMorePayments').style.display=paymentHistory.length>3?'inline-block':'none';
   box.querySelectorAll('[data-undo]').forEach(x=>x.onclick=()=>undoPayment(x.dataset.undo));
 }
 function recalc(){
@@ -503,6 +547,7 @@ function recalc(){
     close.textContent=`This paycheck has ${first.items.length} planned payment${first.items.length===1?'':'s'} and ${unpaidDue} unpaid current-cycle bill${unpaidDue===1?'':'s'} still in the plan.`;
   }else close.textContent='Set your payday and paycheck amount before closing a paycheck.';
   const s=$('planSummary'),p=$('planSteps');
+  $('planActionCount').textContent=first?`${first.items.length} action${first.items.length===1?'':'s'}`:'0 actions';
   if(!first||!bills.length){s.textContent='Add your paycheck and recurring bills to generate a plan.';p.innerHTML=''}
   else{
     const overdueCount=bills.filter(b=>billStatus(b).key==='overdue').length;
@@ -511,9 +556,9 @@ function recalc(){
       :`After this check, ${money(first.short)} will carry forward. Checkstride will keep prioritizing it on future checks.${overdueCount?` ${overdueCount} overdue bill${overdueCount===1?'':'s'} are being prioritized.`:''}`;
     p.innerHTML='';
     first.items.forEach((x,i)=>{
-      const n=document.createElement('div');n.className='plan';
-      const paidBtn=(x.type==='due'&&x.billId&&x.due)?`<button class="paid-btn" data-plan-pay="${esc(x.billId)}" data-plan-due="${iso(x.due)}" data-plan-amt="${x.pay}" style="margin-top:8px">Mark paid</button>`:'';
-      n.innerHTML=`<b>${i+1}. Pay ${esc(x.name)} — ${money(x.pay)}</b><div class="small">${x.type==='overdue'?'Overdue balance':'Upcoming bill'} · ${x.priority} priority${x.remaining>0?' · '+money(x.remaining)+' carries forward':''}</div>${paidBtn}`;
+      const n=document.createElement('div');n.className='plan-card';
+      const paidBtn=(x.type==='due'&&x.billId&&x.due)?`<button class="paid-btn" data-plan-pay="${esc(x.billId)}" data-plan-due="${iso(x.due)}" data-plan-amt="${x.pay}">Mark paid</button>`:'';
+      n.innerHTML=`<div class="plan-card-top"><div><div class="plan-card-title">${i+1}. ${esc(x.name)}</div><div class="plan-card-meta">${x.type==='overdue'?'Overdue balance':'Upcoming bill'} · ${x.priority} priority${x.remaining>0?' · '+money(x.remaining)+' carries forward':''}</div></div><div class="plan-card-amount">${money(x.pay)}</div></div>${paidBtn}`;
       p.appendChild(n)
     });
     p.querySelectorAll('[data-plan-pay]').forEach(btn=>btn.onclick=()=>{
@@ -591,6 +636,26 @@ $('signInNow').onclick=async()=>{try{await signInWithEmailAndPassword(auth,$('au
 $('createNow').onclick=async()=>{try{await createUserWithEmailAndPassword(auth,$('authEmail').value.trim(),$('authPassword').value);$('authModal').classList.remove('show')}catch(e){$('authStatus').textContent=e.message.replace('Firebase: ','')}};
 $('signOutBtn').onclick=()=>signOut(auth);
 
+
+
+function toggleSection(bodyId,btnId,showText='Show',hideText='Hide'){
+  const body=$(bodyId), btn=$(btnId);
+  if(!body||!btn)return;
+  const hidden=body.classList.toggle('hidden-section');
+  btn.textContent=hidden?showText:hideText;
+}
+$('toggleForecast').onclick=()=>toggleSection('forecastBody','toggleForecast');
+$('toggleCloseout').onclick=()=>toggleSection('closeoutBody','toggleCloseout');
+$('togglePaymentHistory').onclick=()=>toggleSection('paymentHistoryBody','togglePaymentHistory');
+$('toggleWhatIf').onclick=()=>toggleSection('whatIfBody','toggleWhatIf');
+$('showMorePaychecks').onclick=()=>{
+  $('paycheckHistory').classList.toggle('history-mini');
+  $('showMorePaychecks').textContent=$('paycheckHistory').classList.contains('history-mini')?'Show more':'Show less';
+};
+$('showMorePayments').onclick=()=>{
+  $('paymentHistory').classList.toggle('history-mini');
+  $('showMorePayments').textContent=$('paymentHistory').classList.contains('history-mini')?'Show more':'Show less';
+};
 
 function openDrawer(){
   $('drawer').classList.add('show');
