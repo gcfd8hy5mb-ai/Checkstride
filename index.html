@@ -23,6 +23,15 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
 .history-row{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px}
 .history-row .meta{font-size:11px;color:var(--muted);margin-top:3px}
 .mini-btn{border:1px solid #334155;background:#13263a;color:#fff;border-radius:9px;padding:6px 8px;font-size:11px}
+.status-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.status-card{background:#091827;border:1px solid var(--line);border-radius:14px;padding:13px}
+.status-card b{font-size:18px}.status-card span{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+.status-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.status-item{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px}
+.status-chip{font-size:10px;padding:5px 7px;border-radius:999px;font-weight:800;white-space:nowrap}
+.status-paid{background:#123026;color:#9ff5d8}.status-due{background:#0f365f;color:#bfdbfe}.status-soon{background:#422006;color:#fde68a}.status-overdue{background:#3f1d1d;color:#fecaca}.status-upcoming{background:#243046;color:#d8e0ea}
+.alert-box{border-radius:14px;padding:13px;background:#0c1d2e;border:1px solid #31516d;margin-bottom:10px}.alert-box strong{display:block;margin-bottom:4px}
+@media(max-width:560px){.status-grid{grid-template-columns:1fr 1fr}}
 .footer{position:fixed;left:0;right:0;bottom:0;background:rgba(7,17,31,.96);border-top:1px solid #1f2937;padding:10px 14px calc(env(safe-area-inset-bottom) + 10px)}.footer>div{max-width:760px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}.footer button{width:100%}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}.modal.show{display:flex}.modalbox{width:min(430px,100%);background:#0d1b2a;border:1px solid var(--line);border-radius:20px;padding:18px}.modalbox .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .auth-gate{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);background:radial-gradient(circle at 50% 15%,#0d3a63 0,#07111f 42%,#050b14 100%)}
@@ -92,6 +101,18 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
     <div class="kpi"><span>Overdue balance</span><b id="overdueKpi">$0.00</b></div>
     <div class="kpi"><span>Bills before next check</span><b id="dueKpi">$0.00</b></div>
     <div class="kpi"><span>Estimated caught up</span><b id="caughtUpKpi">—</b></div>
+  </div>
+
+  <div class="card">
+    <h2>Bill status</h2>
+    <div class="status-grid">
+      <div class="status-card"><b id="statusOverdueCount">0</b><span>Overdue</span></div>
+      <div class="status-card"><b id="statusDueSoonCount">0</b><span>Due in 7 days</span></div>
+      <div class="status-card"><b id="statusPaidCount">0</b><span>Paid this cycle</span></div>
+      <div class="status-card"><b id="statusUpcomingCount">0</b><span>Upcoming</span></div>
+    </div>
+    <div id="billAlerts" style="margin-top:12px"></div>
+    <div id="billStatusList" class="status-list"></div>
   </div>
 
   <div class="card">
@@ -188,6 +209,26 @@ function currentCycleDueDate(b){
   const now=today();
   return billDueDateForMonth(b,now.getFullYear(),now.getMonth());
 }
+function nextDueDate(b){
+  const now=today();
+  let d=billDueDateForMonth(b,now.getFullYear(),now.getMonth());
+  if(d<now && !isOccurrencePaid(b,d)){ return d; }
+  if(d<now || isOccurrencePaid(b,d)){
+    const n=new Date(now.getFullYear(),now.getMonth()+1,1);
+    d=billDueDateForMonth(b,n.getFullYear(),n.getMonth());
+  }
+  return d;
+}
+function billStatus(b){
+  const now=today(), cycle=currentCycleDueDate(b), paid=isOccurrencePaid(b,cycle);
+  if(paid) return {key:'paid',label:'PAID',date:cycle};
+  if(Number(b.overdue||0)>0) return {key:'overdue',label:'OVERDUE',date:cycle};
+  const due=nextDueDate(b), diff=Math.ceil((due-now)/86400000);
+  if(diff<0) return {key:'overdue',label:'OVERDUE',date:due};
+  if(diff===0) return {key:'due',label:'DUE TODAY',date:due};
+  if(diff<=7) return {key:'soon',label:`DUE IN ${diff} DAY${diff===1?'':'S'}`,date:due};
+  return {key:'upcoming',label:'UPCOMING',date:due};
+}
 function isOccurrencePaid(b,d){
   const key=dueKey(d);
   return paymentHistory.some(p=>p.billId===b.id&&p.dueKey===key);
@@ -233,7 +274,7 @@ function upcomingOccurrences(b,start,end){
   while(cur<=last){const d=billDueDateForMonth(b,cur.getFullYear(),cur.getMonth());if(d>=start&&d<=end)out.push(d);cur.setMonth(cur.getMonth()+1)}
   return out;
 }
-function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,paymentHistory,onboardingComplete:true,version:3}}
+function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,paymentHistory,onboardingComplete:true,version:4}}
 function normalizeBill(b){
   if(b.dueDay) return {...b,id:b.id||uid(),dueDay:Number(b.dueDay)};
   let dueDay=1;
@@ -254,6 +295,38 @@ async function saveCloud(){if(!currentUser)return;await setDoc(doc(db,'users',cu
 function schedule(){saveLocal();if(!currentUser)return;badge('Saving…',true);clearTimeout(timer);timer=setTimeout(()=>saveCloud().catch(()=>badge('Sync error')),600)}
 async function loadCloud(){const snap=await getDoc(doc(db,'users',currentUser.uid,'state','main'));if(snap.exists()){apply(snap.data());badge('Synced',true);return true}badge('New account',true);return false}
 
+function renderBillStatus(){
+  const list=$('billStatusList'), alerts=$('billAlerts');
+  let counts={overdue:0,soon:0,paid:0,upcoming:0,due:0};
+  if(!bills.length){
+    list.innerHTML='<div class="empty">Add recurring bills to see due alerts.</div>';
+    alerts.innerHTML='';
+    $('statusOverdueCount').textContent='0';$('statusDueSoonCount').textContent='0';$('statusPaidCount').textContent='0';$('statusUpcomingCount').textContent='0';
+    return;
+  }
+  const rows=bills.map(b=>({b,s:billStatus(b)})).sort((x,y)=>{
+    const order={overdue:0,due:1,soon:2,upcoming:3,paid:4};
+    return order[x.s.key]-order[y.s.key] || x.s.date-y.s.date;
+  });
+  list.innerHTML='';
+  rows.forEach(({b,s})=>{
+    counts[s.key]=(counts[s.key]||0)+1;
+    const row=document.createElement('div');row.className='status-item';
+    row.innerHTML=`<div><b>${esc(b.name)}</b><div class="small">${money(b.amount)} · due ${iso(s.date)}</div></div><span class="status-chip status-${s.key}">${s.label}</span>`;
+    list.appendChild(row);
+  });
+  $('statusOverdueCount').textContent=counts.overdue||0;
+  $('statusDueSoonCount').textContent=(counts.soon||0)+(counts.due||0);
+  $('statusPaidCount').textContent=counts.paid||0;
+  $('statusUpcomingCount').textContent=counts.upcoming||0;
+
+  const urgent=rows.filter(x=>['overdue','due','soon'].includes(x.s.key));
+  if(!urgent.length){
+    alerts.innerHTML='<div class="alert-box"><strong>No urgent bills right now.</strong><span class="small">Your upcoming bills are outside the 7-day alert window.</span></div>';
+  }else{
+    alerts.innerHTML=urgent.slice(0,3).map(({b,s})=>`<div class="alert-box"><strong>${esc(b.name)} — ${s.label}</strong><span class="small">${money(b.amount)} · ${s.key==='overdue'?'needs attention first':'due '+iso(s.date)}</span></div>`).join('');
+  }
+}
 function renderBills(){
   const box=$('billList');
   if(!bills.length){box.className='small';box.textContent='No recurring bills added yet.';return}
@@ -316,6 +389,7 @@ function renderPaymentHistory(){
   box.querySelectorAll('[data-undo]').forEach(x=>x.onclick=()=>undoPayment(x.dataset.undo));
 }
 function recalc(){
+  renderBillStatus();
   renderBills();
   renderPaymentHistory();
   const f=buildForecast(),first=f.checks[0];
@@ -329,7 +403,10 @@ function recalc(){
   const s=$('planSummary'),p=$('planSteps');
   if(!first||!bills.length){s.textContent='Add your paycheck and recurring bills to generate a plan.';p.innerHTML=''}
   else{
-    s.textContent=first.short<=0?`This check can cover its planned obligations while keeping ${money(first.cushion)} protected.`:`After this check, ${money(first.short)} will carry forward. Checkstride will keep prioritizing it on future checks.`;
+    const overdueCount=bills.filter(b=>billStatus(b).key==='overdue').length;
+    s.textContent=first.short<=0
+      ?`This check can cover its planned obligations while keeping ${money(first.cushion)} protected.${overdueCount?` ${overdueCount} overdue bill${overdueCount===1?'':'s'} need attention first.`:''}`
+      :`After this check, ${money(first.short)} will carry forward. Checkstride will keep prioritizing it on future checks.${overdueCount?` ${overdueCount} overdue bill${overdueCount===1?'':'s'} are being prioritized.`:''}`;
     p.innerHTML='';
     first.items.forEach((x,i)=>{
       const n=document.createElement('div');n.className='plan';
