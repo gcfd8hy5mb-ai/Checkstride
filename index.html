@@ -19,13 +19,28 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
 .plan{background:#091827;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}.notice{padding:12px;border-radius:12px;background:#091827;border:1px solid #334155;margin-top:10px}.authbar{display:flex;justify-content:flex-end;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}.authbar span{font-size:12px;color:var(--muted)}
 .footer{position:fixed;left:0;right:0;bottom:0;background:rgba(7,17,31,.96);border-top:1px solid #1f2937;padding:10px 14px calc(env(safe-area-inset-bottom) + 10px)}.footer>div{max-width:760px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}.footer button{width:100%}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}.modal.show{display:flex}.modalbox{width:min(430px,100%);background:#0d1b2a;border:1px solid var(--line);border-radius:20px;padding:18px}.modalbox .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.auth-gate{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);background:radial-gradient(circle at 50% 15%,#0d3a63 0,#07111f 42%,#050b14 100%)}
+.auth-gate-card{width:min(430px,100%);text-align:center;background:rgba(13,27,42,.94);border:1px solid #1f4964;border-radius:26px;padding:30px 22px 24px;box-shadow:0 24px 70px rgba(0,0,0,.38)}
+.auth-logo{width:106px;height:106px;object-fit:contain;margin:0 auto 14px;display:block}.auth-gate-card h1{font-size:34px;margin:0 0 6px}.auth-tagline{margin:0 auto 26px;color:#a8bacb;font-size:16px;line-height:1.45}.auth-gate-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}.auth-gate-actions button{min-height:52px}.auth-note{margin:18px 6px 0}
 @media(max-width:560px){.row,.row3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="app">
+<div id="authGate" class="auth-gate">
+  <div class="auth-gate-card">
+    <img src="./checkstride-logo.svg" alt="Checkstride" class="auth-logo">
+    <h1>Checkstride</h1>
+    <p class="auth-tagline">Know what this paycheck needs to do.</p>
+    <div class="auth-gate-actions">
+      <button id="gateSignIn" class="secondary">Sign in</button>
+      <button id="gateCreate" class="primary">Create account</button>
+    </div>
+    <p class="small auth-note">Sign in to securely access your paycheck plan and sync it across devices.</p>
+  </div>
+</div>
+<div id="appShell" class="app" style="display:none">
 <div class="header">
-  <div class="brand"><img src="./checkstride-logo.svg" alt="" onerror="this.style.display='none'"><div><h1>Checkstride</h1><p>Know what this paycheck needs to do.</p></div></div>
+  <div class="brand"><img src="./checkstride-logo.png" alt="" onerror="this.style.display='none'"><div><h1>Checkstride</h1><p>Know what this paycheck needs to do.</p></div></div>
   <div id="cloudBadge" class="badge">Local only</div>
 </div>
 
@@ -116,15 +131,17 @@ const s=$('planSummary'),p=$('planSteps');if(!bills.length||r.income<=0){s.textC
 
 $('addBillBtn').onclick=()=>{const name=$('billName').value.trim(),amount=Number($('billAmount').value||0),overdueAmt=Number($('billOverdue').value||0);if(!name||amount<=0)return alert('Enter a bill name and amount.');bills.push({name,amount,overdue:overdueAmt,date:$('billDate').value||'',priority:$('billPriority').value});$('billName').value=$('billAmount').value=$('billOverdue').value=$('billDate').value='';schedule();recalc()};
 ['payday','paycheck','cushion','extraIncome','strategy'].forEach(id=>$(id).oninput=()=>{schedule();recalc()});
-$('whatIfBtn').onclick=()=>{const r=plan(Number($('whatIfIncome').value||0),Number($('whatIfSpend').value||0));$('whatIfResult').textContent=r.unpaid<=0?'With that change, this paycheck could fully cover the current catch-up plan.':`With that change, about ${money(r.unpaid)} would still remain after this paycheck.`};
+$('whatIfBtn').onclick=()=>{const r=plan(Number($('whatIfIncome').value||0),Number($('whatIfSpend').value||0));$('whatIfResult').textContent=r.unpaid<=0?'With that change, this paycheck could fully cover the catch-up plan.':`With that change, about ${money(r.unpaid)} would still remain after this paycheck.`};
 $('saveBtn').onclick=async()=>{schedule();if(currentUser){try{await saveCloud();alert('Saved to Checkstride cloud.')}catch{alert('Saved locally. Cloud sync failed.')}}else alert('Saved on this device. Sign in to sync across devices.')};
 $('resetBtn').onclick=()=>{if(!confirm('Reset this plan?'))return;bills=[];['payday','paycheck','cushion','extraIncome'].forEach(id=>$(id).value='');$('strategy').value='balanced';schedule();recalc()};
 
 $('authBtn').onclick=()=>$('authModal').classList.add('show');$('closeAuth').onclick=()=>$('authModal').classList.remove('show');
+$('gateSignIn').onclick=()=>{$('authModal').classList.add('show');$('authStatus').textContent='';};
+$('gateCreate').onclick=()=>{$('authModal').classList.add('show');$('authStatus').textContent='Create your Checkstride account below.';};
 $('signInNow').onclick=async()=>{try{await signInWithEmailAndPassword(auth,$('authEmail').value.trim(),$('authPassword').value);$('authModal').classList.remove('show')}catch(e){$('authStatus').textContent=e.message.replace('Firebase: ','')}};
 $('createNow').onclick=async()=>{try{await createUserWithEmailAndPassword(auth,$('authEmail').value.trim(),$('authPassword').value);$('authModal').classList.remove('show')}catch(e){$('authStatus').textContent=e.message.replace('Firebase: ','')}};
 $('signOutBtn').onclick=()=>signOut(auth);
 
-onAuthStateChanged(auth,async user=>{currentUser=user;if(user){$('authLabel').textContent=user.email||'Signed in';$('authBtn').style.display='none';$('signOutBtn').style.display='inline-block';badge('Loading cloud…',true);try{await loadCloud()}catch{badge('Cloud error')}}else{$('authLabel').textContent='Not signed in';$('authBtn').style.display='inline-block';$('signOutBtn').style.display='none';badge('Local only');const l=loadLocal();if(l)apply(l);else recalc()}});
+onAuthStateChanged(auth,async user=>{currentUser=user;if(user){$('authGate').style.display='none';$('appShell').style.display='block';$('authLabel').textContent=user.email||'Signed in';$('authBtn').style.display='none';$('signOutBtn').style.display='inline-block';badge('Loading cloud…',true);try{await loadCloud()}catch{badge('Cloud error')}}else{$('authGate').style.display='flex';$('appShell').style.display='none';$('authLabel').textContent='Not signed in';$('authBtn').style.display='inline-block';$('signOutBtn').style.display='none';badge('Local only');const l=loadLocal();if(l)apply(l);else recalc()}});
 </script>
 </body></html>
