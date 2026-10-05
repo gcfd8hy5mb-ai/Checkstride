@@ -62,6 +62,21 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
 .status-saved{color:var(--ok)!important}.status-saving{color:var(--warn)!important}.status-error{color:var(--error)!important}
 @media(max-width:640px){.quick-grid,.form-grid,.strategy-grid{grid-template-columns:1fr}.bill-form{grid-template-columns:1fr 1fr}.bill-form>*:first-child,.bill-form>*:last-child{grid-column:1/-1}.hero strong{font-size:40px}.topbar small{display:none}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+.ai-stack{display:grid;gap:12px}
+.ai-banner{padding:14px;border-radius:16px;background:linear-gradient(135deg,rgba(42,169,160,.15),rgba(111,159,189,.08));border:1px solid rgba(42,169,160,.35)}
+.ai-banner strong{display:block;font:700 16px/1.25 var(--display);margin-bottom:4px}.ai-banner p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}
+.plan-list{display:grid;gap:8px;margin-top:10px}.plan-line{display:flex;justify-content:space-between;gap:12px;padding:10px 11px;border-radius:13px;background:var(--surface);border:1px solid var(--border)}
+.plan-line span{color:var(--muted);font-size:12px}.plan-line b{text-align:right;font-size:12px}
+.warning-list{display:grid;gap:8px}.warning-item{padding:11px 12px;border-radius:13px;background:var(--surface);border:1px solid var(--border)}
+.warning-item.high{border-color:rgba(214,90,100,.55)}.warning-item.medium{border-color:rgba(213,162,62,.45)}.warning-item low{border-color:var(--border)}
+.warning-item b{display:block;font-size:12px}.warning-item small{display:block;color:var(--muted);margin-top:4px;line-height:1.35}
+.scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.scenario-result{margin-top:10px;padding:12px;border-radius:14px;background:var(--surface);border:1px solid var(--border)}
+.goal-row{display:grid;grid-template-columns:1.2fr .8fr .8fr auto;gap:8px;align-items:end}.goal-row .field{margin:0}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--surface);color:var(--muted);padding:6px 9px;border-radius:999px;font-size:11px}
+.approve-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+@media(max-width:640px){.scenario-grid,.goal-row{grid-template-columns:1fr}.goal-row>*{grid-column:1/-1}.approve-row{grid-template-columns:1fr 1fr}}
+
 </style>
 </head>
 <body>
@@ -173,6 +188,61 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     </div>
   </section>
 
+
+  <section class="card section" id="diagnosisSection">
+    <div class="title-row"><h2>Outcome diagnosis</h2><span id="diagnosisStatus">Learning</span></div>
+    <div class="ai-banner"><strong id="diagnosisHeadline">Waiting for completed paycheck outcomes.</strong><p id="diagnosisDetail">When a forecast misses, Checkstride will isolate whether income, spending, bill timing, or a one-off event caused it.</p></div>
+  </section>
+
+  <section class="card section" id="autoplanSection">
+    <div class="title-row"><h2>Autonomous paycheck plan</h2><span id="autoplanStatus">Draft</span></div>
+    <div class="ai-banner"><strong id="autoplanHeadline">Finish setup to generate a paycheck plan.</strong><p id="autoplanWhy">Checkstride will allocate the paycheck without moving money or paying bills.</p></div>
+    <div id="autoplanList" class="plan-list"></div>
+    <div class="approve-row">
+      <button id="approvePlan" class="primary-btn">Approve plan</button>
+      <button id="rebuildPlan" class="ghost">Rebuild plan</button>
+    </div>
+    <div id="planApprovalMsg" class="msg hidden"></div>
+  </section>
+
+  <section class="card section" id="scenarioSection">
+    <div class="title-row"><h2>Scenario planner</h2><span>What if?</span></div>
+    <div class="scenario-grid">
+      <div class="field"><label>Extra purchase</label><input id="scenarioPurchase" type="number" min="0" step="0.01" placeholder="0" /></div>
+      <div class="field"><label>Income change</label><input id="scenarioIncome" type="number" step="0.01" placeholder="0" /></div>
+      <div class="field"><label>Extra bill</label><input id="scenarioBill" type="number" min="0" step="0.01" placeholder="0" /></div>
+    </div>
+    <button id="runScenario" class="ghost" style="width:100%;margin-top:10px">Run scenario</button>
+    <div id="scenarioResult" class="scenario-result"><span style="color:var(--muted);font-size:12px">Enter a scenario to compare it with the current plan.</span></div>
+  </section>
+
+  <section class="card section" id="goalsSection">
+    <div class="title-row"><h2>Goal-aware planning</h2><span id="goalSummary">No active goal</span></div>
+    <div class="goal-row">
+      <div class="field"><label>Goal</label><input id="goalName" placeholder="Emergency fund" /></div>
+      <div class="field"><label>Target</label><input id="goalTarget" type="number" min="0" step="0.01" placeholder="1000" /></div>
+      <div class="field"><label>Saved</label><input id="goalSaved" type="number" min="0" step="0.01" placeholder="0" /></div>
+      <button id="saveGoal" class="primary-btn">Save goal</button>
+    </div>
+    <div id="goalPlan" class="smart-rows"></div>
+  </section>
+
+  <section class="card section" id="warningsSection">
+    <div class="title-row"><h2>Proactive warnings</h2><span id="warningCount">0 active</span></div>
+    <div id="warningList" class="warning-list"></div>
+  </section>
+
+  <section class="card section" id="coach12Section">
+    <div class="title-row"><h2>Closed-loop coach</h2><span id="coachModePill" class="pill">Guided</span></div>
+    <div class="ai-stack">
+      <div class="ai-banner"><strong id="coach12Action">Finish setup to activate the coach.</strong><p id="coach12Reason">The coach will combine forecasts, outcomes, goals, and context reliability into one plan.</p></div>
+      <div class="smart-row"><span>Current operating mode</span><b id="coach12Mode">Guided — recommendations require your approval.</b></div>
+      <div class="smart-row"><span>What changed</span><b id="coach12Change">No completed outcome to compare yet.</b></div>
+      <div class="smart-row"><span>Next review trigger</span><b id="coach12Trigger">Next paycheck completion or a meaningful plan change.</b></div>
+      <button id="toggleCoachMode" class="ghost">Switch to Auto-draft mode</button>
+    </div>
+  </section>
+
   <section class="card section" id="contextSection">
     <div class="title-row"><h2>Context intelligence</h2><span id="contextStatus">Learning</span></div>
     <div class="smart-rows">
@@ -229,7 +299,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
   const API_KEY="AIzaSyDoLHFn-sHVa9LROJOg3TFA6m4xFZCfhos";
   const PROJECT_ID="paycheck-advisor";
   const SESSION_KEY="checkstride_rest_session";
-  const blank={payday:"",paycheck:0,frequency:"biweekly",cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null}}};
+  const blank={payday:"",paycheck:0,frequency:"biweekly",cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
   let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null;
 
   const $=id=>document.getElementById(id);
@@ -307,7 +377,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>({...b,amount:clampMoney(b.amount),overdue:clampMoney(b.overdue),dueDay:Math.min(31,Math.max(1,Math.trunc(Number(b.dueDay)||1)))})),version:32};
+      bills:data.bills.map(b=>({...b,amount:clampMoney(b.amount),overdue:clampMoney(b.overdue),dueDay:Math.min(31,Math.max(1,Math.trunc(Number(b.dueDay)||1)))})),version:38};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -695,6 +765,141 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     return`This context has appeared ${total} time${total===1?"":"s"}; prior recommendations worked ${hit}% of the time.`;
   }
 
+
+  // Level 6 — diagnose why a completed paycheck forecast missed.
+  function outcomeDiagnosis(){
+    const rows=predictionHistory();
+    if(!rows.length)return{status:"Learning",headline:"Waiting for completed paycheck outcomes.",detail:"Complete a paycheck and Checkstride will compare predicted vs actual results.",cause:"none",severity:"low"};
+    const x=rows[rows.length-1], predicted=clampMoney(x.predictedLeft), actual=clampMoney(x.actualLeft), income=clampMoney(x.actualIncome), unexpected=clampMoney(x.unexpectedSpend);
+    const miss=actual-predicted, absMiss=Math.abs(miss), tolerance=Math.max(35,income*.05);
+    if(absMiss<=tolerance)return{status:"On target",headline:`Forecast landed within ${money(tolerance)} of actual.`,detail:`Predicted ${money(predicted)} left and actual was ${money(actual)}. No major correction is needed.`,cause:"none",severity:"low"};
+    const expectedIncome=clampMoney(state.paycheck);
+    const incomeGap=income-expectedIncome;
+    const residual=miss+unexpected-incomeGap;
+    const candidates=[
+      {cause:"income",value:Math.abs(incomeGap),label:`take-home income differed by ${money(Math.abs(incomeGap))}`},
+      {cause:"spending",value:unexpected,label:`unexpected spending was ${money(unexpected)}`},
+      {cause:"bills",value:Math.abs(residual),label:`timing/other planned cash flow differed by about ${money(Math.abs(residual))}`}
+    ].sort((a,b)=>b.value-a.value);
+    const top=candidates[0], oneOff=unexpected>income*.18&&predictionHistory().slice(-4,-1).every(r=>clampMoney(r.unexpectedSpend)<unexpected*.5);
+    const severity=absMiss>income*.15?"high":absMiss>income*.08?"medium":"low";
+    return{
+      status:oneOff?"Outlier detected":"Self-correcting",
+      headline:`The plan missed by ${money(absMiss)} mainly because ${top.label}.`,
+      detail:oneOff?`This looks more like a one-off event than a new normal, so Checkstride will not fully retrain the rest of the plan around it.`:`Only the ${top.cause} context should lose trust; the other prediction areas remain independently calibrated.`,
+      cause:top.cause,severity
+    };
+  }
+
+  // Level 7 — build a complete paycheck allocation draft automatically.
+  function buildAutonomousPlan(){
+    const income=clampMoney(state.paycheck)+clampMoney(state.extraIncome);
+    if(!state.payday||income<=0)return null;
+    const ctx=contextCalibration(), adaptive=contextAdjustedPlan(), goal=primaryGoal(), rows=adaptiveFourCheckPlan(), first=rows[0];
+    const due=clampMoney(first?.due||0), baseCushion=outcomeAdjustedCushion().amount;
+    const cushion=adaptive.aggression==="protect"?baseCushion*1.15:adaptive.aggression==="fast"?baseCushion*.85:baseCushion;
+    const overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0);
+    let remaining=Math.max(0,income-due-cushion);
+    const catchupRate=adaptive.aggression==="fast"?1:adaptive.aggression==="protect"?.5:.8;
+    const catchup=Math.min(overdue,remaining*catchupRate);remaining=Math.max(0,remaining-catchup);
+    const goalNeed=goal?Math.max(0,clampMoney(goal.target)-clampMoney(goal.saved)):0;
+    const goalAllocation=goal?Math.min(goalNeed,remaining*(adaptive.aggression==="protect"?.1:.2)):0;
+    remaining=Math.max(0,remaining-goalAllocation);
+    const safe=remaining;
+    const diagnosis=outcomeDiagnosis();
+    return{
+      createdAt:new Date().toISOString(),income,due,cushion,catchup,goalAllocation,safe,
+      strategy:adaptive.aggression,goalName:goal?.name||"",confidence:forecastReasoning().confidence,
+      why:`${adaptive.reason} ${diagnosis.cause!=="none"?`Recent diagnosis is being applied only to ${diagnosis.cause}.`:""}`
+    };
+  }
+
+  function currentAutonomousPlan(){
+    const existing=state.smartMemory?.autonomousPlan;
+    const fresh=buildAutonomousPlan();
+    if(!fresh)return null;
+    if(!existing)return fresh;
+    const stale=!existing.createdAt || Date.now()-new Date(existing.createdAt).getTime()>12*60*60*1000;
+    const material=Math.abs(clampMoney(existing.income)-fresh.income)>1 || Math.abs(clampMoney(existing.due)-fresh.due)>1;
+    return stale||material?fresh:existing;
+  }
+
+  // Level 8 — strategy is selected from outcomes, context and runway instead of one rule.
+  function adaptiveStrategyChoice(){
+    const sims=strategySimulation(), ctx=contextCalibration(), trend=outcomeTrend(), diag=outcomeDiagnosis(), overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0);
+    if(!sims.length)return{key:"balanced",name:"Balanced",reason:"Waiting for enough setup data.",confidence:0};
+    let best=sims[0];
+    if((ctx.income.score&&ctx.income.score<60)||(ctx.spending.score&&ctx.spending.score<60)||diag.severity==="high"){
+      best=sims.find(x=>x.key==="minimum")||best;
+    }else if(overdue>0&&trend.stability==="high"&&diag.severity!=="high"){
+      best=sims.find(x=>x.key==="fastest")||best;
+    }
+    const names={fastest:"Fastest Catch-Up",balanced:"Balanced",minimum:"Minimum Stress"};
+    return{key:best.key,name:names[best.key],reason:best.key==="fastest"?"Stable recent outcomes support faster catch-up.":best.key==="minimum"?"Current uncertainty favors protecting cash.":"The middle path currently produces the best risk-adjusted runway.",confidence:forecastReasoning().confidence};
+  }
+
+  // Level 9 — what-if simulation without changing saved state.
+  function simulateScenario(purchase,incomeDelta,extraBill){
+    const rows=adaptiveFourCheckPlan();
+    if(!rows.length)return null;
+    let carry=0;
+    const adjusted=rows.map((r,i)=>{
+      const income=Math.max(0,clampMoney(r.income)+(i===0?incomeDelta:0));
+      const due=clampMoney(r.due)+(i===0?extraBill:0);
+      const oneTime=i===0?purchase:0;
+      const safe=Math.max(0,income-due-clampMoney(r.catchup)-clampMoney(r.cushion)-oneTime-carry);
+      const shortage=Math.max(0,due+clampMoney(r.catchup)+clampMoney(r.cushion)+oneTime+carry-income);
+      carry=shortage;
+      return{...r,income,due,safe,shortage};
+    });
+    const minSafe=Math.min(...adjusted.map(x=>x.safe)), shortages=adjusted.reduce((s,x)=>s+x.shortage,0);
+    return{rows:adjusted,minSafe,shortages,status:shortages>0?"risky":minSafe<clampMoney(state.cushion)*.5?"tight":"safe"};
+  }
+
+  // Level 10 — goal-aware planning.
+  function primaryGoal(){
+    const goals=Array.isArray(state.smartMemory?.goals)?state.smartMemory.goals:[];
+    return goals[0]||null;
+  }
+  function goalGuidance(){
+    const goal=primaryGoal();
+    if(!goal)return{active:false,text:"No active goal yet.",perCheck:0,checks:0};
+    const need=Math.max(0,clampMoney(goal.target)-clampMoney(goal.saved));
+    if(need<=0)return{active:true,text:`${goal.name} is funded.`,perCheck:0,checks:0};
+    const plan=buildAutonomousPlan(), available=clampMoney(plan?.safe||0);
+    const perCheck=Math.max(0,Math.min(need,available*.25));
+    const checks=perCheck>0?Math.ceil(need/perCheck):0;
+    return{active:true,perCheck,checks,text:perCheck>0?`Set aside about ${money(perCheck)} per paycheck; approximately ${checks} checks to reach ${money(goal.target)}.`:`Protect cash first; this goal should wait until the paycheck margin improves.`};
+  }
+
+  // Level 11 — proactive warning engine.
+  function proactiveWarnings(){
+    const warnings=[], runway=fourCheckRunway(), ctx=contextCalibration(), diag=outcomeDiagnosis(), goal=primaryGoal(), plan=buildAutonomousPlan();
+    if(runway.status==="critical")warnings.push({severity:"high",title:"Upcoming paycheck has no safe margin",detail:runway.text});
+    else if(runway.status==="tight")warnings.push({severity:"medium",title:"A future paycheck is getting tight",detail:runway.text});
+    if(ctx.drift!=="none")warnings.push({severity:"medium",title:"Behavior pattern changed",detail:ctx.driftText});
+    if(diag.severity==="high")warnings.push({severity:"medium",title:"Recent forecast miss needs attention",detail:diag.headline});
+    if(plan&&plan.safe<clampMoney(state.cushion)*.5)warnings.push({severity:"medium",title:"Safe-to-spend margin is thin",detail:`The autonomous plan leaves ${money(plan.safe)} after bills, catch-up, cushion and goal allocation.`});
+    const overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0);
+    if(overdue>0&&adaptiveStrategyChoice().key==="minimum")warnings.push({severity:"low",title:"Catch-up intentionally slowed",detail:`You still have ${money(overdue)} overdue, but current uncertainty makes protecting cash the safer move.`});
+    if(goal&&clampMoney(goal.saved)>=clampMoney(goal.target)&&clampMoney(goal.target)>0)warnings.push({severity:"low",title:"Goal reached",detail:`${goal.name} has reached its target.`});
+    return warnings.slice(0,5);
+  }
+
+  // Level 12 — closed-loop coach combines every subsystem.
+  function closedLoopCoach(){
+    const strategy=adaptiveStrategyChoice(), diag=outcomeDiagnosis(), plan=buildAutonomousPlan(), warns=proactiveWarnings(), goal=goalGuidance(), ctx=contextCalibration();
+    if(!plan)return{action:"Finish setup to activate the coach.",reason:"A payday and take-home amount are required.",change:"No completed outcome to compare yet.",trigger:"Complete setup."};
+    let action=`Use ${strategy.name}. Cover ${money(plan.due)} in bills, protect ${money(plan.cushion)},`;
+    if(plan.catchup>0)action+=` put ${money(plan.catchup)} toward catch-up,`;
+    if(plan.goalAllocation>0)action+=` put ${money(plan.goalAllocation)} toward ${plan.goalName},`;
+    action+=` and cap safe-to-spend at ${money(plan.safe)}.`;
+    const reason=`${strategy.reason} ${plan.why}`.trim();
+    const change=diag.cause==="none"?"No major model correction is needed from the latest outcome.":`Latest correction is focused on ${diag.cause}; unrelated contexts keep their existing trust.`;
+    const trigger=warns.some(w=>w.severity==="high")?"Review now because a high-priority warning is active.":"Review again after the next completed paycheck or a meaningful change to income/bills.";
+    return{action,reason,change,trigger};
+  }
+
   function render(){
     const f=forecast(),first=f[0],overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0),conf=confidence();
     $("safeSpend").textContent=money(first?.safe||0);
@@ -730,14 +935,48 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     $("runwayStatus").textContent=rw.text;
     $("decisionConfidence").textContent=`${fr.confidence}/100 · ${fr.confidence>=80?"strong enough to lean on":fr.confidence>=60?"useful with caution":fr.confidence>=35?"still learning":"not ready to trust yet"}`;
     $("contextMemory").textContent=rememberedContextInsight();
+    const od=outcomeDiagnosis();
+    $("diagnosisStatus").textContent=od.status;
+    $("diagnosisHeadline").textContent=od.headline;
+    $("diagnosisDetail").textContent=od.detail;
+
+    const autoPlan=currentAutonomousPlan();
+    $("autoplanStatus").textContent=state.smartMemory?.autonomousPlan?.approvedAt?"Approved":"Draft";
+    $("autoplanHeadline").textContent=autoPlan?`Draft plan for ${money(autoPlan.income)} of income`:"Finish setup to generate a paycheck plan.";
+    $("autoplanWhy").textContent=autoPlan?autoPlan.why:"Checkstride will allocate the paycheck without moving money or paying bills.";
+    $("autoplanList").innerHTML=autoPlan?[
+      ["Bills due",money(autoPlan.due)],
+      ["Protected cushion",money(autoPlan.cushion)],
+      ["Catch-up",money(autoPlan.catchup)],
+      [autoPlan.goalName?`Goal · ${escapeHtml(autoPlan.goalName)}`:"Goal allocation",money(autoPlan.goalAllocation)],
+      ["Safe to spend",money(autoPlan.safe)]
+    ].map(([a,b])=>`<div class="plan-line"><span>${a}</span><b>${b}</b></div>`).join(""):"";
+
+    const goal=primaryGoal(), gg=goalGuidance();
+    $("goalSummary").textContent=goal?`${money(goal.saved)} / ${money(goal.target)}`:"No active goal";
+    $("goalPlan").innerHTML=goal?`<div class="smart-row"><span>${escapeHtml(goal.name)}</span><b>${escapeHtml(gg.text)}</b></div>`:"<div class=\"smart-row\"><span>Goal planning</span><b>Add a savings goal and Checkstride will include it only after essentials and your protected cushion.</b></div>";
+
+    const warns=proactiveWarnings();
+    $("warningCount").textContent=`${warns.length} active`;
+    $("warningList").innerHTML=warns.length?warns.map(w=>`<div class="warning-item ${w.severity}"><b>${escapeHtml(w.title)}</b><small>${escapeHtml(w.detail)}</small></div>`).join(""):'<p class="empty">No proactive warnings right now.</p>';
+
+    const coach=closedLoopCoach(), coachMode=state.smartMemory?.coachMode||"guided";
+    $("coachModePill").textContent=coachMode==="auto-draft"?"Auto-draft":"Guided";
+    $("coach12Action").textContent=coach.action;
+    $("coach12Reason").textContent=coach.reason;
+    $("coach12Mode").textContent=coachMode==="auto-draft"?"Auto-draft — Checkstride rebuilds the plan automatically, but still never moves money.":"Guided — recommendations require your approval.";
+    $("coach12Change").textContent=coach.change;
+    $("coach12Trigger").textContent=coach.trigger;
+    $("toggleCoachMode").textContent=coachMode==="auto-draft"?"Switch to Guided mode":"Switch to Auto-draft mode";
+
 
 
 
 
     const rec=smartRecommendation(), ac=adaptiveCushion(), rel=reliability();
     const adv=contextualRecommendation(), cal=calibration(), spendInsight=recurringSpendInsight(), adj=outcomeAdjustedCushion();
-    $("coachAction").textContent=forecastReasoning().action;
-    $("coachWhy").textContent=forecastReasoning().why;
+    $("coachAction").textContent=closedLoopCoach().action;
+    $("coachWhy").textContent=closedLoopCoach().reason;
     $("coachCushion").textContent=`${money(adj.amount)} · ${adj.reason}`;
     $("coachReliability").textContent=cal.count?`${cal.grade} · average prediction miss ${money(cal.error)}`:rel.text;
     $("coachLearning").textContent=cal.count?cal.grade:rel.label;
@@ -783,6 +1022,43 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
   $("billList").addEventListener("click",e=>{const btn=e.target.closest("[data-remove]");if(!btn)return;state={...state,bills:state.bills.filter(b=>b.id!==btn.dataset.remove)};scheduleSave()});
 
 
+
+  $("rebuildPlan").onclick=()=>{
+    const plan=buildAutonomousPlan();
+    if(!plan){setMsg("planApprovalMsg","Finish paycheck setup first.");return}
+    const m=getSmartMemory();
+    state={...state,smartMemory:{...m,autonomousPlan:plan}};
+    setMsg("planApprovalMsg","Plan rebuilt from the latest data.");
+    scheduleSave();
+  };
+  $("approvePlan").onclick=()=>{
+    const plan=currentAutonomousPlan();
+    if(!plan){setMsg("planApprovalMsg","Finish paycheck setup first.");return}
+    const m=getSmartMemory();
+    state={...state,smartMemory:{...m,autonomousPlan:{...plan,approvedAt:new Date().toISOString()}}};
+    setMsg("planApprovalMsg","Plan approved. Checkstride will use the outcome to calibrate the next one.");
+    scheduleSave();
+  };
+  $("runScenario").onclick=()=>{
+    const purchase=clampMoney($("scenarioPurchase").value), incomeDelta=Number($("scenarioIncome").value||0), extraBill=clampMoney($("scenarioBill").value);
+    const sim=simulateScenario(purchase,incomeDelta,extraBill);
+    $("scenarioResult").innerHTML=!sim?'<span style="color:var(--muted);font-size:12px">Finish paycheck setup first.</span>':
+      `<b>${sim.status==="safe"?"Looks safe":sim.status==="tight"?"Possible, but tight":"High risk"}</b><small style="display:block;color:var(--muted);margin-top:5px">${sim.shortages>0?`Creates ${money(sim.shortages)} of projected shortage across the next 4 checks.`:`Lowest projected safe margin is ${money(sim.minSafe)}.`}</small>`;
+  };
+  $("saveGoal").onclick=()=>{
+    const name=$("goalName").value.trim(),target=clampMoney($("goalTarget").value),saved=clampMoney($("goalSaved").value);
+    if(!name||target<=0)return;
+    const m=getSmartMemory();
+    state={...state,smartMemory:{...m,goals:[{id:"primary",name,target,saved,createdAt:new Date().toISOString()}]}};
+    scheduleSave();
+  };
+  $("toggleCoachMode").onclick=()=>{
+    const m=getSmartMemory(), next=(m.coachMode||"guided")==="guided"?"auto-draft":"guided";
+    const nextPlan=next==="auto-draft"?buildAutonomousPlan():m.autonomousPlan;
+    state={...state,smartMemory:{...m,coachMode:next,autonomousPlan:nextPlan||m.autonomousPlan}};
+    scheduleSave();
+  };
+
   $("completePaycheck").onclick=()=>{
     const actualIncome=clampMoney($("actualIncome").value), actualExtra=clampMoney($("actualExtra").value), unexpected=clampMoney($("unexpectedSpend").value), actualLeft=clampMoney($("actualLeft").value);
     if(actualIncome<=0){setMsg("completeMsg","Enter the actual take-home pay for this paycheck.");return}
@@ -799,7 +1075,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
       paycheckHistory:[...(state.paycheckHistory||[]),{date:state.payday,income:actualIncome+actualExtra,predictedLeft,actualLeft,unexpectedSpend:unexpected,strategy:state.strategy}].slice(-52),
       payday:advancePayday(state.payday,state.frequency),
       extraIncome:0,
-      smartMemory:{...m,planWins:m.planWins+(worked?1:0),planMisses:m.planMisses+(worked?0:1),lastOutcome:worked?"worked":"missed",lastRecommendation:contextualRecommendation().action,lastCompletedPaycheck:new Date().toISOString(),predictions:nextPred,spendingPatterns:{...patterns,unexpected:unexpectedArr},adaptivePlan:{...contextAdjustedPlan(),lastUpdated:new Date().toISOString()},contextCalibration:(()=>{const c=contextCalibration();return{income:c.income.score,spending:c.spending.score,bills:c.bills.score,overall:Math.round((c.income.score+c.spending.score+c.bills.score)/3),drift:c.drift,lastReason:c.weakest}})()},decisionMemory:{contexts:newContexts,lastDecision:{at:new Date().toISOString(),context:dkey,action:decision.action,confidence:decision.confidence,outcome:worked?"worked":"missed"}}
+      smartMemory:{...m,planWins:m.planWins+(worked?1:0),planMisses:m.planMisses+(worked?0:1),lastOutcome:worked?"worked":"missed",lastRecommendation:contextualRecommendation().action,lastCompletedPaycheck:new Date().toISOString(),predictions:nextPred,spendingPatterns:{...patterns,unexpected:unexpectedArr},adaptivePlan:{...contextAdjustedPlan(),lastUpdated:new Date().toISOString()},contextCalibration:(()=>{const c=contextCalibration();return{income:c.income.score,spending:c.spending.score,bills:c.bills.score,overall:Math.round((c.income.score+c.spending.score+c.bills.score)/3),drift:c.drift,lastReason:c.weakest}})()},decisionMemory:{contexts:newContexts,lastDecision:{at:new Date().toISOString(),context:dkey,action:decision.action,confidence:decision.confidence,outcome:worked?"worked":"missed"}},diagnostics:[...(Array.isArray(m.diagnostics)?m.diagnostics:[]),{at:new Date().toISOString(),...outcomeDiagnosis()}].slice(-24),autonomousPlan:null
     };
     $("actualIncome").value="";$("actualExtra").value="";$("unexpectedSpend").value="";$("actualLeft").value="";
     const nextMode=adaptivePlan().aggression; setMsg("completeMsg",worked?`Paycheck recorded. The plan was close, so confidence increased. Adaptive mode: ${nextMode}.`:`Paycheck recorded. Checkstride adjusted the next multi-paycheck plan. Adaptive mode: ${nextMode}.`);
