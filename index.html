@@ -79,6 +79,10 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #4da3ff;outline-offset:2px}
 button{font-family:inherit}
 button:disabled{opacity:.55;cursor:not-allowed}
+.auth-links{display:flex;justify-content:space-between;gap:12px;margin-top:10px;flex-wrap:wrap}
+.auth-link{border:0;background:transparent;color:#9edcf1;padding:4px 0;font-size:12px;font-weight:800}
+.auth-help{background:#091827;border:1px solid #29425a;border-radius:14px;padding:12px;margin-top:10px}
+.auth-help strong{display:block;font-size:13px;margin-bottom:4px}.auth-help span{font-size:12px;color:var(--muted);line-height:1.45}
 *{-webkit-tap-highlight-color:transparent}
 .toast-stack{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 82px);transform:translateX(-50%);z-index:90;width:min(calc(100% - 28px),430px);display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{background:rgba(12,29,46,.97);border:1px solid #2e506b;color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 12px 32px rgba(0,0,0,.28);font-size:13px;font-weight:700;opacity:0;transform:translateY(12px) scale(.98);transition:opacity .18s ease,transform .18s ease;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
@@ -320,13 +324,27 @@ button:disabled{opacity:.55;cursor:not-allowed}
   <h2 style="margin-top:0">Checkstride account</h2>
   <label>Email</label><input id="authEmail" type="email" autocomplete="email">
   <label>Password</label><input id="authPassword" type="password" autocomplete="current-password">
+  <div class="auth-links">
+    <button id="forgotPasswordBtn" class="auth-link" type="button">Forgot password?</button>
+    <button id="forgotEmailBtn" class="auth-link" type="button">Forgot email?</button>
+  </div>
   <div class="actions"><button id="signInNow" class="secondary">Sign in</button><button id="createNow" class="primary">Create account</button></div>
   <div id="authStatus" class="small" style="margin-top:10px"></div><div style="height:8px"></div><button id="closeAuth" class="secondary" style="width:100%">Close</button>
 </div></div>
 
+<div id="recoverEmailModal" class="modal"><div class="modalbox">
+  <h2 style="margin-top:0">Find your account email</h2>
+  <div id="savedEmailBox" class="auth-help"></div>
+  <div class="auth-help">
+    <strong>If this device does not remember it</strong>
+    <span>For privacy, Checkstride cannot search Firebase accounts by name or phone number. Check the email inboxes you normally use for a Checkstride/Firebase message, or try the email addresses you commonly sign in with.</span>
+  </div>
+  <button id="closeRecoverEmail" class="secondary" style="width:100%;margin-top:12px">Close</button>
+</div></div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import { getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,sendPasswordResetEmail,signOut,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import { getFirestore,doc,getDoc,setDoc,serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const firebaseConfig={
@@ -422,7 +440,7 @@ function upcomingOccurrences(b,start,end){
   while(cur<=last){const d=billDueDateForMonth(b,cur.getFullYear(),cur.getMonth());if(d>=start&&d<=end)out.push(d);cur.setMonth(cur.getMonth()+1)}
   return out;
 }
-function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,paymentHistory,paycheckHistory,onboardingComplete:true,version:11}}
+function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,paymentHistory,paycheckHistory,onboardingComplete:true,version:12}}
 function normalizeBill(b){
   if(b.dueDay) return {...b,id:b.id||uid(),dueDay:Number(b.dueDay)};
   let dueDay=1;
@@ -686,11 +704,93 @@ $('addBillBtn').onclick=()=>{const name=$('billName').value.trim(),amount=Number
 $('whatIfBtn').onclick=()=>{const f=buildForecast(Number($('whatIfIncome').value||0),Number($('whatIfSpend').value||0));if(!f.checks.length)return $('whatIfResult').textContent='Set your pay schedule first.';$('whatIfResult').textContent=f.caughtUp?`With that change, the plan is caught up by ${iso(f.caughtUp)}.`:`After 4 checks, about ${money(f.remainingOverdue)} would still be carrying forward.`};
 $('saveBtn').onclick=async()=>{schedule();try{await saveCloud();alert('Saved to Checkstride cloud.')}catch{alert('Saved on this device. Cloud sync failed.')}};
 $('resetBtn').onclick=()=>{if(!confirm('Reset this plan and payment history?'))return;bills=[];paymentHistory=[];paycheckHistory=[];['payday','paycheck','cushion','extraIncome'].forEach(id=>$(id).value='');$('payFrequency').value='biweekly';$('strategy').value='balanced';schedule();recalc()};
-$('gateSignIn').onclick=()=>{$('authModal').classList.add('show');$('authStatus').textContent=''};
-$('gateCreate').onclick=()=>{$('authModal').classList.add('show');$('authStatus').textContent='Create your Checkstride account below.'};
+function friendlyAuthError(e){
+  const code=e?.code||'';
+  if(code==='auth/too-many-requests') return 'Too many sign-in attempts. Please wait a little while and try again.';
+  if(code==='auth/invalid-credential' || code==='auth/wrong-password' || code==='auth/user-not-found') return 'Email or password is incorrect.';
+  if(code==='auth/invalid-email') return 'Enter a valid email address.';
+  if(code==='auth/email-already-in-use') return 'An account already exists with this email. Try signing in instead.';
+  if(code==='auth/weak-password') return 'Use a stronger password with at least 6 characters.';
+  if(code==='auth/network-request-failed') return 'Check your internet connection and try again.';
+  if(code==='auth/missing-password') return 'Enter your password.';
+  return 'Something went wrong. Please try again.';
+}
+function rememberAccountEmail(email){
+  if(email) localStorage.setItem('checkstrideLastEmail',email);
+}
+function savedAccountEmail(){
+  return localStorage.getItem('checkstrideLastEmail')||'';
+}
+$('gateSignIn').onclick=()=>{
+  $('authModal').classList.add('show');
+  $('authStatus').textContent='';
+  const saved=savedAccountEmail();
+  if(saved && !$('authEmail').value) $('authEmail').value=saved;
+};
+$('gateCreate').onclick=()=>{
+  $('authModal').classList.add('show');
+  $('authStatus').textContent='Create your Checkstride account below.';
+};
 $('closeAuth').onclick=()=>$('authModal').classList.remove('show');
-$('signInNow').onclick=async()=>{try{await signInWithEmailAndPassword(auth,$('authEmail').value.trim(),$('authPassword').value);$('authModal').classList.remove('show')}catch(e){$('authStatus').textContent=e.message.replace('Firebase: ','')}};
-$('createNow').onclick=async()=>{try{await createUserWithEmailAndPassword(auth,$('authEmail').value.trim(),$('authPassword').value);$('authModal').classList.remove('show')}catch(e){$('authStatus').textContent=e.message.replace('Firebase: ','')}};
+
+$('signInNow').onclick=async()=>{
+  const email=$('authEmail').value.trim();
+  const password=$('authPassword').value;
+  $('authStatus').textContent='';
+  try{
+    await signInWithEmailAndPassword(auth,email,password);
+    rememberAccountEmail(email);
+    $('authModal').classList.remove('show');
+  }catch(e){
+    $('authStatus').textContent=friendlyAuthError(e);
+  }
+};
+
+$('createNow').onclick=async()=>{
+  const email=$('authEmail').value.trim();
+  const password=$('authPassword').value;
+  $('authStatus').textContent='';
+  try{
+    await createUserWithEmailAndPassword(auth,email,password);
+    rememberAccountEmail(email);
+    $('authModal').classList.remove('show');
+  }catch(e){
+    $('authStatus').textContent=friendlyAuthError(e);
+  }
+};
+
+$('forgotPasswordBtn').onclick=async()=>{
+  const email=$('authEmail').value.trim();
+  if(!email){
+    $('authStatus').textContent='Enter your email first, then tap Forgot password.';
+    $('authEmail').focus();
+    return;
+  }
+  try{
+    await sendPasswordResetEmail(auth,email);
+    rememberAccountEmail(email);
+    $('authStatus').textContent='Password reset email sent. Check your inbox and junk folder.';
+  }catch(e){
+    // Avoid exposing whether an account exists. Keep response privacy-safe.
+    if(e?.code==='auth/too-many-requests'){
+      $('authStatus').textContent='Too many reset attempts. Please wait a little while and try again.';
+    }else if(e?.code==='auth/invalid-email'){
+      $('authStatus').textContent='Enter a valid email address.';
+    }else{
+      $('authStatus').textContent='If that email is linked to a Checkstride account, a reset email will be sent.';
+    }
+  }
+};
+
+$('forgotEmailBtn').onclick=()=>{
+  const saved=savedAccountEmail();
+  $('savedEmailBox').innerHTML=saved
+    ?`<strong>This device remembers:</strong><span>${esc(saved)}</span>`
+    :'<strong>No saved account email on this device</strong><span>Once you successfully sign in or create an account, Checkstride will remember the email on this device for future recovery.</span>';
+  $('recoverEmailModal').classList.add('show');
+};
+$('closeRecoverEmail').onclick=()=>$('recoverEmailModal').classList.remove('show');
+
 $('signOutBtn').onclick=()=>signOut(auth);
 
 
