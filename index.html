@@ -591,6 +591,42 @@ input,select{
   .bill-update-modern,.bill-remove-modern{padding:6px 7px}
 }
 
+
+/* v51 Smart Stride is closed by default everywhere */
+#smartStrideLearningDropdown{margin:0 0 10px}
+#smartStrideLearningDropdown>summary{min-height:54px}
+#smartStrideLearningDropdown:not([open]) .smart-stride-body{display:none}
+#smartStrideLearningDropdown .smart-stride-body>.card{border:0;background:transparent;padding:4px 0 0}
+
+
+/* v52 — all learning/intelligence lives in dropdowns */
+.learning-dropdown{
+  margin:0 0 10px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--card);
+  overflow:hidden;
+}
+.learning-dropdown>summary{
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:54px;
+  padding:13px 14px;
+  cursor:pointer;
+}
+.learning-dropdown>summary::-webkit-details-marker{display:none}
+.learning-dropdown>summary b{display:block;font-size:14px}
+.learning-dropdown>summary small{display:block;color:var(--muted);font-size:10px;margin-top:2px;line-height:1.3}
+.learning-dropdown>summary>span{color:var(--accent);font-size:10px;font-weight:700}
+.learning-dropdown[open]>summary>span{font-size:0}
+.learning-dropdown[open]>summary>span::after{content:"Close";font-size:10px}
+.learning-dropdown-body{padding:0 8px 8px}
+.learning-dropdown-body>.card{margin:0 0 8px;box-shadow:none}
+.learning-dropdown-body>.card:last-child{margin-bottom:0}
+
 </style>
 </head>
 <body>
@@ -623,29 +659,6 @@ input,select{
   <details class="compact-details appPageHidden" id="strideAdvanced">
     <summary><div><b>Why this recommendation</b><small>Forecast reasoning and outcome diagnosis.</small></div><span>Show</span></summary>
     <div class="details-body">
-
-
-
-
-
-
-  <section class="card section" id="reasoningSection">
-    <div class="title-row"><h2>Why Stride picked this</h2><span id="reasoningConfidence">Learning</span></div>
-    <div class="smart-rows">
-      <div class="smart-row"><span>Best next move</span><b id="reasoningAction">Finish setup so Checkstride can compare future paycheck outcomes.</b></div>
-      <div class="smart-row"><span>Why this move</span><b id="reasoningWhy">Checkstride weighs the next four paychecks instead of optimizing only the current one.</b></div>
-      <div class="smart-row"><span>If you ignore this</span><b id="reasoningRisk">Waiting for enough information.</b></div>
-      <div class="smart-row"><span>Next 4 paychecks</span><b id="runwayStatus">Waiting for a complete forecast.</b></div>
-      <div class="smart-row"><span>How sure Stride is</span><b id="decisionConfidence">Not enough evidence yet.</b></div>
-      <div class="smart-row"><span>Similar situations</span><b id="contextMemory">No repeated decision context recorded yet.</b></div>
-    </div>
-  </section>
-
-
-  <section class="card section" id="diagnosisSection">
-    <div class="title-row"><h2>What Stride learned</h2><span id="diagnosisStatus">Learning</span></div>
-    <div class="ai-banner"><strong id="diagnosisHeadline">Waiting for completed paycheck outcomes.</strong><p id="diagnosisDetail">When a forecast misses, Checkstride will isolate whether income, spending, bill timing, or a one-off event caused it.</p></div>
-  </section>
     </div>
   </details>
 
@@ -784,8 +797,14 @@ input,select{
     </div>
   </section>
 
+  <details class="learning-dropdown" id="strideRecommendationDropdown">
+    <summary>
+      <div><b>Stride recommendation</b><small>What Stride recommends and why</small></div>
+      <span>Open</span>
+    </summary>
+    <div class="learning-dropdown-body">
 
-  <section class="card section" id="coachSection">
+<section class="card section" id="coachSection">
     <div class="title-row"><h2>Smart Stride</h2><span id="coachLearning">Learning</span></div>
     <div class="smart-rows">
       <div class="smart-row"><span>What this paycheck needs to do</span><b id="coachAction">Finish setup so Checkstride can build a recommendation.</b></div>
@@ -798,6 +817,91 @@ input,select{
       <button id="planMissed" class="ghost">Needs adjustment</button>
     </div>
   </section>
+
+
+
+
+
+
+
+  <section class="card section" id="reasoningSection">
+    <div class="title-row"><h2>Why Stride picked this</h2><span id="reasoningConfidence">Learning</span></div>
+    <div class="smart-rows">
+      <div class="smart-row"><span>Best next move</span><b id="reasoningAction">Finish setup so Checkstride can compare future paycheck outcomes.</b></div>
+      <div class="smart-row"><span>Why this move</span><b id="reasoningWhy">Checkstride weighs the next four paychecks instead of optimizing only the current one.</b></div>
+      <div class="smart-row"><span>If you ignore this</span><b id="reasoningRisk">Waiting for enough information.</b></div>
+      <div class="smart-row"><span>Next 4 paychecks</span><b id="runwayStatus">Waiting for a complete forecast.</b></div>
+      <div class="smart-row"><span>How sure Stride is</span><b id="decisionConfidence">Not enough evidence yet.</b></div>
+      <div class="smart-row"><span>Similar situations</span><b id="contextMemory">No repeated decision context recorded yet.</b></div>
+    </div>
+  </section>
+    </div>
+  </details>
+
+  <details class="learning-dropdown" id="strideLearningDropdown">
+    <summary>
+      <div><b>Stride learning</b><small>Accuracy, patterns, and what Stride is learning</small></div>
+      <span>Open</span>
+    </summary>
+    <div class="learning-dropdown-body">
+
+
+
+  <section class="card section" id="diagnosisSection">
+    <div class="title-row"><h2>What Stride learned</h2><span id="diagnosisStatus">Learning</span></div>
+    <div class="ai-banner"><strong id="diagnosisHeadline">Waiting for completed paycheck outcomes.</strong><p id="diagnosisDetail">When a forecast misses, Checkstride will isolate whether income, spending, bill timing, or a one-off event caused it.</p></div>
+  </section>
+
+  <section class="card section" id="contextSection">
+    <div class="title-row"><h2>How Stride is learning</h2><span id="contextStatus">Learning</span></div>
+    <div class="smart-rows">
+      <div class="smart-row"><span>Needs the most learning</span><b id="weakestContext">Waiting for more completed paychecks.</b></div>
+      <div class="smart-row"><span>Paycheck accuracy</span><b id="incomeReliability">Learning your take-home pattern.</b></div>
+      <div class="smart-row"><span>Spending accuracy</span><b id="spendingReliability">Learning your unexpected-spending pattern.</b></div>
+      <div class="smart-row"><span>Bill timing accuracy</span><b id="billReliability">Learning whether bill timing is matching reality.</b></div>
+      <div class="smart-row"><span>Recent changes</span><b id="driftStatus">No drift detected yet.</b></div>
+    </div>
+  </section>
+    </div>
+  </details>
+
+  <details class="learning-dropdown" id="strideAdaptiveDropdown">
+    <summary>
+      <div><b>Adaptive planning</b><small>How future paycheck plans are being adjusted</small></div>
+      <span>Open</span>
+    </summary>
+    <div class="learning-dropdown-body">
+
+
+  <section class="card section" id="adaptiveSection">
+    <div class="title-row"><h2>Next few paychecks</h2><span id="adaptiveMode">Learning</span></div>
+    <div class="smart-rows">
+      <div class="smart-row"><span>Catch-up speed</span><b id="adaptivePace">Balanced until enough history is available.</b></div>
+      <div class="smart-row"><span>Recent direction</span><b id="adaptiveTrend">Waiting for completed paycheck history.</b></div>
+      <div class="smart-row"><span>Next 4 checks</span><b id="adaptiveNext4">Complete at least 2 paychecks to unlock adaptive pacing.</b></div>
+      <div class="smart-row"><span>Why it changed</span><b id="adaptiveWhy">Checkstride will become more aggressive only when recent paychecks are stable and recommendations are landing close to actual results.</b></div>
+    </div>
+  </section>
+
+<section class="card section" id="planSection">
+    <h2>Smart plan</h2>
+    <div class="strategy-grid">
+      <div class="strategy" data-strategy="fastest"><span>Catch up faster</span><b id="est-fastest">—</b></div>
+      <div class="strategy" data-strategy="balanced"><span>Balanced</span><b id="est-balanced">—</b></div>
+      <div class="strategy" data-strategy="minimum"><span>Protect more cash</span><b id="est-minimum">—</b></div>
+    </div>
+    <div class="smart-rows">
+      <div class="smart-row"><span>How sure Stride is</span><b id="confidence">Low · 0/100</b></div>
+      <div class="smart-row"><span>If you have extra money</span><b id="extraMove">Add or verify your bills before using a catch-up recommendation.</b></div>
+      <div class="smart-row"><span>What Stride remembers</span><b>Uses your selected strategy and never changes it automatically.</b></div>
+      <div class="smart-row"><span>Prediction accuracy</span><b id="predictionCalibration">Waiting for completed paychecks.</b></div>
+      <div class="smart-row"><span>Spending trend</span><b id="spendingPattern">Waiting for completed paychecks.</b></div>
+    </div>
+  </section>
+    </div>
+  </details>
+
+
   <section class="bills-page-head section" id="billsSection">
     <div>
       <h2>Bills</h2>
@@ -913,16 +1017,6 @@ input,select{
     <div class="title-row"><h2>Heads up</h2><span id="warningCount">0 active</span></div>
     <div id="warningList" class="warning-list"></div>
   </section>
-  <section class="card section" id="contextSection">
-    <div class="title-row"><h2>How Stride is learning</h2><span id="contextStatus">Learning</span></div>
-    <div class="smart-rows">
-      <div class="smart-row"><span>Needs the most learning</span><b id="weakestContext">Waiting for more completed paychecks.</b></div>
-      <div class="smart-row"><span>Paycheck accuracy</span><b id="incomeReliability">Learning your take-home pattern.</b></div>
-      <div class="smart-row"><span>Spending accuracy</span><b id="spendingReliability">Learning your unexpected-spending pattern.</b></div>
-      <div class="smart-row"><span>Bill timing accuracy</span><b id="billReliability">Learning whether bill timing is matching reality.</b></div>
-      <div class="smart-row"><span>Recent changes</span><b id="driftStatus">No drift detected yet.</b></div>
-    </div>
-  </section>
     </div>
   </details>
 
@@ -942,38 +1036,6 @@ input,select{
   <details class="compact-details appPageHidden" id="planAdvanced">
     <summary><div><b>More plan details</b><small>Catch-up style comparison and adaptive pacing.</small></div><span>Show</span></summary>
     <div class="details-body">
-  <details class="smart-stride-dropdown" id="smartStrideDropdown">
-    <summary><div><b>Smart Stride</b><small>Learning & recommendations</small></div><span>Open</span></summary>
-    <div class="smart-stride-body">
-
-
-  <section class="card section" id="planSection">
-    <h2>Smart plan</h2>
-    <div class="strategy-grid">
-      <div class="strategy" data-strategy="fastest"><span>Catch up faster</span><b id="est-fastest">—</b></div>
-      <div class="strategy" data-strategy="balanced"><span>Balanced</span><b id="est-balanced">—</b></div>
-      <div class="strategy" data-strategy="minimum"><span>Protect more cash</span><b id="est-minimum">—</b></div>
-    </div>
-    <div class="smart-rows">
-      <div class="smart-row"><span>How sure Stride is</span><b id="confidence">Low · 0/100</b></div>
-      <div class="smart-row"><span>If you have extra money</span><b id="extraMove">Add or verify your bills before using a catch-up recommendation.</b></div>
-      <div class="smart-row"><span>What Stride remembers</span><b>Uses your selected strategy and never changes it automatically.</b></div>
-      <div class="smart-row"><span>Prediction accuracy</span><b id="predictionCalibration">Waiting for completed paychecks.</b></div>
-      <div class="smart-row"><span>Spending trend</span><b id="spendingPattern">Waiting for completed paychecks.</b></div>
-    </div>
-  </section>
-    </div>
-  </details>
-
-  <section class="card section" id="adaptiveSection">
-    <div class="title-row"><h2>Next few paychecks</h2><span id="adaptiveMode">Learning</span></div>
-    <div class="smart-rows">
-      <div class="smart-row"><span>Catch-up speed</span><b id="adaptivePace">Balanced until enough history is available.</b></div>
-      <div class="smart-row"><span>Recent direction</span><b id="adaptiveTrend">Waiting for completed paycheck history.</b></div>
-      <div class="smart-row"><span>Next 4 checks</span><b id="adaptiveNext4">Complete at least 2 paychecks to unlock adaptive pacing.</b></div>
-      <div class="smart-row"><span>Why it changed</span><b id="adaptiveWhy">Checkstride will become more aggressive only when recent paychecks are stable and recommendations are landing close to actual results.</b></div>
-    </div>
-  </section>
 
   <section class="card section" id="forecastSection">
     <h2>Next 4 paychecks</h2>
@@ -1081,7 +1143,7 @@ input,select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:50};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:52};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -2339,8 +2401,8 @@ input,select{
 
   const PAGE_GROUPS={
     home:["setupGuide","homeSection","homeActions","quickStats","billSnapshot","todayFocus"],
-    bills:["smartStrideDropdown","billsSection","completeSection"],
-    coach:["coach12Section","strideAdvanced"],
+    bills:["billsSection","completeSection"],
+    coach:["strideRecommendationDropdown","strideLearningDropdown","strideAdaptiveDropdown","coach12Section","strideAdvanced"],
     more:["setupSection","autoplanSection","goalsSection","scenarioSection","planAdvanced","moreAdvanced"]
   };
   const PAGE_COPY={
@@ -2351,6 +2413,8 @@ input,select{
   };
   function switchPage(page){
     document.querySelectorAll(".compact-details").forEach(d=>d.removeAttribute("open"));
+    document.querySelectorAll(".learning-dropdown").forEach(d=>d.removeAttribute("open"));
+    document.querySelectorAll(".smart-stride-dropdown,.learning-dropdown").forEach(d=>d.removeAttribute("open"));
     const allIds=[...new Set(Object.values(PAGE_GROUPS).flat())];
     allIds.forEach(id=>{const el=$(id);if(el)el.classList.add("appPageHidden")});
     (PAGE_GROUPS[page]||PAGE_GROUPS.home).forEach(id=>{const el=$(id);if(el)el.classList.remove("appPageHidden")});
