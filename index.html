@@ -228,7 +228,7 @@ input,select{min-height:46px}
 
 
   <section class="card section" id="coachSection">
-    <div class="title-row"><h2>Smart Coach</h2><span id="coachLearning">Learning</span></div>
+    <div class="title-row"><h2>Smart Stride</h2><span id="coachLearning">Learning</span></div>
     <div class="smart-rows">
       <div class="smart-row"><span>What this paycheck needs to do</span><b id="coachAction">Finish setup so Checkstride can build a recommendation.</b></div>
       <div class="smart-row"><span>Why</span><b id="coachWhy">Recommendations are based on your paycheck, bill timing, overdue balance, cushion, and past paycheck results.</b></div>
@@ -241,7 +241,7 @@ input,select{min-height:46px}
     </div>
   </section>
 
-<div class="pageIntro appPageHidden" id="billsIntro"><b>Bills & outcomes</b><small>Keep bills current and complete each paycheck so the coach can learn from reality.</small></div>
+<div class="pageIntro appPageHidden" id="billsIntro"><b>Bills & outcomes</b><small>Keep bills current and complete each paycheck so the Stride can learn from reality.</small></div>
   <section class="card section" id="billsSection">
     <div class="title-row"><h2>Bills</h2><span id="billCount">0 tracked</span></div>
     <div class="bill-form">
@@ -316,11 +316,11 @@ input,select{min-height:46px}
     <div id="warningList" class="warning-list"></div>
   </section>
 
-<div class="pageIntro appPageHidden" id="coachIntro"><b>Coach intelligence</b><small>See the recommendation, why it changed, and how much confidence Checkstride has in it.</small></div>
+<div class="pageIntro appPageHidden" id="coachIntro"><b>Stride intelligence</b><small>See the recommendation, why it changed, and how much confidence Checkstride has in it.</small></div>
   <section class="card section" id="coach12Section">
-    <div class="title-row"><h2>Closed-loop coach</h2><span id="coachModePill" class="pill">Guided</span></div>
+    <div class="title-row"><h2>Stride</h2><span id="coachModePill" class="pill">Guided</span></div>
     <div class="ai-stack">
-      <div class="ai-banner"><strong id="coach12Action">Finish setup to activate the coach.</strong><p id="coach12Reason">The coach will combine forecasts, outcomes, goals, and context reliability into one plan.</p></div>
+      <div class="ai-banner"><strong id="coach12Action">Finish setup to activate Stride.</strong><p id="coach12Reason">Stride will combine forecasts, outcomes, goals, and context reliability into one plan.</p></div>
       <div class="smart-row"><span>Current operating mode</span><b id="coach12Mode">Guided — recommendations require your approval.</b></div>
       <div class="smart-row"><span>What changed</span><b id="coach12Change">No completed outcome to compare yet.</b></div>
       <div class="smart-row"><span>Next review trigger</span><b id="coach12Trigger">Next paycheck completion or a meaningful plan change.</b></div>
@@ -371,7 +371,7 @@ input,select{min-height:46px}
 <nav id="bottomNav" class="bottom-nav hidden" aria-label="Primary">
   <button data-page="home" class="active"><span class="navIcon">⌂</span><span>Home</span></button>
   <button data-page="plan"><span class="navIcon">▤</span><span>Plan</span></button>
-  <button data-page="coach"><span class="navIcon">✦</span><span>Coach</span></button>
+  <button data-page="coach"><span class="navIcon">✦</span><span>Stride</span></button>
   <button data-page="bills"><span class="navIcon">$</span><span>Bills</span></button>
   <button data-page="more"><span class="navIcon">•••</span><span>More</span></button>
 </nav>
@@ -971,7 +971,7 @@ input,select{min-height:46px}
   // Level 12 — closed-loop coach combines every subsystem.
   function closedLoopCoach(){
     const strategy=adaptiveStrategyChoice(), diag=outcomeDiagnosis(), plan=buildAutonomousPlan(), warns=proactiveWarnings(), goal=goalGuidance(), ctx=contextCalibration();
-    if(!plan)return{action:"Finish setup to activate the coach.",reason:"A payday and take-home amount are required.",change:"No completed outcome to compare yet.",trigger:"Complete setup."};
+    if(!plan)return{action:"Finish setup to activate Stride.",reason:"A payday and take-home amount are required.",change:"No completed outcome to compare yet.",trigger:"Complete setup."};
     let action=`Use ${strategy.name}. Cover ${money(plan.due)} in bills, protect ${money(plan.cushion)},`;
     if(plan.catchup>0)action+=` put ${money(plan.catchup)} toward catch-up,`;
     if(plan.goalAllocation>0)action+=` put ${money(plan.goalAllocation)} toward ${plan.goalName},`;
@@ -1219,7 +1219,7 @@ input,select{min-height:46px}
   const PAGE_COPY={
     home:["Today","Your paycheck","Live"],
     plan:["Plan","Build the next move","4 checks"],
-    coach:["Coach","What Checkstride recommends","Smart"],
+    coach:["Coach","What Stride recommends","Smart"],
     bills:["Bills","What actually happened","Learning data"],
     more:["Tools","Scenarios & goals","Advanced"]
   };
