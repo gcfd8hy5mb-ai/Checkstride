@@ -22,7 +22,12 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
 .auth-gate{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);background:radial-gradient(circle at 50% 15%,#0d3a63 0,#07111f 42%,#050b14 100%)}
 .auth-gate-card{width:min(430px,100%);text-align:center;background:rgba(13,27,42,.94);border:1px solid #1f4964;border-radius:26px;padding:30px 22px 24px;box-shadow:0 24px 70px rgba(0,0,0,.38)}
 .auth-logo{width:106px;height:106px;object-fit:contain;margin:0 auto 14px;display:block}.auth-gate-card h1{font-size:34px;margin:0 0 6px}.auth-tagline{margin:0 auto 26px;color:#a8bacb;font-size:16px;line-height:1.45}.auth-gate-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}.auth-gate-actions button{min-height:52px}.auth-note{margin:18px 6px 0}
-@media(max-width:560px){.row,.row3{grid-template-columns:1fr}}
+
+.onboard{position:fixed;inset:0;z-index:45;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(env(safe-area-inset-top) + 24px) 18px calc(env(safe-area-inset-bottom) + 24px);background:radial-gradient(circle at 50% 10%,#0d3a63 0,#07111f 42%,#050b14 100%)}
+.onboard.show{display:flex}.onboard-card{width:min(520px,100%);background:rgba(13,27,42,.97);border:1px solid #1f4964;border-radius:24px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.38)}
+.onboard-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}.onboard-head img{width:52px;height:52px;object-fit:contain}.onboard-head h2{margin:0;font-size:24px}.progress{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 20px}.progress i{height:5px;border-radius:999px;background:#173047}.progress i.active{background:linear-gradient(90deg,#0E3A70,var(--teal))}
+.step{display:none}.step.active{display:block}.step h3{margin:0 0 6px;font-size:22px}.step p{margin:0 0 18px;color:var(--muted);line-height:1.45}.onboard-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.bill-seed{display:grid;grid-template-columns:1.3fr .7fr;gap:10px;margin-bottom:10px}.welcome-done{text-align:center;padding:14px 4px 2px}.welcome-done .bigcheck{font-size:46px;margin-bottom:8px}
+@media(max-width:560px){.row,.row3,.bill-seed{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -38,9 +43,41 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
     <p class="small auth-note">Sign in to securely access your paycheck plan and sync it across devices.</p>
   </div>
 </div>
+<div id="onboarding" class="onboard">
+  <div class="onboard-card">
+    <div class="onboard-head"><img src="./checkstride-logo.svg" alt=""><div><h2>Set up Checkstride</h2><div class="small">A quick setup to build your first paycheck plan.</div></div></div>
+    <div class="progress"><i id="prog1" class="active"></i><i id="prog2"></i><i id="prog3"></i><i id="prog4"></i></div>
+
+    <section class="step active" data-step="1">
+      <h3>When do you get paid?</h3><p>Start with the next paycheck Checkstride should plan around.</p>
+      <label>Next payday</label><input id="obPayday" type="date">
+      <label>Expected take-home pay</label><input id="obPaycheck" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
+    </section>
+
+    <section class="step" data-step="2">
+      <h3>What bills need this check?</h3><p>Add the bills you already know are coming up. You can add more later.</p>
+      <div class="bill-seed"><input id="obBillName" placeholder="Bill name"><input id="obBillAmount" type="number" step="0.01" inputmode="decimal" placeholder="Amount"></div>
+      <div class="bill-seed"><input id="obBillDate" type="date"><select id="obBillPriority"><option value="critical">Critical</option><option value="important">Important</option><option value="flexible">Flexible</option></select></div>
+      <button id="obAddBill" class="secondary" style="width:100%">+ Add this bill</button>
+      <div id="obBillList" class="small" style="margin-top:12px">No bills added yet.</div>
+    </section>
+
+    <section class="step" data-step="3">
+      <h3>Protect some breathing room</h3><p>Choose how much money you want left untouched for everyday spending.</p>
+      <label>Spending cushion</label><input id="obCushion" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
+      <label>Catch-up style</label><select id="obStrategy"><option value="balanced">Balanced</option><option value="fast">Fastest Catch-Up</option><option value="stress">Minimum Stress</option></select>
+    </section>
+
+    <section class="step" data-step="4">
+      <div class="welcome-done"><div class="bigcheck">✓</div><h3>Your first plan is ready</h3><p>Checkstride will now show what this paycheck needs to do, what to pay first, and what is safe to spend.</p></div>
+    </section>
+
+    <div class="onboard-actions"><button id="obBack" class="secondary">Back</button><button id="obNext" class="primary">Continue</button></div>
+  </div>
+</div>
 <div id="appShell" class="app" style="display:none">
 <div class="header">
-  <div class="brand"><img src="./checkstride-logo.png" alt="" onerror="this.style.display='none'"><div><h1>Checkstride</h1><p>Know what this paycheck needs to do.</p></div></div>
+  <div class="brand"><img src="./checkstride-logo.svg" alt="" onerror="this.style.display='none'"><div><h1>Checkstride</h1><p>Know what this paycheck needs to do.</p></div></div>
   <div id="cloudBadge" class="badge">Local only</div>
 </div>
 
@@ -108,14 +145,14 @@ const overdue=b=>Number(b.overdue||0)>0||(b.date&&new Date(b.date+'T00:00:00')<t
 const dueBefore=b=>!$('payday').value||!b.date||b.date<=$('payday').value;
 const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 
-function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills}}
+function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,onboardingComplete:true}}
 function apply(d){if(!d)return;$('payday').value=d.payday||'';$('paycheck').value=d.paycheck||'';$('cushion').value=d.cushion||'';$('extraIncome').value=d.extraIncome||'';$('strategy').value=d.strategy||'balanced';bills=Array.isArray(d.bills)?d.bills:[];recalc()}
 function saveLocal(){localStorage.setItem('checkstrideV1',JSON.stringify(state()))}
 function loadLocal(){try{return JSON.parse(localStorage.getItem('checkstrideV1')||'null')}catch{return null}}
 function badge(t,on=false){$('cloudBadge').textContent=t;$('cloudBadge').className='badge'+(on?' online':'')}
 async function saveCloud(){if(!currentUser)return;await setDoc(doc(db,'users',currentUser.uid,'state','main'),{...state(),updatedAt:serverTimestamp()},{merge:true});badge('Synced',true)}
 function schedule(){saveLocal();if(!currentUser)return;badge('Saving…',true);clearTimeout(timer);timer=setTimeout(()=>saveCloud().catch(()=>badge('Sync error')),600)}
-async function loadCloud(){const ref=doc(db,'users',currentUser.uid,'state','main'),snap=await getDoc(ref);if(snap.exists())apply(snap.data());else{const l=loadLocal();if(l)apply(l);await saveCloud()}badge('Synced',true)}
+async function loadCloud(){const ref=doc(db,'users',currentUser.uid,'state','main'),snap=await getDoc(ref);if(snap.exists()){const d=snap.data();apply(d);badge('Synced',true);return true}badge('New account',true);return false}
 
 function renderBills(){const box=$('billList');if(!bills.length){box.className='small';box.textContent='No bills added yet.';return}box.className='list';box.innerHTML='';
 bills.slice().sort((a,b)=>rank(a.priority)-rank(b.priority)||(a.date||'').localeCompare(b.date||'')).forEach(b=>{const i=bills.indexOf(b),row=document.createElement('div');row.className='item';row.innerHTML=`<div><strong>${esc(b.name)}</strong>${overdue(b)?'<span class="tag overdue">OVERDUE</span>':''}<span class="tag ${b.priority}">${b.priority.toUpperCase()}</span><div class="small">${b.date?'Due '+b.date:'No due date'} · overdue ${money(b.overdue)}</div></div><div><span>${money(b.amount)}</span> <button class="danger remove" data-i="${i}">×</button></div>`;box.appendChild(row)});
@@ -128,6 +165,14 @@ return {income,cushion,steps,unpaid,totalOverdue:bills.reduce((s,b)=>s+Number(b.
 
 function recalc(){const r=plan();$('paycheckKpi').textContent=money(r.income);$('overdueKpi').textContent=money(r.totalOverdue);$('dueKpi').textContent=money(r.dueNow);$('safeSpend').textContent=money(Math.max(0,r.income-r.cushion-r.steps.reduce((s,x)=>s+x.pay,0)));const d=daysUntil($('payday').value);$('countdown').textContent=$('payday').value?`${d} day${d===1?'':'s'} until next payday.`:'Set your next payday below.';$('caughtUpKpi').textContent=r.unpaid<=0&&bills.length?($('payday').value||'This check'):(r.unpaid>0&&r.income>r.cushion?`~${Math.ceil(r.unpaid/Math.max(1,r.income-r.cushion))+1} checks`:'—');
 const s=$('planSummary'),p=$('planSteps');if(!bills.length||r.income<=0){s.textContent='Add your paycheck and bills to generate a plan.';p.innerHTML='';renderBills();return}s.textContent=r.unpaid<=0?`This paycheck can cover the catch-up plan while keeping ${money(r.cushion)} as your cushion.`:`You still have ${money(r.unpaid)} that cannot fit into this paycheck. Checkstride prioritizes what to pay first.`;p.innerHTML='';r.steps.forEach((x,i)=>{const d=document.createElement('div');d.className='plan';d.innerHTML=`<b>${i+1}. Pay ${esc(x.name)} — ${money(x.pay)}</b><div class="small">${x.priority} priority${x.remaining>0?' · '+money(x.remaining)+' still remaining':''}</div>`;p.appendChild(d)});renderBills()}
+
+let obStep=1,obBills=[];
+function showOnboarding(){obStep=1;obBills=[];$('onboarding').classList.add('show');renderOb()}
+function hideOnboarding(){$('onboarding').classList.remove('show')}
+function renderOb(){document.querySelectorAll('.step').forEach(x=>x.classList.toggle('active',Number(x.dataset.step)===obStep));for(let i=1;i<=4;i++)$('prog'+i).classList.toggle('active',i<=obStep);$('obBack').style.visibility=obStep===1?'hidden':'visible';$('obNext').textContent=obStep===4?'Open my plan':'Continue';const box=$('obBillList');if(!obBills.length)box.textContent='No bills added yet.';else box.innerHTML=obBills.map((b,i)=>`<div class="item"><div><b>${esc(b.name)}</b><div class="small">${money(b.amount)}${b.date?' · due '+b.date:''}</div></div><button class="danger ob-remove" data-i="${i}">×</button></div>`).join('');box.querySelectorAll?.('.ob-remove').forEach(x=>x.onclick=()=>{obBills.splice(Number(x.dataset.i),1);renderOb()})}
+$('obAddBill').onclick=()=>{const name=$('obBillName').value.trim(),amount=Number($('obBillAmount').value||0);if(!name||amount<=0)return alert('Enter a bill name and amount.');obBills.push({name,amount,overdue:0,date:$('obBillDate').value||'',priority:$('obBillPriority').value});$('obBillName').value='';$('obBillAmount').value='';$('obBillDate').value='';renderOb()};
+$('obBack').onclick=()=>{if(obStep>1){obStep--;renderOb()}};
+$('obNext').onclick=async()=>{if(obStep===1){if(!$('obPayday').value||Number($('obPaycheck').value||0)<=0)return alert('Enter your next payday and expected take-home pay.');obStep=2;renderOb();return}if(obStep===2){obStep=3;renderOb();return}if(obStep===3){$('payday').value=$('obPayday').value;$('paycheck').value=$('obPaycheck').value;$('cushion').value=$('obCushion').value||'';$('strategy').value=$('obStrategy').value;bills=obBills.slice();recalc();saveLocal();try{await saveCloud()}catch{badge('Sync error')}obStep=4;renderOb();return}if(obStep===4){hideOnboarding();recalc()}};
 
 $('addBillBtn').onclick=()=>{const name=$('billName').value.trim(),amount=Number($('billAmount').value||0),overdueAmt=Number($('billOverdue').value||0);if(!name||amount<=0)return alert('Enter a bill name and amount.');bills.push({name,amount,overdue:overdueAmt,date:$('billDate').value||'',priority:$('billPriority').value});$('billName').value=$('billAmount').value=$('billOverdue').value=$('billDate').value='';schedule();recalc()};
 ['payday','paycheck','cushion','extraIncome','strategy'].forEach(id=>$(id).oninput=()=>{schedule();recalc()});
@@ -142,6 +187,6 @@ $('signInNow').onclick=async()=>{try{await signInWithEmailAndPassword(auth,$('au
 $('createNow').onclick=async()=>{try{await createUserWithEmailAndPassword(auth,$('authEmail').value.trim(),$('authPassword').value);$('authModal').classList.remove('show')}catch(e){$('authStatus').textContent=e.message.replace('Firebase: ','')}};
 $('signOutBtn').onclick=()=>signOut(auth);
 
-onAuthStateChanged(auth,async user=>{currentUser=user;if(user){$('authGate').style.display='none';$('appShell').style.display='block';$('authLabel').textContent=user.email||'Signed in';$('authBtn').style.display='none';$('signOutBtn').style.display='inline-block';badge('Loading cloud…',true);try{await loadCloud()}catch{badge('Cloud error')}}else{$('authGate').style.display='flex';$('appShell').style.display='none';$('authLabel').textContent='Not signed in';$('authBtn').style.display='inline-block';$('signOutBtn').style.display='none';badge('Local only');const l=loadLocal();if(l)apply(l);else recalc()}});
+onAuthStateChanged(auth,async user=>{currentUser=user;if(user){$('authGate').style.display='none';$('appShell').style.display='block';$('authLabel').textContent=user.email||'Signed in';$('authBtn').style.display='none';$('signOutBtn').style.display='inline-block';badge('Loading cloud…',true);try{const hasCloud=await loadCloud();if(!hasCloud)showOnboarding()}catch{badge('Cloud error')}}else{hideOnboarding();$('authGate').style.display='flex';$('appShell').style.display='none';$('authLabel').textContent='Not signed in';$('authBtn').style.display='inline-block';$('signOutBtn').style.display='none';badge('Local only');recalc()}});
 </script>
 </body></html>
