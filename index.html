@@ -11,6 +11,8 @@
 radial-gradient(circle at top right,rgba(24,183,176,.08),transparent 30%),
 linear-gradient(#07111f,#0b1523);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 body.menu-open{overflow:hidden}
+html{scroll-behavior:smooth}
+body.busy{cursor:progress}
 .app{max-width:760px;margin:auto;padding:calc(env(safe-area-inset-top) + 10px) 14px calc(env(safe-area-inset-bottom) + 98px)}
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;position:sticky;top:0;z-index:20;padding:8px 0 10px;background:linear-gradient(180deg,rgba(7,17,31,.99),rgba(7,17,31,.94),rgba(7,17,31,.10));backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .brand{display:flex;align-items:center;gap:10px}.brand img{width:44px;height:44px;object-fit:contain}.brand h1{margin:0;font-size:20px;letter-spacing:-.35px;font-weight:800}.brand p{margin:2px 0 0;color:var(--muted);font-size:10.5px;letter-spacing:.01em}
@@ -76,7 +78,37 @@ label{display:block;color:#cbd5e1;font-size:13px;margin:10px 0 6px}input,select,
 
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #4da3ff;outline-offset:2px}
 button{font-family:inherit}
+button:disabled{opacity:.55;cursor:not-allowed}
 *{-webkit-tap-highlight-color:transparent}
+.toast-stack{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 82px);transform:translateX(-50%);z-index:90;width:min(calc(100% - 28px),430px);display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:rgba(12,29,46,.97);border:1px solid #2e506b;color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 12px 32px rgba(0,0,0,.28);font-size:13px;font-weight:700;opacity:0;transform:translateY(12px) scale(.98);transition:opacity .18s ease,transform .18s ease;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.toast.show{opacity:1;transform:translateY(0) scale(1)}
+.toast.success{border-color:#1b6f66;background:rgba(9,47,49,.97)}
+.toast.warn{border-color:#71551b;background:rgba(43,34,12,.97)}
+.toast.error{border-color:#77343a;background:rgba(52,22,26,.97)}
+.loading-overlay{position:fixed;inset:0;background:rgba(5,12,20,.66);display:none;place-items:center;z-index:80;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.loading-overlay.show{display:grid}
+.loading-card{background:#0d1b2a;border:1px solid #2a4157;border-radius:18px;padding:18px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 18px 50px rgba(0,0,0,.35);font-weight:800}
+.spinner{width:20px;height:20px;border-radius:50%;border:2px solid #31516d;border-top-color:#22c9bf;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{padding:18px 14px;text-align:center;background:#091827;border:1px dashed #2a4157;border-radius:14px}.empty-state strong{display:block;font-size:14px;margin-bottom:5px}.empty-state span{display:block;color:var(--muted);font-size:12px;line-height:1.4}
+.success-flash{animation:successFlash .7s ease}@keyframes successFlash{0%{box-shadow:0 0 0 0 rgba(24,183,176,.35)}50%{box-shadow:0 0 0 8px rgba(24,183,176,0)}100%{box-shadow:var(--shadow)}}
+.drawer,.hidden-section,.card,.bill-card,.plan-card,.status-item{will-change:transform}
+.section-head button,.text-btn,.collapse-btn{cursor:pointer}
+.ob-progress{display:flex;gap:7px;margin:14px 0 18px}.ob-dot{height:5px;flex:1;border-radius:999px;background:#1d3144}.ob-dot.active{background:linear-gradient(90deg,#18b7b0,#4da3ff)}.ob-dot.done{background:#176b66}
+.ob-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:#78cfc8;font-weight:850;margin-bottom:5px}
+.ob-title{font-size:24px;line-height:1.08;letter-spacing:-.7px;margin:0 0 7px}.ob-copy{font-size:13px;line-height:1.5;color:var(--muted);margin-bottom:16px}
+.ob-example{background:#091827;border:1px solid #24384d;border-radius:14px;padding:12px;margin:12px 0}.ob-example b{display:block;font-size:12px;margin-bottom:4px}.ob-example span{font-size:11px;color:var(--muted);line-height:1.4}
+.ob-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.ob-actions .primary,.ob-actions .secondary{width:100%}
+.ob-step{animation:obIn .18s ease}@keyframes obIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}
+.ob-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.ob-summary-card{background:#091827;border:1px solid #22364a;border-radius:14px;padding:12px}.ob-summary-card span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em}.ob-summary-card b{display:block;margin-top:4px;font-size:16px}
+.ob-skip{border:0;background:transparent;color:var(--muted);font-weight:700;padding:8px 0}
+.ob-bill-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:#091827;border:1px solid #22364a;border-radius:12px;padding:10px;margin-top:8px}.ob-bill-row strong{font-size:13px}.ob-bill-row span{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+@media(max-width:560px){.ob-title{font-size:22px}.ob-actions{grid-template-columns:1fr}.ob-summary{grid-template-columns:1fr 1fr}}
+
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
 
 </style>
 </head>
@@ -142,6 +174,13 @@ button{font-family:inherit}
       <div id="countdown" class="small">Set your next payday below.</div>
       <div id="heroStatus" class="hero-chip">Plan not ready</div>
     </div>
+
+<div id="firstUseHint" class="card" style="display:none">
+  <div class="section-head"><h2>Finish your first plan</h2><span class="inline-stat">2 minutes</span></div>
+  <div class="ob-copy" style="margin-bottom:12px">Add your payday, paycheck amount, and at least one bill. Checkstride will calculate what is safe to spend automatically.</div>
+  <button id="firstUseSetupBtn" class="primary" style="width:100%">Finish setup</button>
+</div>
+
   </div>
 
   <div class="kpis">
@@ -270,10 +309,10 @@ button{font-family:inherit}
 
 <div id="mobileTabs" class="mobile-tabs" style="display:none">
   <div>
-    <button class="tab-btn active" data-scroll="appShell"><strong>⌂</strong>Home</button>
-    <button class="tab-btn" data-scroll="planCard"><strong>✓</strong>Plan</button>
-    <button class="tab-btn" data-scroll="billsCard"><strong>▤</strong>Bills</button>
-    <button class="tab-btn" data-scroll="historyCard"><strong>↺</strong>History</button>
+    <button class="tab-btn active" data-scroll="appShell" aria-label="Home"><strong>⌂</strong>Home</button>
+    <button class="tab-btn" data-scroll="planCard" aria-label="Current paycheck plan"><strong>✓</strong>Plan</button>
+    <button class="tab-btn" data-scroll="billsCard" aria-label="Bills"><strong>▤</strong>Bills</button>
+    <button class="tab-btn" data-scroll="historyCard" aria-label="History"><strong>↺</strong>History</button>
   </div>
 </div>
 
@@ -347,10 +386,13 @@ function markOccurrencePaid(b,d,amount){
     dueKey:key, paidAt:new Date().toISOString()
   });
   schedule(); recalc();
+  toast(`${b.name} marked paid.`,'success');
 }
 function undoPayment(id){
+  const item=paymentHistory.find(p=>p.id===id);
   paymentHistory=paymentHistory.filter(p=>p.id!==id);
   schedule(); recalc();
+  toast(item?`${item.billName} payment restored.`:'Payment restored.','default');
 }
 
 function nextPaydays(startStr,freq,count=4){
@@ -380,7 +422,7 @@ function upcomingOccurrences(b,start,end){
   while(cur<=last){const d=billDueDateForMonth(b,cur.getFullYear(),cur.getMonth());if(d>=start&&d<=end)out.push(d);cur.setMonth(cur.getMonth()+1)}
   return out;
 }
-function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,paymentHistory,paycheckHistory,onboardingComplete:true,version:8}}
+function state(){return {payday:$('payday').value,paycheck:$('paycheck').value,payFrequency:$('payFrequency').value,cushion:$('cushion').value,extraIncome:$('extraIncome').value,strategy:$('strategy').value,bills,paymentHistory,paycheckHistory,onboardingComplete:true,version:10}}
 function normalizeBill(b){
   if(b.dueDay) return {...b,id:b.id||uid(),dueDay:Number(b.dueDay)};
   let dueDay=1;
@@ -406,7 +448,7 @@ function renderBillStatus(){
   const list=$('billStatusList'), alerts=$('billAlerts');
   let counts={overdue:0,soon:0,paid:0,upcoming:0,due:0};
   if(!bills.length){
-    list.innerHTML='<div class="empty">Add recurring bills to see due alerts.</div>';
+    list.innerHTML='<div class="empty-state"><strong>No bill alerts yet</strong><span>Add recurring bills to see what needs attention first.</span></div>';
     alerts.innerHTML='';
     $('statusOverdueCount').textContent='0';$('statusDueSoonCount').textContent='0';$('statusPaidCount').textContent='0';$('statusUpcomingCount').textContent='0';
     return;
@@ -456,7 +498,12 @@ function renderBills(){
     </div>`;
     box.appendChild(row)
   });
-  box.querySelectorAll('.remove').forEach(x=>x.onclick=()=>{bills.splice(Number(x.dataset.i),1);schedule();recalc()});
+  box.querySelectorAll('.remove').forEach(x=>x.onclick=()=>{
+    const i=Number(x.dataset.i), bill=bills[i];
+    if(!bill)return;
+    if(!confirmAction(`Remove ${bill.name}? This will remove the recurring bill from your plan.`))return;
+    bills.splice(i,1);schedule();recalc();toast(`${bill.name} removed.`,'default');
+  });
   box.querySelectorAll('[data-pay]').forEach(x=>x.onclick=()=>{
     const b=bills[Number(x.dataset.pay)], d=currentCycleDueDate(b);
     if(isOccurrencePaid(b,d)) return;
@@ -499,7 +546,7 @@ function buildForecast(extraFirst=0,spendFirst=0){
 function renderPaycheckHistory(){
   const box=$('paycheckHistory');
   if(!paycheckHistory.length){
-    box.innerHTML='<div class="empty">No completed paychecks yet.</div>';
+    box.innerHTML='<div class="empty-state"><strong>No paycheck history yet</strong><span>Complete your first paycheck to start building history.</span></div>';
     return;
   }
   box.innerHTML='';
@@ -512,7 +559,7 @@ function renderPaycheckHistory(){
 }
 function renderPaymentHistory(){
   const box=$('paymentHistory');
-  if(!paymentHistory.length){box.innerHTML='<div class="empty">No payments recorded yet.</div>';return}
+  if(!paymentHistory.length){box.innerHTML='<div class="empty-state"><strong>No payments yet</strong><span>Mark a bill paid and it will show here.</span></div>';return}
   box.innerHTML='';
   paymentHistory.slice(0,25).forEach(p=>{
     const row=document.createElement('div');row.className='history-row';
@@ -524,6 +571,7 @@ function renderPaymentHistory(){
   box.querySelectorAll('[data-undo]').forEach(x=>x.onclick=()=>undoPayment(x.dataset.undo));
 }
 function recalc(){
+  updateFirstUseHint();
   renderBillStatus();
   renderBills();
   renderPaycheckHistory();
@@ -570,18 +618,18 @@ function recalc(){
   if(!f.checks.length)t.innerHTML='<div class="empty">Set a payday and paycheck amount to see future checks.</div>';
   else f.checks.forEach((c,i)=>{const box=document.createElement('div');box.className='paycard';box.innerHTML=`<div class="paytop"><div><b>${i===0?'Current':'Paycheck '+(i+1)} · ${iso(c.date)}</b><div class="small">${c.items.length} planned payment${c.items.length===1?'':'s'}</div></div><div class="money">${money(c.safe)} safe</div></div><div class="small" style="margin-top:8px">Income ${money(c.income)} · cushion ${money(c.cushion)}${c.short>0?' · '+money(c.short)+' carries forward':' · fully covered'}</div>`;t.appendChild(box)})
 }
-function showOnboarding(){obStep=1;obBills=[];$('onboarding').classList.add('show');renderOb()}
+function showOnboarding(){setOnboardingStep(1);obStep=1;obBills=[];$('onboarding').classList.add('show');renderOb()}
 function hideOnboarding(){$('onboarding').classList.remove('show')}
 function renderOb(){document.querySelectorAll('.step').forEach(x=>x.classList.toggle('active',Number(x.dataset.step)===obStep));for(let i=1;i<=4;i++)$('prog'+i).classList.toggle('active',i<=obStep);$('obBack').style.visibility=obStep===1?'hidden':'visible';$('obNext').textContent=obStep===4?'Open my plan':'Continue';const box=$('obBillList');if(!obBills.length)box.textContent='No bills added yet.';else box.innerHTML=obBills.map((b,i)=>`<div class="item"><div><b>${esc(b.name)}</b><div class="small">${money(b.amount)} · due day ${b.dueDay}</div></div><button class="danger ob-remove" data-i="${i}">×</button></div>`).join('');box.querySelectorAll?.('.ob-remove').forEach(x=>x.onclick=()=>{obBills.splice(Number(x.dataset.i),1);renderOb()})}
 $('obAddBill').onclick=()=>{const name=$('obBillName').value.trim(),amount=Number($('obBillAmount').value||0),dueDay=Number($('obBillDueDay').value||0);if(!name||amount<=0||dueDay<1||dueDay>31)return alert('Enter a bill name, amount, and due day from 1 to 31.');obBills.push({id:uid(),name,amount,overdue:0,dueDay,priority:$('obBillPriority').value});$('obBillName').value='';$('obBillAmount').value='';$('obBillDueDay').value='';renderOb()};
 $('obBack').onclick=()=>{if(obStep>1){obStep--;renderOb()}};
-$('obNext').onclick=async()=>{if(obStep===1){if(!$('obPayday').value||Number($('obPaycheck').value||0)<=0)return alert('Enter your next payday and expected take-home pay.');obStep=2;renderOb();return}if(obStep===2){obStep=3;renderOb();return}if(obStep===3){$('payday').value=$('obPayday').value;$('paycheck').value=$('obPaycheck').value;$('payFrequency').value=$('obFrequency').value;$('cushion').value=$('obCushion').value||'';$('strategy').value=$('obStrategy').value;bills=obBills.slice();recalc();saveLocal();try{await saveCloud()}catch{badge('Sync error')}obStep=4;renderOb();return}if(obStep===4){hideOnboarding();recalc()}};
+$('obNext').onclick=async()=>{if(obStep===1){if(!$('obPayday').value||Number($('obPaycheck').value||0)<=0)return alert('Enter your next payday and expected take-home pay.');obStep=2;renderOb();return}if(obStep===2){obStep=3;renderOb();return}if(obStep===3){$('payday').value=$('obPayday').value;$('paycheck').value=$('obPaycheck').value;$('payFrequency').value=$('obFrequency').value;$('cushion').value=$('obCushion').value||'';$('strategy').value=$('obStrategy').value;bills=obBills.slice();recalc();saveLocal();try{await saveCloud()}catch{badge('Sync error')}obStep=4;renderOb();return}if(obStep===4){hideOnboarding();toast('Your first Checkstride plan is ready.','success',3000);recalc()}};
 
 
 async function completeCurrentPaycheck(){
   const forecast=buildForecast(), first=forecast.checks[0];
   if(!first || !$('payday').value || Number($('paycheck').value||0)<=0){
-    alert('Set your current payday and paycheck amount first.');
+    toast('Set your payday and paycheck amount first.','warn');
     return;
   }
   if(!confirm('Complete this paycheck? Unpaid current-cycle bills will carry forward and Checkstride will move to your next payday.')) return;
@@ -618,13 +666,22 @@ async function completeCurrentPaycheck(){
   $('extraIncome').value='';
 
   saveLocal();
-  try{ await saveCloud(); }catch{ badge('Sync error'); }
+  setBusy(true,'Saving paycheck…');
+  try{
+    await saveCloud();
+  }catch{
+    badge('Sync error');
+    toast('Saved on this device. Cloud sync needs attention.','warn',3200);
+  }finally{
+    setBusy(false);
+  }
   recalc();
-  alert('Paycheck completed. Your next payday is ready.');
+  toast('Paycheck completed. Next payday is ready.','success');flash($('planCard'));
 }
 $('completePaycheckBtn').onclick=completeCurrentPaycheck;
 
-$('addBillBtn').onclick=()=>{const name=$('billName').value.trim(),amount=Number($('billAmount').value||0),overdue=Number($('billOverdue').value||0),dueDay=Number($('billDueDay').value||0);if(!name||amount<=0||dueDay<1||dueDay>31)return alert('Enter a bill name, amount, and monthly due day from 1 to 31.');bills.push({id:uid(),name,amount,overdue,dueDay,priority:$('billPriority').value});['billName','billAmount','billOverdue','billDueDay'].forEach(id=>$(id).value='');schedule();recalc()};
+$('addBillBtn').onclick=()=>{const name=$('billName').value.trim(),amount=Number($('billAmount').value||0),overdue=Number($('billOverdue').value||0),dueDay=Number($('billDueDay').value||0);if(!name||amount<=0||dueDay<1||dueDay>31)return alert('Enter a bill name, amount, and monthly due day from 1 to 31.');bills.push({id:uid(),name,amount,overdue,dueDay,priority:$('billPriority').value});
+  toast(`${name} added.`,'success');['billName','billAmount','billOverdue','billDueDay'].forEach(id=>$(id).value='');schedule();recalc()};
 ['payday','paycheck','payFrequency','cushion','extraIncome','strategy'].forEach(id=>$(id).oninput=()=>{schedule();recalc()});
 $('whatIfBtn').onclick=()=>{const f=buildForecast(Number($('whatIfIncome').value||0),Number($('whatIfSpend').value||0));if(!f.checks.length)return $('whatIfResult').textContent='Set your pay schedule first.';$('whatIfResult').textContent=f.caughtUp?`With that change, the plan is caught up by ${iso(f.caughtUp)}.`:`After 4 checks, about ${money(f.remainingOverdue)} would still be carrying forward.`};
 $('saveBtn').onclick=async()=>{schedule();try{await saveCloud();alert('Saved to Checkstride cloud.')}catch{alert('Saved on this device. Cloud sync failed.')}};
@@ -637,6 +694,90 @@ $('createNow').onclick=async()=>{try{await createUserWithEmailAndPassword(auth,$
 $('signOutBtn').onclick=()=>signOut(auth);
 
 
+
+
+
+function setOnboardingStep(step){
+  obStep=step;
+  document.querySelectorAll('[data-obdot]').forEach(dot=>{
+    const n=Number(dot.dataset.obdot);
+    dot.classList.toggle('active',n===step);
+    dot.classList.toggle('done',n<step);
+  });
+  const titles={
+    1:['Build your first paycheck plan','Start with when you get paid and what a normal paycheck looks like.'],
+    2:['Add the bills that matter most','You can start small. Critical bills are enough for a useful first plan.'],
+    3:['Choose your breathing room','Set a cushion and how aggressively you want Checkstride to catch you up.'],
+    4:['Your plan is ready','You can change anything later. Checkstride will keep recalculating automatically.']
+  };
+  if($('obTitle')) $('obTitle').textContent=titles[step]?.[0]||'Checkstride setup';
+  if($('obCopy')) $('obCopy').textContent=titles[step]?.[1]||'';
+  if(step===4){
+    const pay=Number($('obPaycheck')?.value||$('paycheck')?.value||0);
+    if($('obSummaryPay')) $('obSummaryPay').textContent=money(pay);
+    if($('obSummaryBills')) $('obSummaryBills').textContent=String((obBills?.length||bills.length||0));
+  }
+}
+function updateFirstUseHint(){
+  const hint=$('firstUseHint');
+  if(!hint)return;
+  const ready=!!$('payday')?.value && Number($('paycheck')?.value||0)>0 && bills.length>0;
+  hint.style.display=ready?'none':'block';
+}
+if($('firstUseSetupBtn')) $('firstUseSetupBtn').onclick=()=>{
+  if(typeof showOnboarding==='function') showOnboarding();
+  else {
+    $('settingsBody')?.classList.remove('hidden-section');
+    $('toggleSettings') && ($('toggleSettings').textContent='Done');
+    $('appShell')?.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+};
+
+function toast(message,type='default',duration=2400){
+  const stack=$('toastStack');
+  if(!stack) return;
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.textContent=message;
+  stack.appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('show'));
+  setTimeout(()=>{
+    el.classList.remove('show');
+    setTimeout(()=>el.remove(),220);
+  },duration);
+}
+function setBusy(on,text='Working…'){
+  const overlay=$('loadingOverlay');
+  if(!overlay) return;
+  $('loadingText').textContent=text;
+  overlay.classList.toggle('show',!!on);
+  overlay.setAttribute('aria-hidden',on?'false':'true');
+  document.body.classList.toggle('busy',!!on);
+}
+function flash(el){
+  if(!el) return;
+  el.classList.remove('success-flash');
+  void el.offsetWidth;
+  el.classList.add('success-flash');
+}
+function confirmAction(message){
+  return window.confirm(message);
+}
+function currentOpenPanel(){
+  if($('drawer').classList.contains('show')) return 'drawer';
+  if(!$('whatIfBody').classList.contains('hidden-section')) return 'whatif';
+  if(!$('settingsBody').classList.contains('hidden-section')) return 'settings';
+  if(!$('billForm').classList.contains('hidden-section')) return 'billform';
+  return null;
+}
+function closeTopPanel(){
+  const panel=currentOpenPanel();
+  if(panel==='drawer'){closeDrawer();return true}
+  if(panel==='whatif'){$('whatIfBody').classList.add('hidden-section');$('toggleWhatIf').textContent='Show';return true}
+  if(panel==='settings'){$('settingsBody').classList.add('hidden-section');$('toggleSettings').textContent='Edit';return true}
+  if(panel==='billform'){$('billForm').classList.add('hidden-section');$('toggleBillForm').textContent='Add';return true}
+  return false;
+}
 
 function toggleSection(bodyId,btnId,showText='Show',hideText='Hide'){
   const body=$(bodyId), btn=$(btnId);
@@ -672,6 +813,22 @@ function closeDrawer(){
 $('menuBtn').onclick=openDrawer;
 $('closeMenuBtn').onclick=closeDrawer;
 $('drawerBackdrop').onclick=closeDrawer;
+let drawerTouchX=null;
+$('drawer').addEventListener('touchstart',e=>{drawerTouchX=e.touches?.[0]?.clientX??null},{passive:true});
+$('drawer').addEventListener('touchend',e=>{
+  if(drawerTouchX===null)return;
+  const end=e.changedTouches?.[0]?.clientX??drawerTouchX;
+  const delta=end-drawerTouchX;
+  drawerTouchX=null;
+  if(delta>70) closeDrawer();
+},{passive:true});
+
+window.addEventListener('popstate',()=>{
+  if(closeTopPanel()) history.pushState({checkstride:true},'');
+});
+if(!history.state?.checkstride) history.replaceState({checkstride:true},'');
+history.pushState({checkstride:true},'');
+
 $('drawerSignOut').onclick=()=>{closeDrawer();signOut(auth)};
 document.querySelectorAll('[data-scroll]').forEach(btn=>{
   btn.onclick=()=>{
@@ -703,11 +860,17 @@ $('quickComplete').onclick=()=>$('completePaycheckBtn').click();
 onAuthStateChanged(auth,async user=>{
   currentUser=user;
   if(user){
-    $('authGate').style.display='none';$('appShell').style.display='block';$('footer').style.display='block';$('mobileTabs').style.display='block';$('authLabel').textContent=user.email||'Signed in';badge('Loading cloud…',true);
+    $('authGate').style.display='none';$('appShell').style.display='block';$('footer').style.display='block';$('mobileTabs').style.display='block';$('authLabel').textContent=user.email||'Signed in';badge('Loading…',true);setBusy(true,'Loading your plan…');setTimeout(()=>setBusy(false),1800);
     try{const hasCloud=await loadCloud();if(!hasCloud)showOnboarding()}catch{badge('Cloud error')}
   }else{
     hideOnboarding();closeDrawer();$('authGate').style.display='flex';$('appShell').style.display='none';$('footer').style.display='none';$('mobileTabs').style.display='none';badge('Local only')
   }
 });
 </script>
+
+<div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+<div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
+  <div class="loading-card"><span class="spinner"></span><span id="loadingText">Working…</span></div>
+</div>
+
 </body></html>
