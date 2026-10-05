@@ -369,6 +369,118 @@ input,select{
   .quick-grid>div{padding:8px}
 }
 
+
+/* v44 bills snapshot */
+.snapshot-card{padding:13px}
+.snapshot-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:13px;margin:9px 0 10px}
+.snapshot-tabs button{border:0;background:transparent;color:var(--muted);min-height:34px;border-radius:9px;font-size:10px;font-weight:700;padding:5px 4px}
+.snapshot-tabs button.active{background:#193047;color:var(--fg)}
+.snapshot-totals{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin:1px 0 9px}
+.snapshot-totals>div{padding:5px 8px;border-right:1px solid var(--border)}
+.snapshot-totals>div:last-child{border-right:0}
+.snapshot-totals span{display:block;color:var(--muted);font-size:9px}
+.snapshot-totals b{display:block;margin-top:3px;font-size:15px;font-variant-numeric:tabular-nums}
+.snapshot-totals>div:nth-child(2) b{color:var(--ok)}
+.snapshot-progress{height:6px;border-radius:999px;background:#15283a;overflow:hidden}
+.snapshot-progress i{display:block;height:100%;width:0;background:var(--primary);border-radius:inherit;transition:width .2s ease}
+.snapshot-progress-copy{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px}
+.snapshot-progress-copy span{font-size:9px;color:var(--muted)}
+.snapshot-progress-copy button{border:0;background:transparent;color:var(--accent);font-size:10px;font-weight:700;padding:4px 0}
+.snapshot-list{display:grid;gap:5px;margin-top:8px}
+.snapshot-bill{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:8px 9px;background:var(--surface);border:1px solid var(--border);border-radius:10px}
+.snapshot-bill .name{min-width:0}.snapshot-bill .name b{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snapshot-bill .name small{display:block;color:var(--muted);font-size:9px;margin-top:2px}
+.snapshot-bill .amount{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+.snapshot-bill .paid-toggle{border:0;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:700;background:#17283a;color:var(--muted)}
+.snapshot-bill .paid-toggle.paid{background:rgba(42,166,125,.13);color:#68d5ad}
+.snapshot-empty{padding:10px 2px;color:var(--muted);font-size:10px;text-align:center}
+.bill-actions{display:flex;justify-content:flex-end;gap:5px;margin-top:4px}
+.bill-actions button{border:0;background:transparent;font-size:10px;font-weight:700;padding:5px 6px}
+.mark-paid{color:var(--ok)}.mark-paid.is-paid{color:var(--muted)}.remove{color:var(--error)!important}
+@media(max-width:380px){.snapshot-tabs button{font-size:9px}.snapshot-totals b{font-size:13px}.snapshot-bill{grid-template-columns:1fr auto}.snapshot-bill .paid-toggle{grid-column:1/-1;justify-self:start}}
+
+
+/* v45 approved mockup styling */
+.home-greeting{padding:4px 2px 8px}
+.home-greeting h2{margin:0;font:700 25px/1.05 var(--display);letter-spacing:-.025em}
+.home-greeting p{margin:5px 0 0;color:var(--muted);font-size:12px}
+
+.home-summary{
+  display:grid;grid-template-columns:1.2fr .8fr;
+  background:linear-gradient(145deg,#10253a,#0d1e30);
+  border:1px solid #213a50;border-radius:18px;padding:16px;margin-bottom:9px
+}
+.safe-block{padding-right:16px;border-right:1px solid #284359}
+.safe-block span,.payday-block span{display:block;color:#c0d0df;font-size:11px}
+.safe-block strong{display:block;margin-top:4px;color:#35aef0;font:700 38px/1 var(--display);letter-spacing:-.035em}
+.payday-block{padding-left:16px;display:flex;flex-direction:column;justify-content:center}
+.payday-block strong{font-size:19px;margin-top:3px}
+.payday-block small{color:var(--muted);font-size:10px;margin-top:3px}
+
+.status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:9px}
+.status-card{padding:11px;border-radius:14px;background:var(--surface);border:1px solid var(--border)}
+.status-card span{display:block;font-size:10px;color:var(--muted)}
+.status-card b{display:block;font-size:10px;margin-top:5px;font-weight:600}
+.status-card strong{display:block;font-size:13px;margin-top:2px}
+.status-card.overdue strong{color:#ff6d76}
+.status-card.due strong{color:#e8ba58}
+.status-card.upcoming strong{color:#c7d5df}
+
+.snapshot-head,.section-head-row,.bills-page-head>div:first-child{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:10px
+}
+.snapshot-head h2,.bills-page-head h2{margin:0;font:700 18px/1.1 var(--display)}
+.snapshot-head p,.bills-page-head p{margin:4px 0 0;color:var(--muted);font-size:11px}
+.snapshot-head button{border:0;background:transparent;color:#46aef5;font-size:11px;font-weight:700;padding:3px 0}
+.snapshot-range-row,.bills-range-row{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px;color:var(--muted);font-size:10px}
+.snapshot-view-all{width:100%;border:0;background:#12283a;color:#52b8ff;border-radius:10px;padding:9px;font-size:10px;font-weight:700;margin-top:7px}
+.upcoming-home .section-head-row{align-items:center}
+.upcoming-home .section-head-row h2{margin:0}
+.upcoming-home .section-head-row span{color:var(--muted);font-size:10px}
+
+.bills-page-head{position:relative;padding-top:2px}
+.bills-page-head>div:first-child{display:block;margin-bottom:10px}
+.add-bill-top{position:absolute;right:0;top:0;border:0;border-radius:12px;padding:9px 12px;background:#1689ff;color:#fff;font-size:11px;font-weight:700}
+.bills-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;background:#0a1724;border:1px solid #274258;border-radius:14px;margin:10px 0}
+.bills-tabs button{border:0;background:transparent;color:var(--muted);border-radius:10px;min-height:36px;font-size:10px;font-weight:700}
+.bills-tabs button.active{background:#1589ff;color:#fff}
+.bills-summary{background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:12px;margin-bottom:10px}
+.bill-filter-row{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px}
+.bill-filter-row button{border:0;background:#111f2d;color:var(--muted);border-radius:999px;padding:8px 5px;font-size:9px;font-weight:700}
+.bill-filter-row button.active{background:#1689ff;color:#fff}
+.bill-filter-row span{opacity:.75}
+
+.bill-list-modern{display:grid;gap:0;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface)}
+.bill-row-modern{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:9px;padding:11px 10px;border-bottom:1px solid var(--border)}
+.bill-row-modern:last-child{border-bottom:0}
+.bill-main{min-width:0}
+.bill-main b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bill-main small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.bill-amount{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.bill-status{border:0;border-radius:999px;padding:6px 9px;font-size:9px;font-weight:700;white-space:nowrap}
+.bill-status.paid{background:rgba(42,166,125,.15);color:#68d5ad}
+.bill-status.due{background:rgba(31,132,255,.18);color:#69b7ff}
+.bill-status.upcoming{background:#17283a;color:#9db1c2}
+.bill-status.overdue{background:rgba(214,90,100,.17);color:#ff7d86}
+.bill-more{border:0;background:transparent;color:var(--muted);font-size:18px;padding:4px 2px}
+.add-bill-panel{margin-top:10px;border:1px solid var(--border);border-radius:13px;background:var(--surface)}
+.add-bill-panel>summary{list-style:none;padding:11px 12px;font-size:11px;font-weight:700;cursor:pointer;color:var(--accent)}
+.add-bill-panel>summary::-webkit-details-marker{display:none}
+.add-bill-panel .bill-form{padding:0 10px 10px}
+.add-bill-panel .msg{margin:0 10px 10px}
+
+.snapshot-list .snapshot-bill{grid-template-columns:minmax(0,1fr) auto auto}
+.snapshot-list .snapshot-bill:nth-child(n+4){display:none}
+
+.bottom-nav button[data-page="bills"].active{background:#153a5d;color:#56b6ff}
+@media(max-width:640px){
+  .home-greeting h2{font-size:23px}
+  .safe-block strong{font-size:34px}
+  .home-summary{padding:14px}
+  .bill-row-modern{grid-template-columns:minmax(0,1fr) auto auto}
+  .bill-more{display:none}
+}
+
 </style>
 </head>
 <body>
@@ -440,32 +552,79 @@ input,select{
     <div><span id="pageEyebrow">Today</span><h2 id="pageTitle">Your paycheck</h2></div>
     <span id="pageStatus" class="pill">Live plan</span>
   </section>
-
-  <section class="hero section" id="homeSection">
-    <span>Safe to spend this check</span><strong id="safeSpend">$0.00</strong><p id="heroText">Add your next payday and paycheck amount to build the plan.</p>
+  <section class="home-greeting section" id="homeSection">
+    <h2 id="greetingText">Good morning</h2>
+    <p>Here’s where you stand.</p>
   </section>
 
-  <section class="quick-grid" id="quickStats">
-    <div><span>Next payday</span><b id="quickPayday">—</b></div>
-    <div><span>Overdue</span><b id="quickOverdue">$0.00</b></div>
-    <div><span>Risk</span><b id="quickRisk">Finish setup</b></div>
-  </section>
-
-  <section class="card home-focus section" id="todayFocus">
-    <div class="title-row"><h2>Recommended</h2><span id="todayState" class="pill">Building plan</span></div>
-    <div class="focus-copy">
-      <strong id="todayAction">Finish paycheck setup to build today’s plan.</strong>
-      <p id="todayReason">Stride will surface the single most important move for this paycheck.</p>
+  <section class="home-summary section" id="quickStats">
+    <div class="safe-block">
+      <span>Safe to Spend</span>
+      <strong id="safeSpend">$0.00</strong>
     </div>
-    <div class="focus-actions">
-      <button id="goPlan" class="primary-btn">View plan</button>
-      <button id="goCoach" class="ghost">View Stride</button>
+    <div class="payday-block">
+      <span>Next Payday</span>
+      <strong id="quickPayday">—</strong>
+      <small id="paydayCountdown">—</small>
     </div>
   </section>
 
-  <section class="card section" id="upcomingBills">
-    <div class="title-row"><h2>Upcoming bills</h2><span id="upcomingCount">0 bills</span></div>
-    <div id="upcomingList" class="list"></div>
+  <section class="status-grid section" id="statusCards">
+    <div class="status-card overdue">
+      <span>Overdue</span>
+      <b id="statusOverdueCount">0 bills</b>
+      <strong id="quickOverdue">$0.00</strong>
+    </div>
+    <div class="status-card due">
+      <span>Due Soon</span>
+      <b id="statusDueSoonCount">0 bills</b>
+      <strong id="statusDueSoonAmount">$0.00</strong>
+    </div>
+    <div class="status-card upcoming">
+      <span>Upcoming</span>
+      <b id="statusUpcomingCount">0 bills</b>
+      <strong id="statusUpcomingAmount">$0.00</strong>
+    </div>
+  </section>
+
+  <section class="card snapshot-card section" id="billSnapshot">
+    <div class="snapshot-head">
+      <div>
+        <h2>Bills Snapshot</h2>
+        <p>See your bills at a glance.</p>
+      </div>
+      <button id="viewBillsFromSnapshot" type="button">View All</button>
+    </div>
+
+    <div class="snapshot-tabs" role="tablist" aria-label="Bills snapshot period">
+      <button type="button" class="active" data-snapshot="this">This Paycheck</button>
+      <button type="button" data-snapshot="next">Next Paycheck</button>
+      <button type="button" data-snapshot="totals">Totals</button>
+    </div>
+
+    <div class="snapshot-range-row">
+      <span id="snapshotRange">Current paycheck</span>
+      <span id="snapshotBillCount">0 bills</span>
+    </div>
+
+    <div class="snapshot-totals">
+      <div><span>Total Bills</span><b id="snapshotTotal">$0.00</b></div>
+      <div><span>Paid</span><b id="snapshotPaid">$0.00</b></div>
+      <div><span>Remaining</span><b id="snapshotRemaining">$0.00</b></div>
+    </div>
+
+    <div class="snapshot-progress"><i id="snapshotProgress"></i></div>
+    <div class="snapshot-progress-copy"><span id="snapshotProgressText">0% paid</span></div>
+    <div id="snapshotList" class="snapshot-list"></div>
+    <button type="button" id="snapshotViewAllBottom" class="snapshot-view-all">View All Bills</button>
+  </section>
+
+  <section class="card section upcoming-home" id="todayFocus">
+    <div class="section-head-row">
+      <h2>Upcoming Bills</h2>
+      <span>Next 7 days</span>
+    </div>
+    <div id="homeUpcomingList" class="list"></div>
   </section>
 
   <section class="card section" id="setupSection">
@@ -494,18 +653,55 @@ input,select{
       <button id="planMissed" class="ghost">Needs adjustment</button>
     </div>
   </section>
-  <section class="card section" id="billsSection">
-    <div class="title-row"><h2>Bills</h2><span id="billCount">0 tracked</span></div>
-    <div class="bill-form">
-      <div class="field"><label>Bill name</label><input id="billName" placeholder="Rent" /></div>
-      <div class="field"><label>Amount</label><input id="billAmount" type="number" min="0" step="0.01" /></div>
-      <div class="field"><label>Due day</label><input id="billDay" type="number" min="1" max="31" value="1" /></div>
-      <div class="field"><label>Priority</label><select id="billPriority"><option value="critical">Critical</option><option value="important" selected>Important</option><option value="flexible">Flexible</option></select></div>
-      <button id="addBill" class="primary-btn">Add bill</button>
+  <section class="bills-page-head section" id="billsSection">
+    <div>
+      <h2>Bills</h2>
+      <p>Manage your bills and payments.</p>
     </div>
-    <div id="billMsg" class="msg hidden"></div>
-    <div id="billList" class="list"></div>
+    <button id="showAddBill" type="button" class="add-bill-top">＋ Add Bill</button>
+
+    <div class="bills-tabs" role="tablist">
+      <button class="active" type="button" data-bills-view="this">This Paycheck</button>
+      <button type="button" data-bills-view="next">Next Paycheck</button>
+      <button type="button" data-bills-view="totals">Totals</button>
+    </div>
+
+    <div class="bills-summary">
+      <div class="bills-range-row">
+        <span id="billsRange">—</span>
+        <span id="billsCount">0 bills</span>
+      </div>
+      <div class="snapshot-totals">
+        <div><span>Total Bills</span><b id="billsTotal">$0.00</b></div>
+        <div><span>Paid</span><b id="billsPaid">$0.00</b></div>
+        <div><span>Remaining</span><b id="billsRemaining">$0.00</b></div>
+      </div>
+      <div class="snapshot-progress"><i id="billsProgress"></i></div>
+      <div class="snapshot-progress-copy"><span id="billsProgressText">0% paid</span></div>
+    </div>
+
+    <div class="bill-filter-row">
+      <button class="active" type="button" data-bill-filter="all">All <span id="filterAllCount">0</span></button>
+      <button type="button" data-bill-filter="paid">Paid <span id="filterPaidCount">0</span></button>
+      <button type="button" data-bill-filter="upcoming">Upcoming <span id="filterUpcomingCount">0</span></button>
+      <button type="button" data-bill-filter="overdue">Overdue <span id="filterOverdueCount">0</span></button>
+    </div>
+
+    <div id="billList" class="bill-list-modern"></div>
+
+    <details class="add-bill-panel" id="addBillPanel">
+      <summary>Add or manage bills</summary>
+      <div class="bill-form">
+        <div class="field"><label>Bill name</label><input id="billName" placeholder="Rent" /></div>
+        <div class="field"><label>Amount</label><input id="billAmount" type="number" min="0" step="0.01" /></div>
+        <div class="field"><label>Due day</label><input id="billDay" type="number" min="1" max="31" value="1" /></div>
+        <div class="field"><label>Priority</label><select id="billPriority"><option value="critical">Critical</option><option value="important" selected>Important</option><option value="flexible">Flexible</option></select></div>
+        <button id="addBill" class="primary-btn">Add bill</button>
+      </div>
+      <div id="billMsg" class="msg hidden"></div>
+    </details>
   </section>
+
 
   <section class="card section" id="autoplanSection">
     <div class="title-row"><h2>Autonomous paycheck plan</h2><span id="autoplanStatus">Draft</span></div>
@@ -715,7 +911,7 @@ input,select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>({...b,amount:clampMoney(b.amount),overdue:clampMoney(b.overdue),dueDay:Math.min(31,Math.max(1,Math.trunc(Number(b.dueDay)||1)))})),version:43};
+      bills:data.bills.map(b=>({...b,amount:clampMoney(b.amount),overdue:clampMoney(b.overdue),dueDay:Math.min(31,Math.max(1,Math.trunc(Number(b.dueDay)||1)))})),version:45};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -1263,12 +1459,237 @@ input,select{
     return{action,reason,change,trigger};
   }
 
+
+  let snapshotView="this";
+  let billsView="this", billFilter="all";
+
+  function previousPayday(nextDate,frequency){
+    const base=new Date(nextDate+"T12:00:00");
+    if(!nextDate||Number.isNaN(base.getTime()))return new Date(NaN);
+    const d=new Date(base);
+    if(frequency==="weekly"){d.setDate(d.getDate()-7);return d}
+    if(frequency==="biweekly"){d.setDate(d.getDate()-14);return d}
+    if(frequency==="monthly"){
+      const wanted=d.getDate(), target=d.getMonth()-1;
+      const y=d.getFullYear()+Math.floor(target/12), m=((target%12)+12)%12;
+      return dateAtDay(y,m,wanted);
+    }
+    if(frequency==="semimonthly"){
+      if(d.getDate()>1&&d.getDate()<=15)return dateAtDay(d.getFullYear(),d.getMonth(),1);
+      const pm=d.getMonth()===0?11:d.getMonth()-1, py=d.getMonth()===0?d.getFullYear()-1:d.getFullYear();
+      return dateAtDay(py,pm,15);
+    }
+    d.setDate(d.getDate()-14);return d;
+  }
+
+  function billDueDateInWindow(bill,start,end){
+    if(Number.isNaN(start.getTime())||Number.isNaN(end.getTime())||end<=start)return null;
+    let y=start.getFullYear(),m=start.getMonth();
+    for(let guard=0;guard<4;guard++){
+      const due=dateAtDay(y,m,bill.dueDay);
+      if(due>=end)return null;
+      if(due>=start)return due;
+      m++;if(m>11){m=0;y++}
+    }
+    return null;
+  }
+
+  function monthKeyFor(date){return `month:${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}`}
+  function periodKeyFor(start){return `paycheck:${start.getFullYear()}-${String(start.getMonth()+1).padStart(2,"0")}-${String(start.getDate()).padStart(2,"0")}`}
+
+  function snapshotData(view=snapshotView){
+    const next=state.payday?new Date(state.payday+"T12:00:00"):new Date(NaN);
+    const currentStart=previousPayday(state.payday,state.frequency);
+    const nextEnd=state.payday?nextPayday(state.payday,state.frequency,1):new Date(NaN);
+    const secondEnd=state.payday?nextPayday(state.payday,state.frequency,2):new Date(NaN);
+    let start=currentStart,end=next,key=Number.isNaN(currentStart.getTime())?"":periodKeyFor(currentStart),range="Current paycheck";
+    let rows=[];
+
+    if(view==="next"){
+      start=next;end=nextEnd;key=Number.isNaN(next.getTime())?"":periodKeyFor(next);range="Next paycheck";
+    }
+
+    if(view==="totals"){
+      const today=new Date();
+      key=monthKeyFor(today);
+      range=today.toLocaleDateString(undefined,{month:"long",year:"numeric"});
+      rows=state.bills.map(b=>({bill:b,due:null}));
+    }else if(!Number.isNaN(start.getTime())&&!Number.isNaN(end.getTime())){
+      rows=state.bills.map(b=>({bill:b,due:billDueDateInWindow(b,start,end)})).filter(x=>x.due);
+      range=`${start.toLocaleDateString(undefined,{month:"short",day:"numeric"})} – ${end.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`;
+    }
+
+    const history=Array.isArray(state.paymentHistory)?state.paymentHistory:[];
+    const normalized=rows.map(x=>{
+      const payment=history.find(p=>p.billId===x.bill.id && (view==="totals"?p.monthKey===key:p.periodKey===key));
+      return {...x,paid:!!payment,paidAmount:payment?clampMoney(payment.amount||x.bill.amount):0};
+    });
+
+    const total=normalized.reduce((s,x)=>s+clampMoney(x.bill.amount),0);
+    const paid=normalized.reduce((s,x)=>s+(x.paid?clampMoney(x.bill.amount):0),0);
+    return {rows:normalized,total,paid,remaining:Math.max(0,total-paid),pct:total?Math.round((paid/total)*100):0,key,range};
+  }
+
+  function setBillPaid(billId,paid,view=snapshotView){
+    const snap=snapshotData(view), bill=state.bills.find(b=>b.id===billId);
+    if(!bill)return;
+    const now=new Date();
+    let history=Array.isArray(state.paymentHistory)?[...state.paymentHistory]:[];
+    history=history.filter(p=>!(p.billId===billId && (view==="totals"?p.monthKey===snap.key:p.periodKey===snap.key)));
+    if(paid){
+      const date=now.toISOString();
+      history.push({
+        id:crypto.randomUUID(),billId,amount:clampMoney(bill.amount),date,
+        periodKey:view==="totals"?null:snap.key,
+        monthKey:view==="totals"?snap.key:monthKeyFor(now)
+      });
+    }
+    state={...state,paymentHistory:history};
+    scheduleSave();
+  }
+
+  function removeBillById(id){
+    if(!id)return;
+    state={
+      ...state,
+      bills:state.bills.filter(b=>b.id!==id),
+      paymentHistory:(state.paymentHistory||[]).filter(p=>p.billId!==id)
+    };
+    setMsg("billMsg","Bill removed.");
+    scheduleSave();
+  }
+
+  function renderSnapshot(){
+    const snap=snapshotData(snapshotView);
+    if(!$("billSnapshot"))return;
+    $("snapshotRange").textContent=snap.range;
+    $("snapshotTotal").textContent=money(snap.total);
+    $("snapshotPaid").textContent=money(snap.paid);
+    $("snapshotRemaining").textContent=money(snap.remaining);
+    $("snapshotProgress").style.width=`${snap.pct}%`;
+    $("snapshotProgressText").textContent=`${snap.pct}% paid`;
+    if($("snapshotBillCount"))$("snapshotBillCount").textContent=`${snap.rows.length} bill${snap.rows.length===1?"":"s"}`;
+    document.querySelectorAll("[data-snapshot]").forEach(b=>b.classList.toggle("active",b.dataset.snapshot===snapshotView));
+    $("snapshotList").innerHTML=snap.rows.length?snap.rows.slice(0,5).map(x=>`
+      <div class="snapshot-bill">
+        <div class="name"><b>${escapeHtml(x.bill.name)}</b><small>${x.due?`Due ${x.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:escapeHtml(x.bill.priority)}</small></div>
+        <div class="amount">${money(x.bill.amount)}</div>
+        <button type="button" class="paid-toggle ${x.paid?"paid":""}" data-snapshot-paid="${x.bill.id}" data-paid="${x.paid?"1":"0"}">${x.paid?"Paid":"Mark paid"}</button>
+      </div>`).join(""):'<div class="snapshot-empty">No bills in this view yet.</div>';
+  }
+
+
+  function billStatusFor(item,view){
+    const today=new Date(), bill=item.bill, due=item.due;
+    const snap=snapshotData(view);
+    const paid=(state.paymentHistory||[]).some(p=>p.billId===bill.id && (view==="totals"?p.monthKey===snap.key:p.periodKey===snap.key));
+    if(paid)return "paid";
+    if(clampMoney(bill.overdue)>0)return "overdue";
+    if(due){
+      const diff=Math.ceil((due-new Date(today.getFullYear(),today.getMonth(),today.getDate(),12))/86400000);
+      if(diff<=5)return "due";
+    }
+    return "upcoming";
+  }
+
+  function renderBillsPage(){
+    if(!$("billsSection"))return;
+    const snap=snapshotData(billsView);
+    $("billsRange").textContent=snap.range;
+    $("billsCount").textContent=`${snap.rows.length} bill${snap.rows.length===1?"":"s"}`;
+    $("billsTotal").textContent=money(snap.total);
+    $("billsPaid").textContent=money(snap.paid);
+    $("billsRemaining").textContent=money(snap.remaining);
+    $("billsProgress").style.width=`${snap.pct}%`;
+    $("billsProgressText").textContent=`${snap.pct}% paid`;
+
+    document.querySelectorAll("[data-bills-view]").forEach(b=>b.classList.toggle("active",b.dataset.billsView===billsView));
+
+    const rows=snap.rows.map(x=>({...x,status:billStatusFor(x,billsView)}));
+    const counts={
+      all:rows.length,
+      paid:rows.filter(x=>x.status==="paid").length,
+      upcoming:rows.filter(x=>x.status==="upcoming"||x.status==="due").length,
+      overdue:rows.filter(x=>x.status==="overdue").length
+    };
+    $("filterAllCount").textContent=String(counts.all);
+    $("filterPaidCount").textContent=String(counts.paid);
+    $("filterUpcomingCount").textContent=String(counts.upcoming);
+    $("filterOverdueCount").textContent=String(counts.overdue);
+    document.querySelectorAll("[data-bill-filter]").forEach(b=>b.classList.toggle("active",b.dataset.billFilter===billFilter));
+
+    const filtered=rows.filter(x=>{
+      if(billFilter==="all")return true;
+      if(billFilter==="upcoming")return x.status==="upcoming"||x.status==="due";
+      return x.status===billFilter;
+    });
+
+    $("billList").innerHTML=filtered.length?filtered.map(x=>{
+      const label=x.status==="paid"?"Paid":x.status==="overdue"?"Overdue":x.status==="due"?"Due Soon":"Upcoming";
+      const dueText=x.due?`Due ${x.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:`Due day ${x.bill.dueDay}`;
+      return `<div class="bill-row-modern">
+        <div class="bill-main"><b>${escapeHtml(x.bill.name)}</b><small>${dueText}</small></div>
+        <div class="bill-amount">${money(x.bill.amount)}</div>
+        <button class="bill-status ${x.status}" data-bill-toggle="${x.bill.id}" data-paid="${x.status==="paid"?"1":"0"}">${label}</button>
+        <button class="bill-more" data-bill-menu="${x.bill.id}" aria-label="More">›</button>
+      </div>`;
+    }).join(""):'<div class="empty">No bills in this view.</div>';
+  }
+
+  function renderHomeUpcoming(){
+    if(!$("homeUpcomingList"))return;
+    const today=new Date(), currentDay=today.getDate();
+    const rows=[...state.bills].map(b=>{
+      let delta=Number(b.dueDay)-currentDay;
+      if(delta<0)delta+=daysInMonth(today.getFullYear(),today.getMonth());
+      return {...b,daysAway:delta};
+    }).sort((a,b)=>a.daysAway-b.daysAway).slice(0,4);
+    $("homeUpcomingList").innerHTML=rows.length?rows.map(b=>{
+      const status=clampMoney(b.overdue)>0?"Overdue":b.daysAway<=5?"Due Soon":"Upcoming";
+      const cls=status==="Overdue"?"overdue":status==="Due Soon"?"due":"upcoming";
+      return `<div class="bill-row-modern">
+        <div class="bill-main"><b>${escapeHtml(b.name)}</b><small>${b.daysAway===0?"Due today":b.daysAway===1?"Due tomorrow":`Due in ${b.daysAway} days`}</small></div>
+        <div class="bill-amount">${money(b.amount)}</div>
+        <span class="bill-status ${cls}">${status}</span>
+      </div>`;
+    }).join(""):'<div class="empty">No upcoming bills.</div>';
+  }
+
+  function renderStatusCards(){
+    const today=new Date(), day=today.getDate();
+    let overdueCount=0,overdueAmount=0,dueSoonCount=0,dueSoonAmount=0,upcomingCount=0,upcomingAmount=0;
+    state.bills.forEach(b=>{
+      const amt=clampMoney(b.amount);
+      if(clampMoney(b.overdue)>0){overdueCount++;overdueAmount+=clampMoney(b.overdue);return}
+      let delta=Number(b.dueDay)-day;
+      if(delta<0)delta+=daysInMonth(today.getFullYear(),today.getMonth());
+      if(delta<=5){dueSoonCount++;dueSoonAmount+=amt}else{upcomingCount++;upcomingAmount+=amt}
+    });
+    $("statusOverdueCount").textContent=`${overdueCount} bill${overdueCount===1?"":"s"}`;
+    $("quickOverdue").textContent=money(overdueAmount);
+    $("statusDueSoonCount").textContent=`${dueSoonCount} bill${dueSoonCount===1?"":"s"}`;
+    $("statusDueSoonAmount").textContent=money(dueSoonAmount);
+    $("statusUpcomingCount").textContent=`${upcomingCount} bill${upcomingCount===1?"":"s"}`;
+    $("statusUpcomingAmount").textContent=money(upcomingAmount);
+  }
+
+  function renderGreeting(){
+    const h=new Date().getHours();
+    if($("greetingText"))$("greetingText").textContent=h<12?"Good morning":h<17?"Good afternoon":"Good evening";
+    if($("paydayCountdown")){
+      if(!state.payday){$("paydayCountdown").textContent="—";return}
+      const target=new Date(state.payday+"T12:00:00"), now=new Date();
+      const days=Math.max(0,Math.ceil((target-now)/86400000));
+      $("paydayCountdown").textContent=days===0?"Today":`${days} day${days===1?"":"s"}`;
+    }
+  }
+
   function render(){
     const f=forecast(),first=f[0],overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0),conf=confidence();
     $("safeSpend").textContent=money(first?.safe||0);
-    $("heroText").textContent=first?`${money(first.due)} due before the next check · ${money(state.cushion)} protected cushion`:"Add your next payday and paycheck amount to build the plan.";
+    if($("heroText"))if($("heroText"))$("heroText").textContent=first?`${money(first.due)} due before the next check · ${money(state.cushion)} protected cushion`:"Add your next payday and paycheck amount to build the plan.";
     $("quickPayday").textContent=state.payday||"—";$("quickOverdue").textContent=money(overdue);
-    $("quickRisk").textContent=!state.payday||clampMoney(state.paycheck)<=0?"Finish setup":first?.short?`Short by ${money(first.short)}`:conf<50?"Needs more data":first&&first.safe<clampMoney(state.cushion)*.5?"Tight paycheck":"Low risk";
+    if($("quickRisk"))if($("quickRisk"))$("quickRisk").textContent=!state.payday||clampMoney(state.paycheck)<=0?"Finish setup":first?.short?`Short by ${money(first.short)}`:conf<50?"Needs more data":first&&first.safe<clampMoney(state.cushion)*.5?"Tight paycheck":"Low risk";
     ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>{const el=$(id);const key=id;const val=state[key]??""; if(document.activeElement!==el) el.value=val});
     document.querySelectorAll(".strategy").forEach(el=>el.classList.toggle("active",el.dataset.strategy===state.strategy));
     ["fastest","balanced","minimum"].forEach(k=>$("est-"+k).textContent=strategyEstimate(k));
@@ -1323,11 +1744,11 @@ input,select{
     $("warningCount").textContent=`${warns.length} active`;
     $("warningList").innerHTML=warns.length?warns.map(w=>`<div class="warning-item ${w.severity}"><b>${escapeHtml(w.title)}</b><small>${escapeHtml(w.detail)}</small></div>`).join(""):'<p class="empty">No proactive warnings right now.</p>';
     const coachHome=closedLoopCoach(), homePlan=currentAutonomousPlan();
-    if($("todayAction"))$("todayAction").textContent=coachHome.action;
-    if($("todayReason"))$("todayReason").textContent=coachHome.reason;
+    if($("todayAction"))if($("todayAction"))$("todayAction").textContent=coachHome.action;
+    if($("todayReason"))if($("todayReason"))$("todayReason").textContent=coachHome.reason;
     const topWarning=warns[0];
-    if($("todayState"))$("todayState").textContent=topWarning?.severity==="high"?"Needs attention":topWarning?.severity==="medium"?"Watch closely":homePlan?"On track":"Building plan";
-    if($("todayState"))$("todayState").className=`pill ${topWarning?.severity==="high"?"risk-high":topWarning?.severity==="medium"?"risk-medium":"risk-low"}`;
+    if($("todayState"))if($("todayState"))$("todayState").textContent=topWarning?.severity==="high"?"Needs attention":topWarning?.severity==="medium"?"Watch closely":homePlan?"On track":"Building plan";
+    if($("todayState"))if($("todayState"))$("todayState").className=`pill ${topWarning?.severity==="high"?"risk-high":topWarning?.severity==="medium"?"risk-medium":"risk-low"}`;
 
     const now=new Date(), currentDay=now.getDate();
     const upcoming=[...state.bills].map(b=>{
@@ -1335,15 +1756,15 @@ input,select{
       if(delta<0)delta+=daysInMonth(now.getFullYear(),now.getMonth());
       return {...b,daysAway:delta};
     }).sort((a,b)=>a.daysAway-b.daysAway).slice(0,4);
-    if($("upcomingCount"))$("upcomingCount").textContent=`${upcoming.length} bill${upcoming.length===1?"":"s"}`;
-    if($("upcomingList"))$("upcomingList").innerHTML=upcoming.length?upcoming.map(b=>{
+    if($("upcomingCount"))if($("upcomingCount"))$("upcomingCount").textContent=`${upcoming.length} bill${upcoming.length===1?"":"s"}`;
+    if($("upcomingList"))if($("upcomingList"))$("upcomingList").innerHTML=upcoming.length?upcoming.map(b=>{
       const label=b.daysAway===0?"Due today":b.daysAway===1?"Due tomorrow":`Due in ${b.daysAway} days`;
       const cls=b.daysAway<=1?"urgent":b.daysAway<=5?"soon":"later";
       return `<div class="row"><div><b>${escapeHtml(b.name)}</b><span class="due-badge ${cls}">${label}</span></div><div class="right"><b>${money(b.amount)}</b><small>${escapeHtml(b.priority)}</small></div></div>`;
     }).join(""):'<p class="empty">Add bills to see what is coming up next.</p>';
 
     const riskEl=$("quickRisk");
-    riskEl.className=String(riskEl.textContent).includes("Short")?"risk-high":String(riskEl.textContent).includes("Tight")||String(riskEl.textContent).includes("Needs")?"risk-medium":"risk-low";
+    if(riskEl)riskEl.className=String(riskEl.textContent).includes("Short")?"risk-high":String(riskEl.textContent).includes("Tight")||String(riskEl.textContent).includes("Needs")?"risk-medium":"risk-low";
 
 
     const coach=closedLoopCoach(), coachMode=state.smartMemory?.coachMode||"guided";
@@ -1370,8 +1791,15 @@ input,select{
     if(document.activeElement!==$("actualIncome")&&!$("actualIncome").value)$("actualIncome").value=clampMoney(state.paycheck)||"";
     if(document.activeElement!==$("actualExtra")&&!$("actualExtra").value)$("actualExtra").value=clampMoney(state.extraIncome)||"";
 
-    $("billCount").textContent=`${state.bills.length} tracked`;
-    $("billList").innerHTML=state.bills.length?state.bills.map(b=>`<div class="row"><div><b>${escapeHtml(b.name)}</b><small>Due day ${b.dueDay} · ${b.priority}</small></div><div class="right"><b>${money(b.amount)}</b><button class="remove" data-remove="${b.id}">Remove</button></div></div>`).join(""):'<p class="empty">Add bills to see exactly what each paycheck needs to cover.</p>';
+        $("billList").innerHTML=state.bills.length?state.bills.map(b=>{
+      const today=new Date(), mk=monthKeyFor(today), isPaid=(state.paymentHistory||[]).some(p=>p.billId===b.id&&p.monthKey===mk);
+      return `<div class="row"><div><b>${escapeHtml(b.name)}</b><small>Due day ${b.dueDay} · ${b.priority}</small></div><div class="right"><b>${money(b.amount)}</b><div class="bill-actions"><button type="button" class="mark-paid ${isPaid?"is-paid":""}" data-bill-paid="${b.id}" data-paid="${isPaid?"1":"0"}">${isPaid?"Paid":"Mark paid"}</button><button type="button" class="remove" data-remove="${b.id}">Remove</button></div></div></div>`;
+    }).join(""):'<p class="empty">Add bills to see exactly what each paycheck needs to cover.</p>';
+    renderSnapshot();
+    renderBillsPage();
+    renderHomeUpcoming();
+    renderStatusCards();
+    renderGreeting();
     $("forecastList").innerHTML=f.length?f.map(x=>`<div class="row"><div><b>${x.date.toLocaleDateString()}</b><small>${money(x.due)} bills · ${money(x.catchup)} catch-up</small></div><div class="right"><span style="display:block;color:var(--muted);font-size:11px">Safe</span><b>${money(x.safe)}</b></div></div>`).join(""):'<p class="empty">Your forecast will appear here once setup is complete.</p>';
   }
   function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
@@ -1417,7 +1845,23 @@ input,select{
     if(state.bills.some(b=>b.name.trim().toLowerCase()===name.toLowerCase()))return setMsg("billMsg","That bill is already in your list.");
     setMsg("billMsg","");state={...state,bills:[...state.bills,{id:crypto.randomUUID(),name,amount,dueDay:day,priority,overdue:0}]};$("billName").value="";$("billAmount").value="";scheduleSave();
   };
-  $("billList").addEventListener("click",e=>{const btn=e.target.closest("[data-remove]");if(!btn)return;state={...state,bills:state.bills.filter(b=>b.id!==btn.dataset.remove)};scheduleSave()});
+  $("billList").onclick=e=>{
+    const target=e.target instanceof Element?e.target:null;
+    if(!target)return;
+    const toggle=target.closest("[data-bill-toggle]");
+    if(toggle){
+      const id=toggle.dataset.billToggle, wasPaid=toggle.dataset.paid==="1";
+      setBillPaid(id,!wasPaid,billsView);
+      return;
+    }
+    const menu=target.closest("[data-bill-menu]");
+    if(menu){
+      const id=menu.dataset.billMenu;
+      const bill=state.bills.find(b=>b.id===id);
+      if(!bill)return;
+      if(confirm(`Remove ${bill.name}?`))removeBillById(id);
+    }
+  };
 
 
 
@@ -1493,8 +1937,8 @@ input,select{
 
   
 
-  if($("goPlan"))$("goPlan").onclick=()=>switchPage("plan");
-  if($("goCoach"))$("goCoach").onclick=()=>switchPage("coach");
+  if($("goPlan"))if($("goPlan"))$("goPlan").onclick=()=>switchPage("plan");
+  if($("goCoach"))if($("goCoach"))$("goCoach").onclick=()=>switchPage("coach");
   $("togglePassword").onclick=()=>{
     const input=$("password"), show=input.type==="password";
     input.type=show?"text":"password";
@@ -1502,11 +1946,28 @@ input,select{
     $("togglePassword").setAttribute("aria-label",show?"Hide password":"Show password");
   };
 
+
+  document.querySelectorAll("[data-snapshot]").forEach(btn=>btn.onclick=()=>{snapshotView=btn.dataset.snapshot||"this";renderSnapshot()});
+  if($("snapshotList"))$("snapshotList").onclick=e=>{
+    const target=e.target instanceof Element?e.target:null;
+    const btn=target?.closest("[data-snapshot-paid]");
+    if(!btn)return;
+    setBillPaid(btn.dataset.snapshotPaid,btn.dataset.paid!=="1",snapshotView);
+  };
+  if($("viewBillsFromSnapshot"))$("viewBillsFromSnapshot").onclick=()=>switchPage("bills");
+  if($("snapshotViewAllBottom"))$("snapshotViewAllBottom").onclick=()=>switchPage("bills");
+
+
+  document.querySelectorAll("[data-bills-view]").forEach(btn=>btn.onclick=()=>{billsView=btn.dataset.billsView||"this";billFilter="all";renderBillsPage()});
+  document.querySelectorAll("[data-bill-filter]").forEach(btn=>btn.onclick=()=>{billFilter=btn.dataset.billFilter||"all";renderBillsPage()});
+  if($("showAddBill"))$("showAddBill").onclick=()=>{$("addBillPanel").open=true;$("billName").focus()};
+  if($("snapshotViewAllBottom"))$("snapshotViewAllBottom").onclick=()=>switchPage("bills");
+
   const PAGE_GROUPS={
-    home:["homeSection","quickStats","todayFocus"],
+    home:["homeSection","quickStats","billSnapshot","todayFocus"],
     plan:["setupSection","autoplanSection","planAdvanced"],
     coach:["coach12Section","strideAdvanced"],
-    bills:["billsSection","upcomingBills","completeSection"],
+    bills:["billsSection","completeSection"],
     more:["goalsSection","scenarioSection","moreAdvanced"]
   };
   const PAGE_COPY={
