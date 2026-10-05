@@ -57,7 +57,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
 .list{display:flex;flex-direction:column;gap:8px;margin-top:10px}.row{display:flex;justify-content:space-between;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:11px 12px}.row small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.row .right{text-align:right}.remove{border:0;background:transparent;color:var(--error);padding:4px 0;font-size:10px}
 .empty{color:var(--muted);font-size:12px;text-align:center;padding:16px 8px;margin:0}
 .section{scroll-margin-top:74px}
-.bottom-nav{position:fixed;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(92%,520px);display:grid;grid-template-columns:repeat(7,1fr);gap:6px;background:rgba(9,21,34,.96);border:1px solid var(--border);border-radius:18px;padding:7px;box-shadow:var(--shadow);backdrop-filter:blur(18px);z-index:30}
+.bottom-nav{position:fixed;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(92%,520px);display:grid;grid-template-columns:repeat(9,1fr);gap:6px;background:rgba(9,21,34,.96);border:1px solid var(--border);border-radius:18px;padding:7px;box-shadow:var(--shadow);backdrop-filter:blur(18px);z-index:30}
 .bottom-nav button{border:0;background:transparent;color:var(--muted);padding:10px 6px;border-radius:12px;font-size:11px}.bottom-nav button.active{background:#183047;color:var(--fg);font-weight:700}
 .status-saved{color:var(--ok)!important}.status-saving{color:var(--warn)!important}.status-error{color:var(--error)!important}
 @media(max-width:640px){.quick-grid,.form-grid,.strategy-grid{grid-template-columns:1fr}.bill-form{grid-template-columns:1fr 1fr}.bill-form>*:first-child,.bill-form>*:last-child{grid-column:1/-1}.hero strong{font-size:40px}.topbar small{display:none}}
@@ -159,6 +159,31 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
 
 
 
+
+
+  <section class="card section" id="reasoningSection">
+    <div class="title-row"><h2>Forecast reasoning</h2><span id="reasoningConfidence">Learning</span></div>
+    <div class="smart-rows">
+      <div class="smart-row"><span>Best next move</span><b id="reasoningAction">Finish setup so Checkstride can compare future paycheck outcomes.</b></div>
+      <div class="smart-row"><span>Why this move</span><b id="reasoningWhy">Checkstride weighs the next four paychecks instead of optimizing only the current one.</b></div>
+      <div class="smart-row"><span>Risk if ignored</span><b id="reasoningRisk">Waiting for enough information.</b></div>
+      <div class="smart-row"><span>4-check runway</span><b id="runwayStatus">Waiting for a complete forecast.</b></div>
+      <div class="smart-row"><span>Decision confidence</span><b id="decisionConfidence">Not enough evidence yet.</b></div>
+      <div class="smart-row"><span>Context memory</span><b id="contextMemory">No repeated decision context recorded yet.</b></div>
+    </div>
+  </section>
+
+  <section class="card section" id="contextSection">
+    <div class="title-row"><h2>Context intelligence</h2><span id="contextStatus">Learning</span></div>
+    <div class="smart-rows">
+      <div class="smart-row"><span>Weakest prediction area</span><b id="weakestContext">Waiting for more completed paychecks.</b></div>
+      <div class="smart-row"><span>Income reliability</span><b id="incomeReliability">Learning your take-home pattern.</b></div>
+      <div class="smart-row"><span>Spending reliability</span><b id="spendingReliability">Learning your unexpected-spending pattern.</b></div>
+      <div class="smart-row"><span>Bill-timing reliability</span><b id="billReliability">Learning whether bill timing is matching reality.</b></div>
+      <div class="smart-row"><span>Behavior drift</span><b id="driftStatus">No drift detected yet.</b></div>
+    </div>
+  </section>
+
   <section class="card section" id="adaptiveSection">
     <div class="title-row"><h2>Adaptive multi-paycheck plan</h2><span id="adaptiveMode">Learning</span></div>
     <div class="smart-rows">
@@ -192,6 +217,8 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
   <button data-target="setupSection">Setup</button>
   <button data-target="coachSection">Coach</button>
   <button data-target="billsSection">Bills</button>
+  <button data-target="reasoningSection">Reasoning</button>
+  <button data-target="contextSection">Context</button>
   <button data-target="adaptiveSection">Adaptive</button>
   <button data-target="completeSection">Complete</button>
   <button data-target="forecastSection">Forecast</button>
@@ -202,7 +229,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
   const API_KEY="AIzaSyDoLHFn-sHVa9LROJOg3TFA6m4xFZCfhos";
   const PROJECT_ID="paycheck-advisor";
   const SESSION_KEY="checkstride_rest_session";
-  const blank={payday:"",paycheck:0,frequency:"biweekly",cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null}}};
+  const blank={payday:"",paycheck:0,frequency:"biweekly",cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null}}};
   let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null;
 
   const $=id=>document.getElementById(id);
@@ -487,7 +514,7 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     return base;
   }
   function adaptiveFourCheckPlan(){
-    const plan=adaptivePlan(), paycheck=clampMoney(state.paycheck), extra=clampMoney(state.extraIncome);
+    const plan=contextAdjustedPlan(), paycheck=clampMoney(state.paycheck), extra=clampMoney(state.extraIncome);
     if(!state.payday||paycheck<=0)return[];
     let overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0), out=[];
     const cushion=adaptiveCushionForMode(plan.aggression);
@@ -511,6 +538,163 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     return `${money(totalCatch)} planned catch-up across 4 checks · ${money(endOverdue)} overdue remaining · ${plan.aggression} mode`;
   }
 
+
+  function contextCalibration(){
+    const rows=predictionHistory().slice(-10);
+    if(rows.length<2)return{
+      income:{score:0,label:"Learning",text:"Learning your take-home pattern."},
+      spending:{score:0,label:"Learning",text:"Learning your unexpected-spending pattern."},
+      bills:{score:0,label:"Learning",text:"Learning whether bill timing is matching reality."},
+      weakest:"Learning",drift:"none",driftText:"No drift detected yet."
+    };
+    const moneyPct=(err,base)=>Math.min(1,Math.abs(err)/Math.max(1,base));
+    const incomeErrors=rows.map((x,i)=>{
+      const planned=i===0?clampMoney(state.paycheck)+clampMoney(state.extraIncome):clampMoney(rows[i-1]?.actualIncome||state.paycheck);
+      return moneyPct(Number(x.actualIncome||0)-planned,planned);
+    });
+    const spendErrors=rows.map(x=>moneyPct(Number(x.unexpectedSpend||0),Number(x.actualIncome||1)));
+    const billProxy=rows.map(x=>{
+      const predicted=clampMoney(x.predictedLeft), actual=clampMoney(x.actualLeft), unexpected=clampMoney(x.unexpectedSpend);
+      return moneyPct((predicted-actual)-unexpected,Number(x.actualIncome||1));
+    });
+    const avg=a=>a.reduce((s,x)=>s+x,0)/Math.max(1,a.length);
+    const score=e=>Math.max(0,Math.round((1-avg(e))*100));
+    const label=s=>s>=90?"Strong":s>=75?"Good":s>=55?"Fair":"Needs calibration";
+    const incomeScore=score(incomeErrors), spendingScore=score(spendErrors), billsScore=score(billProxy);
+    const pairs=[["Income",incomeScore],["Unexpected spending",spendingScore],["Bill timing",billsScore]].sort((a,b)=>a[1]-b[1]);
+    let drift="none",driftText="No meaningful behavior drift detected.";
+    if(rows.length>=6){
+      const old=rows.slice(0,3), recent=rows.slice(-3);
+      const oldIncome=old.reduce((s,x)=>s+Number(x.actualIncome||0),0)/3;
+      const recentIncome=recent.reduce((s,x)=>s+Number(x.actualIncome||0),0)/3;
+      const oldSpend=old.reduce((s,x)=>s+Number(x.unexpectedSpend||0),0)/3;
+      const recentSpend=recent.reduce((s,x)=>s+Number(x.unexpectedSpend||0),0)/3;
+      const incomeShift=oldIncome?Math.abs(recentIncome-oldIncome)/oldIncome:0;
+      const spendShift=Math.abs(recentSpend-oldSpend)/Math.max(1,oldSpend||recentSpend);
+      if(incomeShift>.15&&spendShift>.25){drift="mixed";driftText="Income and spending behavior both shifted recently."}
+      else if(incomeShift>.15){drift="income";driftText="Your recent take-home pattern changed enough to recalibrate income expectations."}
+      else if(spendShift>.25){drift="spending";driftText="Your recent unexpected-spending pattern changed enough to recalibrate the cushion."}
+    }
+    return{
+      income:{score:incomeScore,label:label(incomeScore),text:`${label(incomeScore)} · ${incomeScore}/100`},
+      spending:{score:spendingScore,label:label(spendingScore),text:`${label(spendingScore)} · ${spendingScore}/100`},
+      bills:{score:billsScore,label:label(billsScore),text:`${label(billsScore)} · ${billsScore}/100`},
+      weakest:pairs[0][0],drift,driftText
+    };
+  }
+  function contextAdjustedPlan(){
+    const ctx=contextCalibration(), base=adaptivePlan(), result={...base};
+    if(ctx.income.score&&ctx.income.score<60){
+      result.aggression="protect";
+      result.reason="Income predictions are currently the weakest area, so Checkstride is protecting more cash until take-home estimates stabilize.";
+    }else if(ctx.spending.score&&ctx.spending.score<60){
+      result.aggression="protect";
+      result.reason="Unexpected spending is currently the weakest area, so Checkstride is protecting more cash instead of overreacting to other signals.";
+    }else if(ctx.bills.score&&ctx.bills.score<60){
+      result.aggression="balanced";
+      result.reason="Bill timing is the weakest area, so Checkstride is holding catch-up pace steady while recalibrating due-date assumptions.";
+    }
+    if(ctx.drift==="income"||ctx.drift==="mixed"){
+      result.aggression="protect";
+      result.reason+=" Recent behavior drift was detected, so the next plan is intentionally more conservative.";
+    }
+    return result;
+  }
+  function contextualRecommendation(){
+    const rec=advancedRecommendation(), ctx=contextCalibration(), plan=contextAdjustedPlan();
+    let why=rec.why;
+    if(ctx.weakest!=="Learning")why+=` Weakest current prediction area: ${ctx.weakest.toLowerCase()}.`;
+    if(ctx.drift!=="none")why+=` ${ctx.driftText}`;
+    return{...rec,why,contextPlan:plan};
+  }
+
+
+  function decisionMemory(){
+    const m=getSmartMemory(), d=m.decisionMemory&&typeof m.decisionMemory==="object"?m.decisionMemory:{};
+    return {contexts:d.contexts&&typeof d.contexts==="object"?d.contexts:{},lastDecision:d.lastDecision||null};
+  }
+  function fourCheckRunway(){
+    const rows=adaptiveFourCheckPlan();
+    if(!rows.length)return{status:"unknown",text:"Waiting for a complete forecast.",minSafe:0,totalSafe:0,pressureIndex:0};
+    const safes=rows.map(x=>clampMoney(x.safe)), minSafe=Math.min(...safes), totalSafe=safes.reduce((a,b)=>a+b,0);
+    const totalIncome=rows.reduce((a,b)=>a+clampMoney(b.income),0);
+    const totalDue=rows.reduce((a,b)=>a+clampMoney(b.due),0);
+    const pressureIndex=totalIncome?Math.min(1,totalDue/totalIncome):1;
+    let status="healthy";
+    if(rows.some(x=>x.safe<=0))status="critical";
+    else if(minSafe<clampMoney(state.cushion)*.5)status="tight";
+    else if(pressureIndex>.7)status="pressured";
+    const text=status==="critical"?"At least one of the next 4 checks has no safe margin."
+      :status==="tight"?`Lowest projected safe margin is ${money(minSafe)}.`
+      :status==="pressured"?`Bills consume a high share of the next 4 checks; total projected safe margin ${money(totalSafe)}.`
+      :`All 4 projected checks retain a positive margin; lowest is ${money(minSafe)}.`;
+    return{status,text,minSafe,totalSafe,pressureIndex};
+  }
+  function contextKey(){
+    const overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0);
+    const ctx=contextCalibration(), runway=fourCheckRunway();
+    const incomeBand=ctx.income.score>=75?"stable-income":"uncertain-income";
+    const spendBand=ctx.spending.score>=75?"stable-spend":"uncertain-spend";
+    const debtBand=overdue>0?"overdue":"current";
+    return `${incomeBand}|${spendBand}|${debtBand}|${runway.status}`;
+  }
+  function strategySimulation(){
+    const original=state.strategy;
+    const keys=["fastest","balanced","minimum"];
+    return keys.map(key=>{
+      const paycheck=clampMoney(state.paycheck),extra=clampMoney(state.extraIncome),baseCushion=clampMoney(state.cushion);
+      if(!state.payday||paycheck<=0)return{key,score:-999,safe:0,catchup:0,shortage:999999};
+      let overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0), safeTotal=0, catchTotal=0, shortage=0;
+      const cushion=key==="fastest"?baseCushion*.7:key==="minimum"?baseCushion*1.25:baseCushion;
+      for(let i=0;i<4;i++){
+        const a=nextPayday(state.payday,state.frequency,i),b=nextPayday(state.payday,state.frequency,i+1);
+        const due=state.bills.reduce((s,x)=>s+dueBetween(x,a,b),0),income=paycheck+(i===0?extra:0);
+        let avail=Math.max(0,income-due-cushion);
+        if(key==="minimum")avail*=.6;
+        const catchup=Math.min(overdue,avail);overdue=Math.max(0,overdue-catchup);
+        const safe=Math.max(0,income-due-catchup-cushion);
+        const short=Math.max(0,due+cushion+catchup-income);
+        safeTotal+=safe;catchTotal+=catchup;shortage+=short;
+      }
+      const ctx=contextCalibration();
+      const uncertaintyPenalty=((100-(ctx.income.score||50))+(100-(ctx.spending.score||50)))/200;
+      let score=(catchTotal*.65)+(safeTotal*.25)-(shortage*2);
+      if(key==="fastest")score-=uncertaintyPenalty*150;
+      if(key==="minimum")score+=uncertaintyPenalty*80;
+      return{key,score,safe:safeTotal,catchup:catchTotal,shortage};
+    }).sort((a,b)=>b.score-a.score);
+  }
+  function forecastReasoning(){
+    const runway=fourCheckRunway(), sims=strategySimulation(), ctx=contextCalibration(), cal=calibration();
+    if(!state.payday||clampMoney(state.paycheck)<=0||!sims.length){
+      return{action:"Finish setup so Checkstride can compare future paycheck outcomes.",why:"I need a valid payday and take-home amount first.",risk:"No forecast is available yet.",confidence:0,best:null};
+    }
+    const best=sims[0], second=sims[1];
+    const gap=best&&second?Math.max(0,best.score-second.score):0;
+    let confidence=Math.round(Math.min(100,(confidence()+Math.min(25,cal.count*4)+Math.min(20,gap/10))/1.45));
+    if(ctx.drift!=="none")confidence=Math.max(0,confidence-15);
+    if(runway.status==="critical")confidence=Math.max(0,confidence-10);
+    const names={fastest:"Fastest Catch-Up",balanced:"Balanced",minimum:"Minimum Stress"};
+    let action=`Use ${names[best.key]} for the next 4-paycheck window.`;
+    let why=`It currently gives the strongest mix of catch-up progress and protected cash across the next four checks.`;
+    if(best.key==="fastest")why+=` Your recent stability is strong enough to support a more aggressive recovery pace.`;
+    if(best.key==="minimum")why+=` Current uncertainty makes protecting cash more valuable than maximizing catch-up speed.`;
+    if(best.key==="balanced")why+=` Neither extreme currently improves the 4-check outlook enough to justify the added risk.`;
+    let risk=runway.status==="critical"?"Ignoring the forecast could leave at least one upcoming paycheck with no safe margin."
+      :runway.status==="tight"?"A tighter upcoming paycheck could force you to undo progress if too much cash is committed now."
+      :"The main risk is using more cash now than the next few paychecks can comfortably absorb.";
+    if(ctx.drift!=="none")risk+=` Recent behavior drift makes old patterns less trustworthy.`;
+    return{action,why,risk,confidence,best,runway};
+  }
+  function rememberedContextInsight(){
+    const key=contextKey(), dm=decisionMemory(), entry=dm.contexts[key];
+    if(!entry)return"No repeated decision context recorded yet.";
+    const total=Number(entry.wins||0)+Number(entry.misses||0);
+    if(!total)return"This context has been seen before, but no outcome has been recorded yet.";
+    const hit=Math.round((Number(entry.wins||0)/total)*100);
+    return`This context has appeared ${total} time${total===1?"":"s"}; prior recommendations worked ${hit}% of the time.`;
+  }
+
   function render(){
     const f=forecast(),first=f[0],overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0),conf=confidence();
     $("safeSpend").textContent=money(first?.safe||0);
@@ -531,12 +715,29 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     $("adaptiveTrend").textContent=ot.text;
     $("adaptiveNext4").textContent=adaptivePlanSummary();
     $("adaptiveWhy").textContent=ap.reason;
+    const ctx=contextCalibration(), cap=contextAdjustedPlan();
+    $("contextStatus").textContent=ctx.weakest==="Learning"?"Learning":cap.aggression==="protect"?"Self-correcting":"Calibrated";
+    $("weakestContext").textContent=ctx.weakest==="Learning"?"Waiting for more completed paychecks.":`${ctx.weakest} is currently the weakest area.`;
+    $("incomeReliability").textContent=ctx.income.text;
+    $("spendingReliability").textContent=ctx.spending.text;
+    $("billReliability").textContent=ctx.bills.text;
+    $("driftStatus").textContent=ctx.driftText;
+    const fr=forecastReasoning(), rw=fourCheckRunway();
+    $("reasoningConfidence").textContent=fr.confidence>=80?"High":fr.confidence>=60?"Medium":fr.confidence>=35?"Low":"Learning";
+    $("reasoningAction").textContent=fr.action;
+    $("reasoningWhy").textContent=fr.why;
+    $("reasoningRisk").textContent=fr.risk;
+    $("runwayStatus").textContent=rw.text;
+    $("decisionConfidence").textContent=`${fr.confidence}/100 · ${fr.confidence>=80?"strong enough to lean on":fr.confidence>=60?"useful with caution":fr.confidence>=35?"still learning":"not ready to trust yet"}`;
+    $("contextMemory").textContent=rememberedContextInsight();
+
+
 
 
     const rec=smartRecommendation(), ac=adaptiveCushion(), rel=reliability();
-    const adv=advancedRecommendation(), cal=calibration(), spendInsight=recurringSpendInsight(), adj=outcomeAdjustedCushion();
-    $("coachAction").textContent=adv.action;
-    $("coachWhy").textContent=adv.why;
+    const adv=contextualRecommendation(), cal=calibration(), spendInsight=recurringSpendInsight(), adj=outcomeAdjustedCushion();
+    $("coachAction").textContent=forecastReasoning().action;
+    $("coachWhy").textContent=forecastReasoning().why;
     $("coachCushion").textContent=`${money(adj.amount)} · ${adj.reason}`;
     $("coachReliability").textContent=cal.count?`${cal.grade} · average prediction miss ${money(cal.error)}`:rel.text;
     $("coachLearning").textContent=cal.count?cal.grade:rel.label;
@@ -591,11 +792,14 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
     const patterns=m.spendingPatterns&&typeof m.spendingPatterns==="object"?m.spendingPatterns:{};
     const unexpectedArr=[...(Array.isArray(patterns.unexpected)?patterns.unexpected:[]),unexpected].slice(-12);
     const worked=Math.abs(predictedLeft-actualLeft)<=Math.max(50,(actualIncome+actualExtra)*.08);
+    const decision=forecastReasoning(), dmem=decisionMemory(), dkey=contextKey(), oldCtx=dmem.contexts[dkey]||{wins:0,misses:0,lastAction:""};
+    const newContexts={...dmem.contexts,[dkey]:{wins:Number(oldCtx.wins||0)+(worked?1:0),misses:Number(oldCtx.misses||0)+(worked?0:1),lastAction:decision.action,lastAt:new Date().toISOString()}};
+
     state={...state,
       paycheckHistory:[...(state.paycheckHistory||[]),{date:state.payday,income:actualIncome+actualExtra,predictedLeft,actualLeft,unexpectedSpend:unexpected,strategy:state.strategy}].slice(-52),
       payday:advancePayday(state.payday,state.frequency),
       extraIncome:0,
-      smartMemory:{...m,planWins:m.planWins+(worked?1:0),planMisses:m.planMisses+(worked?0:1),lastOutcome:worked?"worked":"missed",lastRecommendation:advancedRecommendation().action,lastCompletedPaycheck:new Date().toISOString(),predictions:nextPred,spendingPatterns:{...patterns,unexpected:unexpectedArr},adaptivePlan:{...adaptivePlan(),lastUpdated:new Date().toISOString()}}
+      smartMemory:{...m,planWins:m.planWins+(worked?1:0),planMisses:m.planMisses+(worked?0:1),lastOutcome:worked?"worked":"missed",lastRecommendation:contextualRecommendation().action,lastCompletedPaycheck:new Date().toISOString(),predictions:nextPred,spendingPatterns:{...patterns,unexpected:unexpectedArr},adaptivePlan:{...contextAdjustedPlan(),lastUpdated:new Date().toISOString()},contextCalibration:(()=>{const c=contextCalibration();return{income:c.income.score,spending:c.spending.score,bills:c.bills.score,overall:Math.round((c.income.score+c.spending.score+c.bills.score)/3),drift:c.drift,lastReason:c.weakest}})()},decisionMemory:{contexts:newContexts,lastDecision:{at:new Date().toISOString(),context:dkey,action:decision.action,confidence:decision.confidence,outcome:worked?"worked":"missed"}}
     };
     $("actualIncome").value="";$("actualExtra").value="";$("unexpectedSpend").value="";$("actualLeft").value="";
     const nextMode=adaptivePlan().aggression; setMsg("completeMsg",worked?`Paycheck recorded. The plan was close, so confidence increased. Adaptive mode: ${nextMode}.`:`Paycheck recorded. Checkstride adjusted the next multi-paycheck plan. Adaptive mode: ${nextMode}.`);
@@ -603,12 +807,12 @@ input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(4
   };
 
   $("planWorked").onclick=()=>{
-    const rec=smartRecommendation(), m=getSmartMemory();
+    const rec=forecastReasoning(), m=getSmartMemory();
     state={...state,smartMemory:{...m,planWins:m.planWins+1,lastRecommendation:rec.action,lastOutcome:"worked",lastSnapshot:{at:new Date().toISOString(),safe:forecast()[0]?.safe||0,overdue:state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0)}}};
     scheduleSave();
   };
   $("planMissed").onclick=()=>{
-    const rec=smartRecommendation(), m=getSmartMemory();
+    const rec=forecastReasoning(), m=getSmartMemory();
     state={...state,smartMemory:{...m,planMisses:m.planMisses+1,lastRecommendation:rec.action,lastOutcome:"missed",lastSnapshot:{at:new Date().toISOString(),safe:forecast()[0]?.safe||0,overdue:state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0)}}};
     scheduleSave();
   };
