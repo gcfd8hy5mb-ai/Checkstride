@@ -510,6 +510,54 @@ input,select{
 .snapshot-bill .name small.split-note{color:var(--accent)}
 .bill-row-modern .bill-main small.split-note{color:var(--accent)}
 
+
+/* v48 usability overhaul */
+.bottom-nav{grid-template-columns:repeat(4,1fr)}
+.setup-guide{
+  background:linear-gradient(145deg,#0f2537,#0d1b29);
+  border:1px solid #244257;
+  border-radius:18px;
+  padding:14px;
+  margin-bottom:10px;
+}
+.setup-guide.complete{background:var(--card);border-color:var(--border)}
+.setup-guide-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.setup-guide-head span{display:block;color:var(--accent);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.setup-guide-head h2{margin:3px 0 0;font:700 18px/1.1 var(--display)}
+.setup-guide-head>b{font-size:10px;color:var(--muted);white-space:nowrap}
+.setup-guide>p{margin:7px 0 11px;color:var(--muted);font-size:11px;line-height:1.4}
+.setup-steps{display:grid;gap:6px}
+.setup-steps button{
+  width:100%;display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:9px;
+  text-align:left;border:1px solid var(--border);background:var(--surface);color:var(--fg);
+  border-radius:12px;padding:9px 10px
+}
+.setup-steps button i{
+  width:24px;height:24px;border-radius:999px;display:grid;place-items:center;
+  background:#17283a;color:var(--muted);font-style:normal;font-size:10px;font-weight:700
+}
+.setup-steps button.done i{background:rgba(42,166,125,.18);color:#69d7ae}
+.setup-steps button.done i::before{content:"✓";font-size:12px}
+.setup-steps button.done i{font-size:0}
+.setup-steps button b{display:block;font-size:11px}
+.setup-steps button small{display:block;color:var(--muted);font-size:9px;margin-top:2px;line-height:1.3}
+.setup-steps button>span{color:var(--muted);font-size:17px}
+.home-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px}
+.home-actions button{
+  min-height:40px;border-radius:11px;border:1px solid var(--border);
+  background:var(--surface);color:var(--fg);font-size:10px;font-weight:700
+}
+.simple-help{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:10px 11px;color:var(--muted);font-size:10px;line-height:1.4;margin-top:8px
+}
+#setupSection .title-row span{font-size:9px}
+#setupSection .form-grid{grid-template-columns:1fr 1fr}
+@media(max-width:640px){
+  #setupSection .form-grid{grid-template-columns:1fr}
+  .setup-guide-head h2{font-size:17px}
+}
+
 </style>
 </head>
 <body>
@@ -549,20 +597,20 @@ input,select{
 
 
   <section class="card section" id="reasoningSection">
-    <div class="title-row"><h2>Forecast reasoning</h2><span id="reasoningConfidence">Learning</span></div>
+    <div class="title-row"><h2>Why Stride picked this</h2><span id="reasoningConfidence">Learning</span></div>
     <div class="smart-rows">
       <div class="smart-row"><span>Best next move</span><b id="reasoningAction">Finish setup so Checkstride can compare future paycheck outcomes.</b></div>
       <div class="smart-row"><span>Why this move</span><b id="reasoningWhy">Checkstride weighs the next four paychecks instead of optimizing only the current one.</b></div>
-      <div class="smart-row"><span>Risk if ignored</span><b id="reasoningRisk">Waiting for enough information.</b></div>
-      <div class="smart-row"><span>4-check runway</span><b id="runwayStatus">Waiting for a complete forecast.</b></div>
-      <div class="smart-row"><span>Decision confidence</span><b id="decisionConfidence">Not enough evidence yet.</b></div>
-      <div class="smart-row"><span>Context memory</span><b id="contextMemory">No repeated decision context recorded yet.</b></div>
+      <div class="smart-row"><span>If you ignore this</span><b id="reasoningRisk">Waiting for enough information.</b></div>
+      <div class="smart-row"><span>Next 4 paychecks</span><b id="runwayStatus">Waiting for a complete forecast.</b></div>
+      <div class="smart-row"><span>How sure Stride is</span><b id="decisionConfidence">Not enough evidence yet.</b></div>
+      <div class="smart-row"><span>Similar situations</span><b id="contextMemory">No repeated decision context recorded yet.</b></div>
     </div>
   </section>
 
 
   <section class="card section" id="diagnosisSection">
-    <div class="title-row"><h2>Outcome diagnosis</h2><span id="diagnosisStatus">Learning</span></div>
+    <div class="title-row"><h2>What Stride learned</h2><span id="diagnosisStatus">Learning</span></div>
     <div class="ai-banner"><strong id="diagnosisHeadline">Waiting for completed paycheck outcomes.</strong><p id="diagnosisDetail">When a forecast misses, Checkstride will isolate whether income, spending, bill timing, or a one-off event caused it.</p></div>
   </section>
     </div>
@@ -581,9 +629,44 @@ input,select{
     <div><span id="pageEyebrow">Today</span><h2 id="pageTitle">Your paycheck</h2></div>
     <span id="pageStatus" class="pill">Live plan</span>
   </section>
+
+  <section class="setup-guide section" id="setupGuide">
+    <div class="setup-guide-head">
+      <div>
+        <span>Getting started</span>
+        <h2 id="setupGuideTitle">Set up Checkstride</h2>
+      </div>
+      <b id="setupGuideProgress">0 of 3</b>
+    </div>
+    <p id="setupGuideText">Three quick steps and Checkstride will tell you what this paycheck can safely do.</p>
+    <div class="setup-steps">
+      <button type="button" id="setupPaycheckStep">
+        <i id="setupPaycheckCheck">1</i>
+        <div><b>Add your paycheck</b><small>How much you bring home and when you get paid.</small></div>
+        <span>›</span>
+      </button>
+      <button type="button" id="setupBillsStep">
+        <i id="setupBillsCheck">2</i>
+        <div><b>Add your bills</b><small>Exact due dates are optional.</small></div>
+        <span>›</span>
+      </button>
+      <button type="button" id="setupReviewStep">
+        <i id="setupReviewCheck">3</i>
+        <div><b>Review your plan</b><small>See what to pay, what to save, and what is safe to spend.</small></div>
+        <span>›</span>
+      </button>
+    </div>
+  </section>
+
   <section class="home-greeting section" id="homeSection">
     <h2 id="greetingText">Good morning</h2>
     <p>Here’s where you stand.</p>
+  </section>
+
+
+  <section class="home-actions section" id="homeActions">
+    <button type="button" id="homeEditPaycheck">Edit paycheck</button>
+    <button type="button" id="homeAddBill">Add bill</button>
   </section>
 
   <section class="home-summary section" id="quickStats">
@@ -657,14 +740,14 @@ input,select{
   </section>
 
   <section class="card section" id="setupSection">
-    <div class="title-row"><h2>Paycheck setup</h2><span id="cloudStatus" class="status-saved">Saved</span></div>
+    <div class="title-row"><h2>Your paycheck</h2><span id="cloudStatus" class="status-saved">Saved</span></div>
     <div class="form-grid">
       <div class="field"><label>Next payday</label><input id="payday" type="date" /></div>
       <div class="field"><label>Take-home pay</label><input id="paycheck" type="number" min="0" step="0.01" /></div>
-      <div class="field"><label>Extra income</label><input id="extraIncome" type="number" min="0" step="0.01" /></div>
-      <div class="field"><label>Protected cushion</label><input id="cushion" type="number" min="0" step="0.01" /></div>
-      <div class="field"><label>Pay frequency</label><select id="frequency"><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option><option value="semimonthly">1st & 15th</option><option value="monthly">Monthly</option></select></div>
-      <div class="field"><label>Strategy</label><select id="strategy"><option value="fastest">Fastest Catch-Up</option><option value="balanced">Balanced</option><option value="minimum">Minimum Stress</option></select></div>
+      <div class="field"><label>Extra income this check</label><input id="extraIncome" type="number" min="0" step="0.01" /></div>
+      <div class="field"><label>Money to keep untouched</label><input id="cushion" type="number" min="0" step="0.01" /></div>
+      <div class="field"><label>How often you get paid</label><select id="frequency"><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option><option value="semimonthly">1st & 15th</option><option value="monthly">Monthly</option></select></div>
+      <div class="field"><label>Catch-up style</label><select id="strategy"><option value="fastest">Catch up faster</option><option value="balanced">Balanced</option><option value="minimum">Protect more cash</option></select></div>
     </div>
   </section>
 
@@ -746,7 +829,7 @@ input,select{
 
 
   <section class="card section" id="autoplanSection">
-    <div class="title-row"><h2>Autonomous paycheck plan</h2><span id="autoplanStatus">Draft</span></div>
+    <div class="title-row"><h2>Your paycheck plan</h2><span id="autoplanStatus">Draft</span></div>
     <div class="ai-banner"><strong id="autoplanHeadline">Finish setup to generate a paycheck plan.</strong><p id="autoplanWhy">Checkstride will allocate the paycheck without moving money or paying bills.</p></div>
     <div id="autoplanList" class="plan-list"></div>
     <div class="approve-row">
@@ -756,7 +839,7 @@ input,select{
     <div id="planApprovalMsg" class="msg hidden"></div>
   </section>
   <section class="card section" id="scenarioSection">
-    <div class="title-row"><h2>Scenario planner</h2><span>What if?</span></div>
+    <div class="title-row"><h2>What if?</h2><span>What if?</span></div>
     <div class="scenario-grid">
       <div class="field"><label>Extra purchase</label><input id="scenarioPurchase" type="number" min="0" step="0.01" placeholder="0" /></div>
       <div class="field"><label>Income change</label><input id="scenarioIncome" type="number" step="0.01" placeholder="0" /></div>
@@ -767,7 +850,7 @@ input,select{
   </section>
 
   <section class="card section" id="goalsSection">
-    <div class="title-row"><h2>Goal-aware planning</h2><span id="goalSummary">No active goal</span></div>
+    <div class="title-row"><h2>Savings goal</h2><span id="goalSummary">No active goal</span></div>
     <div class="goal-row">
       <div class="field"><label>Goal</label><input id="goalName" placeholder="Emergency fund" /></div>
       <div class="field"><label>Target</label><input id="goalTarget" type="number" min="0" step="0.01" placeholder="1000" /></div>
@@ -789,22 +872,22 @@ input,select{
 
 
   <details class="compact-details appPageHidden" id="moreAdvanced">
-    <summary><div><b>Learning details</b><small>Warnings, calibration, and learning details.</small></div><span>Show</span></summary>
+    <summary><div><b>How Stride is learning</b><small>Warnings, calibration, and learning details.</small></div><span>Show</span></summary>
     <div class="details-body">
 
 
   <section class="card section" id="warningsSection">
-    <div class="title-row"><h2>Proactive warnings</h2><span id="warningCount">0 active</span></div>
+    <div class="title-row"><h2>Heads up</h2><span id="warningCount">0 active</span></div>
     <div id="warningList" class="warning-list"></div>
   </section>
   <section class="card section" id="contextSection">
-    <div class="title-row"><h2>Context intelligence</h2><span id="contextStatus">Learning</span></div>
+    <div class="title-row"><h2>How Stride is learning</h2><span id="contextStatus">Learning</span></div>
     <div class="smart-rows">
-      <div class="smart-row"><span>Weakest prediction area</span><b id="weakestContext">Waiting for more completed paychecks.</b></div>
-      <div class="smart-row"><span>Income reliability</span><b id="incomeReliability">Learning your take-home pattern.</b></div>
-      <div class="smart-row"><span>Spending reliability</span><b id="spendingReliability">Learning your unexpected-spending pattern.</b></div>
-      <div class="smart-row"><span>Bill-timing reliability</span><b id="billReliability">Learning whether bill timing is matching reality.</b></div>
-      <div class="smart-row"><span>Behavior drift</span><b id="driftStatus">No drift detected yet.</b></div>
+      <div class="smart-row"><span>Needs the most learning</span><b id="weakestContext">Waiting for more completed paychecks.</b></div>
+      <div class="smart-row"><span>Paycheck accuracy</span><b id="incomeReliability">Learning your take-home pattern.</b></div>
+      <div class="smart-row"><span>Spending accuracy</span><b id="spendingReliability">Learning your unexpected-spending pattern.</b></div>
+      <div class="smart-row"><span>Bill timing accuracy</span><b id="billReliability">Learning whether bill timing is matching reality.</b></div>
+      <div class="smart-row"><span>Recent changes</span><b id="driftStatus">No drift detected yet.</b></div>
     </div>
   </section>
     </div>
@@ -824,33 +907,33 @@ input,select{
 
 
   <details class="compact-details appPageHidden" id="planAdvanced">
-    <summary><div><b>Plan details</b><small>Strategy comparison and adaptive pacing.</small></div><span>Show</span></summary>
+    <summary><div><b>More plan details</b><small>Catch-up style comparison and adaptive pacing.</small></div><span>Show</span></summary>
     <div class="details-body">
 
 
   <section class="card section" id="planSection">
     <h2>Smart plan</h2>
     <div class="strategy-grid">
-      <div class="strategy" data-strategy="fastest"><span>Fastest Catch-Up</span><b id="est-fastest">—</b></div>
+      <div class="strategy" data-strategy="fastest"><span>Catch up faster</span><b id="est-fastest">—</b></div>
       <div class="strategy" data-strategy="balanced"><span>Balanced</span><b id="est-balanced">—</b></div>
-      <div class="strategy" data-strategy="minimum"><span>Minimum Stress</span><b id="est-minimum">—</b></div>
+      <div class="strategy" data-strategy="minimum"><span>Protect more cash</span><b id="est-minimum">—</b></div>
     </div>
     <div class="smart-rows">
-      <div class="smart-row"><span>Forecast confidence</span><b id="confidence">Low · 0/100</b></div>
-      <div class="smart-row"><span>Extra-income move</span><b id="extraMove">Add or verify your bills before using a catch-up recommendation.</b></div>
-      <div class="smart-row"><span>Recommendation memory</span><b>Uses your selected strategy and never changes it automatically.</b></div>
-      <div class="smart-row"><span>Prediction calibration</span><b id="predictionCalibration">Waiting for completed paychecks.</b></div>
-      <div class="smart-row"><span>Spending pattern</span><b id="spendingPattern">Waiting for completed paychecks.</b></div>
+      <div class="smart-row"><span>How sure Stride is</span><b id="confidence">Low · 0/100</b></div>
+      <div class="smart-row"><span>If you have extra money</span><b id="extraMove">Add or verify your bills before using a catch-up recommendation.</b></div>
+      <div class="smart-row"><span>What Stride remembers</span><b>Uses your selected strategy and never changes it automatically.</b></div>
+      <div class="smart-row"><span>Prediction accuracy</span><b id="predictionCalibration">Waiting for completed paychecks.</b></div>
+      <div class="smart-row"><span>Spending trend</span><b id="spendingPattern">Waiting for completed paychecks.</b></div>
     </div>
   </section>
 
   <section class="card section" id="adaptiveSection">
-    <div class="title-row"><h2>Adaptive multi-paycheck plan</h2><span id="adaptiveMode">Learning</span></div>
+    <div class="title-row"><h2>Next few paychecks</h2><span id="adaptiveMode">Learning</span></div>
     <div class="smart-rows">
-      <div class="smart-row"><span>Catch-up pace</span><b id="adaptivePace">Balanced until enough history is available.</b></div>
-      <div class="smart-row"><span>4-check trend</span><b id="adaptiveTrend">Waiting for completed paycheck history.</b></div>
+      <div class="smart-row"><span>Catch-up speed</span><b id="adaptivePace">Balanced until enough history is available.</b></div>
+      <div class="smart-row"><span>Recent direction</span><b id="adaptiveTrend">Waiting for completed paycheck history.</b></div>
       <div class="smart-row"><span>Next 4 checks</span><b id="adaptiveNext4">Complete at least 2 paychecks to unlock adaptive pacing.</b></div>
-      <div class="smart-row"><span>Adjustment logic</span><b id="adaptiveWhy">Checkstride will become more aggressive only when recent paychecks are stable and recommendations are landing close to actual results.</b></div>
+      <div class="smart-row"><span>Why it changed</span><b id="adaptiveWhy">Checkstride will become more aggressive only when recent paychecks are stable and recommendations are landing close to actual results.</b></div>
     </div>
   </section>
 
@@ -864,9 +947,8 @@ input,select{
 
 <nav id="bottomNav" class="bottom-nav hidden" aria-label="Primary">
   <button data-page="home" class="active"><span class="navIcon">⌂</span><span>Home</span></button>
-  <button data-page="plan"><span class="navIcon">▤</span><span>Plan</span></button>
-  <button data-page="coach"><span class="navIcon">✦</span><span>Stride</span></button>
   <button data-page="bills"><span class="navIcon">$</span><span>Bills</span></button>
+  <button data-page="coach"><span class="navIcon">✦</span><span>Stride</span></button>
   <button data-page="more"><span class="navIcon">•••</span><span>More</span></button>
 </nav>
 
@@ -953,7 +1035,7 @@ input,select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:47};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:48};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -1115,7 +1197,7 @@ input,select{
   function advancedRecommendation(){
     const base=smartRecommendation(), cal=calibration(), spend=recurringSpendInsight(), ac=outcomeAdjustedCushion();
     let why=base.why;
-    if(cal.count>=2)why+=` Prediction calibration: ${cal.grade.toLowerCase()} over ${cal.count} completed paycheck${cal.count===1?"":"s"}.`;
+    if(cal.count>=2)why+=` Prediction accuracy: ${cal.grade.toLowerCase()} over ${cal.count} completed paycheck${cal.count===1?"":"s"}.`;
     if(spend.avg>0)why+=` ${spend.text}`;
     return{...base,why,adaptiveCushion:ac.amount};
   }
@@ -1345,7 +1427,7 @@ input,select{
     let decisionScore=Math.round(Math.min(100,(confidence()+Math.min(25,cal.count*4)+Math.min(20,gap/10))/1.45));
     if(ctx.drift!=="none")decisionScore=Math.max(0,decisionScore-15);
     if(runway.status==="critical")decisionScore=Math.max(0,decisionScore-10);
-    const names={fastest:"Fastest Catch-Up",balanced:"Balanced",minimum:"Minimum Stress"};
+    const names={fastest:"Catch up faster",balanced:"Balanced",minimum:"Protect more cash"};
     let action=`Use ${names[best.key]} for the next 4-paycheck window.`;
     let why=`It currently gives the strongest mix of catch-up progress and protected cash across the next four checks.`;
     if(best.key==="fastest")why+=` Your recent stability is strong enough to support a more aggressive recovery pace.`;
@@ -1435,7 +1517,7 @@ input,select{
     }else if(overdue>0&&trend.stability==="high"&&diag.severity!=="high"){
       best=sims.find(x=>x.key==="fastest")||best;
     }
-    const names={fastest:"Fastest Catch-Up",balanced:"Balanced",minimum:"Minimum Stress"};
+    const names={fastest:"Catch up faster",balanced:"Balanced",minimum:"Protect more cash"};
     return{key:best.key,name:names[best.key],reason:best.key==="fastest"?"Stable recent outcomes support faster catch-up.":best.key==="minimum"?"Current uncertainty favors protecting cash.":"The middle path currently produces the best risk-adjusted runway.",confidence:forecastReasoning().confidence};
   }
 
@@ -1710,6 +1792,13 @@ input,select{
     $("billDayField").classList.toggle("hidden",$("billDueMode").value==="monthly");
   };
 
+
+  if($("setupPaycheckStep"))$("setupPaycheckStep").onclick=()=>{switchPage("more");setTimeout(()=>$("setupSection")?.scrollIntoView({behavior:"smooth",block:"start"}),50)};
+  if($("setupBillsStep"))$("setupBillsStep").onclick=()=>{switchPage("bills");setTimeout(()=>{$("addBillPanel").open=true;$("billName")?.focus()},50)};
+  if($("setupReviewStep"))$("setupReviewStep").onclick=()=>{$("billSnapshot")?.scrollIntoView({behavior:"smooth",block:"start"})};
+  if($("homeEditPaycheck"))$("homeEditPaycheck").onclick=()=>{switchPage("more");setTimeout(()=>$("setupSection")?.scrollIntoView({behavior:"smooth",block:"start"}),50)};
+  if($("homeAddBill"))$("homeAddBill").onclick=()=>{switchPage("bills");setTimeout(()=>{$("addBillPanel").open=true;$("billName")?.focus()},50)};
+
   document.querySelectorAll("[data-snapshot]").forEach(b=>b.classList.toggle("active",b.dataset.snapshot===snapshotView));
     $("snapshotList").innerHTML=snap.rows.length?snap.rows.slice(0,5).map(x=>`
       <div class="snapshot-bill">
@@ -1826,6 +1915,28 @@ input,select{
     }
   }
 
+
+  function setupProgress(){
+    const paycheckDone=clampMoney(state.paycheck)>0 && !!state.payday;
+    const billsDone=Array.isArray(state.bills)&&state.bills.length>0;
+    const reviewDone=paycheckDone&&billsDone;
+    return {paycheckDone,billsDone,reviewDone,count:[paycheckDone,billsDone,reviewDone].filter(Boolean).length};
+  }
+
+  function renderSetupGuide(){
+    if(!$("setupGuide"))return;
+    const s=setupProgress();
+    $("setupGuideProgress").textContent=`${s.count} of 3`;
+    $("setupPaycheckStep").classList.toggle("done",s.paycheckDone);
+    $("setupBillsStep").classList.toggle("done",s.billsDone);
+    $("setupReviewStep").classList.toggle("done",s.reviewDone);
+    $("setupGuide").classList.toggle("complete",s.count===3);
+    $("setupGuideTitle").textContent=s.count===3?"You’re set up":"Set up Checkstride";
+    $("setupGuideText").textContent=s.count===3
+      ?"Your plan is ready. Keep bills updated and complete each paycheck so Stride can learn."
+      :"Three quick steps and Checkstride will tell you what this paycheck can safely do.";
+  }
+
   function render(){
     const f=forecast(),first=f[0],overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0),conf=confidence();
     $("safeSpend").textContent=money(first?.safe||0);
@@ -1872,7 +1983,7 @@ input,select{
     $("autoplanWhy").textContent=autoPlan?autoPlan.why:"Checkstride will allocate the paycheck without moving money or paying bills.";
     $("autoplanList").innerHTML=autoPlan?[
       ["Bills due",money(autoPlan.due)],
-      ["Protected cushion",money(autoPlan.cushion)],
+      ["Money to keep untouched",money(autoPlan.cushion)],
       ["Catch-up",money(autoPlan.catchup)],
       [autoPlan.goalName?`Goal · ${escapeHtml(autoPlan.goalName)}`:"Goal allocation",money(autoPlan.goalAllocation)],
       ["Safe to spend",money(autoPlan.safe)]
@@ -1937,6 +2048,7 @@ input,select{
     renderHomeUpcoming();
     renderStatusCards();
     renderGreeting();
+    renderSetupGuide();
     $("forecastList").innerHTML=f.length?f.map(x=>`<div class="row"><div><b>${x.date.toLocaleDateString()}</b><small>${money(x.due)} bills · ${money(x.catchup)} catch-up</small></div><div class="right"><span style="display:block;color:var(--muted);font-size:11px">Safe</span><b>${money(x.safe)}</b></div></div>`).join(""):'<p class="empty">Your forecast will appear here once setup is complete.</p>';
   }
   function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
@@ -2090,7 +2202,7 @@ input,select{
 
   
 
-  if($("goPlan"))if($("goPlan"))$("goPlan").onclick=()=>switchPage("plan");
+  if($("goPlan"))if($("goPlan"))$("goPlan").onclick=()=>switchPage("more");
   if($("goCoach"))if($("goCoach"))$("goCoach").onclick=()=>switchPage("coach");
   $("togglePassword").onclick=()=>{
     const input=$("password"), show=input.type==="password";
@@ -2117,18 +2229,16 @@ input,select{
   if($("snapshotViewAllBottom"))$("snapshotViewAllBottom").onclick=()=>switchPage("bills");
 
   const PAGE_GROUPS={
-    home:["homeSection","quickStats","billSnapshot","todayFocus"],
-    plan:["setupSection","autoplanSection","planAdvanced"],
-    coach:["coach12Section","strideAdvanced"],
+    home:["setupGuide","homeSection","homeActions","quickStats","billSnapshot","todayFocus"],
     bills:["billsSection","completeSection"],
-    more:["goalsSection","scenarioSection","moreAdvanced"]
+    coach:["coach12Section","strideAdvanced"],
+    more:["setupSection","autoplanSection","goalsSection","scenarioSection","planAdvanced","moreAdvanced"]
   };
   const PAGE_COPY={
-    home:["Today","Your paycheck","Live"],
-    plan:["Plan","Your paycheck plan","4 checks"],
-    coach:["Coach","What Stride recommends","Smart"],
-    bills:["Bills","Bills & outcomes","Track"],
-    more:["More","Goals & scenarios","Tools"]
+    home:["Today","Your money","Live"],
+    bills:["Bills","Bills & payments","Track"],
+    coach:["Stride","What should I do next?","Smart"],
+    more:["More","Setup & tools",""]
   };
   function switchPage(page){
     document.querySelectorAll(".compact-details").forEach(d=>d.removeAttribute("open"));
