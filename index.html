@@ -2097,6 +2097,39 @@ select{
   font-weight:700;
   margin-top:-2px;
 }
+
+/* v73 reliable job editing */
+.income-job-actions{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:7px;
+  margin-top:10px;
+}
+.income-job-actions button{
+  min-height:42px;
+  border-radius:11px;
+  font-family:inherit;
+  font-size:11px;
+  font-weight:750;
+}
+.income-open-schedule{
+  border:0;
+  width:100%;
+  background:#1689ff;
+  color:#fff;
+  padding:10px;
+}
+.income-edit-job{
+  min-width:82px;
+  border:1px solid rgba(88,184,255,.38);
+  background:#102235;
+  color:#8fcfff;
+  padding:8px 12px;
+}
+@media(max-width:390px){
+  .income-job-actions{grid-template-columns:1fr}
+  .income-edit-job{width:100%}
+}
 </style>
 </head>
 <body>
@@ -2301,6 +2334,7 @@ select{
         <div class="income-settings-body">
           <div class="income-settings-title"><b>Main job settings</b><small>Change the normal schedule used for future checks.</small></div>
           <div class="form-grid">
+            <div class="field"><label>Job name</label><input id="primaryJobNameInput" placeholder="Main job" /></div>
             <div class="field"><label>Next payday</label><input id="payday" type="date" /></div>
             <div class="field"><label>Typical take-home pay</label><input id="paycheck" type="number" min="0" step="0.01" /></div>
             <div class="field"><label>Extra income this check</label><input id="extraIncome" type="number" min="0" step="0.01" /></div>
@@ -2742,7 +2776,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:72};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:73};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -3955,15 +3989,18 @@ select{
       $("incomeJobCards").innerHTML=sources.length?sources.map(src=>{
         const next=new Date(src.payday+"T12:00:00");
         const nextText=Number.isNaN(next.getTime())?"Not set":next.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
-        return `<button type="button" class="income-job-card" data-income-open="${escapeHtml(src.id)}">
+        return `<div class="income-job-card">
           <div class="income-job-card-head"><span class="income-job-icon">▣</span><b>${escapeHtml(src.name)}</b><span>›</span></div>
           <div class="income-job-card-stats">
             <div><small>Pay schedule</small><strong>${escapeHtml(src.frequency)}</strong></div>
             <div><small>Next payday</small><strong>${escapeHtml(nextText)}</strong></div>
             <div><small>Typical check</small><strong>${money(src.paycheck)}</strong></div>
           </div>
-          <span class="income-open-schedule">Open schedule</span>
-        </button>`;
+          <div class="income-job-actions">
+            <button type="button" class="income-open-schedule" data-income-open="${escapeHtml(src.id)}">Open schedule</button>
+            <button type="button" class="income-edit-job" data-income-settings="${escapeHtml(src.id)}">Edit job</button>
+          </div>
+        </div>`;
       }).join(""):'<div class="income-empty-jobs"><b>No paychecks set up yet.</b><span>Open Paycheck settings below to add your first payday and amount.</span></div>';
     }
 
@@ -4025,6 +4062,40 @@ select{
       <div class="calendar-weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
       <div class="calendar-grid">${cells.join("")}</div>
     </section>`;
+  }
+
+  function openIncomeJobSettings(sourceId){
+    const src=incomeSources().find(x=>x.id===sourceId);
+    if(!src)return;
+
+    selectedIncomeSourceId=null;
+    selectedPaydayKey=null;
+    incomeCalendarOffset=0;
+    $("incomeScheduleView")?.classList.add("hidden");
+    $("incomeJobOverview")?.classList.remove("hidden");
+    $("incomeSettingsPanel").open=true;
+
+    if(src.primary){
+      editingIncomeSourceId=null;
+      if($("primaryJobNameInput"))$("primaryJobNameInput").value=src.name||"Primary job";
+      $("payday").value=src.payday||"";
+      $("paycheck").value=src.paycheck||"";
+      $("frequency").value=src.frequency||"biweekly";
+      setTimeout(()=>$("primaryJobNameInput")?.scrollIntoView({behavior:"smooth",block:"center"}),30);
+      return;
+    }
+
+    const x=(state.additionalPaychecks||[]).find(y=>y.id===src.id);
+    if(!x)return;
+    editingIncomeSourceId=x.id;
+    $("extraJobName").value=x.name;
+    $("extraJobPayday").value=x.payday;
+    $("extraJobPaycheck").value=x.paycheck;
+    $("extraJobFrequency").value=x.frequency;
+    $("incomeJobEditorTitle").textContent=`Edit ${x.name}`;
+    $("saveIncomeSource").textContent="Save job";
+    $("cancelIncomeSourceEdit").classList.remove("hidden");
+    setTimeout(()=>$("extraJobName")?.scrollIntoView({behavior:"smooth",block:"center"}),30);
   }
 
   function renderIncomeSchedule(){
@@ -4089,6 +4160,7 @@ select{
     $("quickPayday").textContent=firstIncomeEvent()?firstIncomeEvent().date.toISOString().slice(0,10):"—";$("quickOverdue").textContent=money(overdue);
     if($("quickRisk"))if($("quickRisk"))$("quickRisk").textContent=!hasIncomeSetup()?"Finish setup":first?.short?`Short by ${money(first.short)}`:conf<50?"Needs more data":first&&first.safe<clampMoney(state.cushion)*.5?"Tight paycheck":"Low risk";
     ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>{const el=$(id);const key=id;const val=state[key]??""; if(document.activeElement!==el) el.value=val});
+    if($("primaryJobNameInput")&&document.activeElement!==$("primaryJobNameInput"))$("primaryJobNameInput").value=state.primaryJobName||"Primary job";
     document.querySelectorAll(".strategy").forEach(el=>el.classList.toggle("active",el.dataset.strategy===state.strategy));
     ["fastest","balanced","minimum"].forEach(k=>$("est-"+k).textContent=strategyEstimate(k));
     $("confidence").textContent=`${conf>=80?"High":conf>=50?"Medium":"Low"} · ${conf}/100`;
@@ -4236,10 +4308,17 @@ select{
   $("logout").onclick=async()=>{if(session&&hydrated){try{await saveState(session,state)}catch{try{const fresh=await withTimeout(refreshSession(session.refreshToken),6000,"REFRESH_TIMEOUT");await saveState({...fresh,email:session.email},state)}catch{}}}localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem("checkstride_page");session=null;hydrated=false;state={...blank};show("auth")};
 
   ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>$(id).addEventListener("change",e=>{state={...state,[id]:["paycheck","extraIncome","cushion"].includes(id)?Number(e.target.value):e.target.value};scheduleSave()}));
+  if($("primaryJobNameInput"))$("primaryJobNameInput").addEventListener("change",e=>{
+    state={...state,primaryJobName:(e.target.value||"Primary job").trim()||"Primary job"};
+    scheduleSave();
+  });
   if($("incomeJobCards"))$("incomeJobCards").onclick=e=>{
     const target=e.target instanceof Element?e.target:null;
-    const card=target?.closest("[data-income-open]");
-    if(card)openIncomeSchedule(card.dataset.incomeOpen);
+    if(!target)return;
+    const open=target.closest("[data-income-open]");
+    const edit=target.closest("[data-income-settings]");
+    if(open){openIncomeSchedule(open.dataset.incomeOpen);return}
+    if(edit){openIncomeJobSettings(edit.dataset.incomeSettings)}
   };
 
   if($("incomeScheduleBack"))$("incomeScheduleBack").onclick=()=>{
@@ -4313,24 +4392,7 @@ select{
   };
 
   if($("editIncomeJobSettings"))$("editIncomeJobSettings").onclick=()=>{
-    const src=incomeSources().find(x=>x.id===selectedIncomeSourceId);
-    if(!src)return;
-    $("incomeSettingsPanel").open=true;
-    if(src.primary){
-      setTimeout(()=>$("payday")?.scrollIntoView({behavior:"smooth",block:"center"}),30);
-    }else{
-      const x=(state.additionalPaychecks||[]).find(y=>y.id===src.id);
-      if(!x)return;
-      editingIncomeSourceId=x.id;
-      $("extraJobName").value=x.name;$("extraJobPayday").value=x.payday;$("extraJobPaycheck").value=x.paycheck;$("extraJobFrequency").value=x.frequency;
-      $("incomeJobEditorTitle").textContent=`Edit ${x.name}`;
-      $("saveIncomeSource").textContent="Save job";
-      $("cancelIncomeSourceEdit").classList.remove("hidden");
-      $("incomeJobOverview")?.classList.remove("hidden");
-      $("incomeScheduleView")?.classList.add("hidden");
-      selectedIncomeSourceId=null;selectedPaydayKey=null;incomeCalendarOffset=0;
-      setTimeout(()=>$("extraJobName")?.scrollIntoView({behavior:"smooth",block:"center"}),30);
-    }
+    if(selectedIncomeSourceId)openIncomeJobSettings(selectedIncomeSourceId);
   };
 
 
