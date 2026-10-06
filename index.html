@@ -5417,7 +5417,7 @@ select:focus-visible{
     try{
     const f=forecast(),first=f[0],overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0),conf=confidence();
     $("safeSpend").textContent=money(first?.safe||0);
-    $("quickPayday").textContent=firstIncomeEvent()?firstIncomeEvent().date.toISOString().slice(0,10):"—";if($("quickOverdue"))$("quickOverdue").textContent=money(overdue);
+    $("quickPayday").textContent=firstIncomeEvent()?firstIncomeEvent().date.toISOString().slice(0,10):"—";
     ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>{const el=$(id);const key=id;const val=state[key]??""; if(document.activeElement!==el) el.value=val});
     if($("primaryJobNameInput")&&document.activeElement!==$("primaryJobNameInput"))$("primaryJobNameInput").value=state.primaryJobName||"Primary job";
     document.querySelectorAll(".strategy").forEach(el=>el.classList.toggle("active",el.dataset.strategy===state.strategy));
@@ -5481,15 +5481,6 @@ select:focus-visible{
       if(delta<0)delta+=daysInMonth(now.getFullYear(),now.getMonth());
       return {...b,daysAway:delta};
     }).sort((a,b)=>a.daysAway-b.daysAway).slice(0,4);
-    if($("upcomingList"))if($("upcomingList"))$("upcomingList").innerHTML=upcoming.length?upcoming.map(b=>{
-      const label=b.daysAway===0?"Due today":b.daysAway===1?"Due tomorrow":`Due in ${b.daysAway} days`;
-      const cls=b.daysAway<=1?"urgent":b.daysAway<=5?"soon":"later";
-      return `<div class="row"><div><b>${escapeHtml(b.name)}</b><span class="due-badge ${cls}">${label}</span></div><div class="right"><b>${money(b.amount)}</b><small>${escapeHtml(b.priority)}</small></div></div>`;
-    }).join(""):'<p class="empty">Add bills to see what is coming up next.</p>';
-
-    const riskEl=$("quickRisk");
-    if(riskEl)riskEl.className=String(riskEl.textContent).includes("Short")?"risk-high":String(riskEl.textContent).includes("Tight")||String(riskEl.textContent).includes("Needs")?"risk-medium":"risk-low";
-
 
     const coach=closedLoopCoach(), coachMode=state.smartMemory?.coachMode||"guided";
     $("coachModePill").textContent=coachMode==="auto-draft"?"Auto-draft":"Guided";
