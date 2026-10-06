@@ -7,6 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Checkstride" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="apple-touch-icon" href="./checkstride-logo.svg" />
 <title>Checkstride</title>
 <link rel="icon" href='data:image/svg+xml;utf8,
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -6564,12 +6566,13 @@ textarea:focus-visible{
 
   document.querySelectorAll("#bottomNav button").forEach(btn=>btn.onclick=()=>switchPage(btn.dataset.page));
 
-  const manifest={
-    name:"Checkstride",short_name:"Checkstride",start_url:".",display:"standalone",background_color:"#07111f",theme_color:"#07111f",
-    description:"Know what this paycheck needs to do."
-  };
-  const blob=new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"});
-  const link=document.createElement("link");link.rel="manifest";link.href=URL.createObjectURL(blob);document.head.appendChild(link);
+  if("serviceWorker" in navigator){
+    window.addEventListener("load",()=>{
+      navigator.serviceWorker.register("./service-worker.js").catch(error=>{
+        console.warn("Checkstride service worker registration failed",error);
+      });
+    });
+  }
 
   (async()=>{
     const startupAttempt=authRevision;
