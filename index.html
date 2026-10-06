@@ -5869,10 +5869,8 @@ textarea:focus-visible{
     }catch{
       if(stillCurrent())setMsg("authMsg","If that email has an account, a reset email will be sent.");
     }finally{
-      if(stillCurrent()){
-        button.disabled=false;
-        button.textContent="Forgot password?";
-      }
+      button.disabled=false;
+      button.textContent="Forgot password?";
     }
   };
   $("logout").onclick=async()=>{
