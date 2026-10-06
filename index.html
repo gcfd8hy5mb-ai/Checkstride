@@ -3100,6 +3100,23 @@ select:focus-visible{
   margin-top:4px
 }
 #addBillPanel[open] .bill-helper{padding:8px 3px 0}
+
+/* v94 Today direct bill navigation */
+.snapshot-bill[role="button"],
+#homeUpcomingList [role="button"]{
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.snapshot-bill[role="button"]:active,
+#homeUpcomingList [role="button"]:active{
+  transform:scale(.99);
+  background:#102740;
+}
+.snapshot-bill[role="button"]:focus-visible,
+#homeUpcomingList [role="button"]:focus-visible{
+  outline:2px solid #55b8ff;
+  outline-offset:2px;
+}
 </style>
 </head>
 <body>
@@ -3858,7 +3875,7 @@ select:focus-visible{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:93};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:94};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -4900,7 +4917,7 @@ select:focus-visible{
       const funding=snapshotBillFundingText(x,snapshotView);
       const dueText=x.due?`Due ${x.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:(normalizedBill(x.bill).dueMode==="monthly"?"Monthly bill":"");
       return `
-      <div class="snapshot-bill">
+      <div class="snapshot-bill" data-snapshot-bill="${x.bill.id}" role="button" tabindex="0">
         <div class="name">
           <b>${escapeHtml(x.bill.name)}</b>
           <small>${dueText}</small>
@@ -5975,6 +5992,14 @@ select:focus-visible{
   };
 
 
+  const openBillFromHome=(billId,view="totals")=>{
+    if(!billId)return;
+    billsView=["this","next","totals"].includes(view)?view:"totals";
+    billFilter="all";
+    switchPage("bills");
+    openBillDetails(billId);
+  };
+
   const homeBillStatusClick=filter=>{
     billsView="totals";
     billFilter=filter==="due"?"due":filter;
@@ -5987,22 +6012,38 @@ select:focus-visible{
     $("homeUpcomingList").onclick=e=>{
       const row=(e.target instanceof Element)?e.target.closest("[data-home-bill-row]"):null;
       if(!row)return;
-      billsView="totals";billFilter="all";switchPage("bills");renderBillsPage();
+      openBillFromHome(row.dataset.homeBillRow,"totals");
     };
     $("homeUpcomingList").onkeydown=e=>{
       if(e.key!=="Enter"&&e.key!==" ")return;
       const row=(e.target instanceof Element)?e.target.closest("[data-home-bill-row]"):null;
       if(!row)return;
-      e.preventDefault();billsView="totals";billFilter="all";switchPage("bills");renderBillsPage();
+      e.preventDefault();
+      openBillFromHome(row.dataset.homeBillRow,"totals");
     };
   }
 
   document.querySelectorAll("[data-snapshot]").forEach(btn=>btn.onclick=()=>{snapshotView=btn.dataset.snapshot||"this";renderSnapshot()});
   if($("snapshotList"))$("snapshotList").onclick=e=>{
     const target=e.target instanceof Element?e.target:null;
-    const btn=target?.closest("[data-snapshot-paid]");
-    if(!btn)return;
-    setBillPaid(btn.dataset.snapshotPaid,btn.dataset.paid!=="1",snapshotView);
+    if(!target)return;
+    const paidBtn=target.closest("[data-snapshot-paid]");
+    if(paidBtn){
+      e.stopPropagation();
+      setBillPaid(paidBtn.dataset.snapshotPaid,paidBtn.dataset.paid!=="1",snapshotView);
+      return;
+    }
+    const row=target.closest("[data-snapshot-bill]");
+    if(row)openBillFromHome(row.dataset.snapshotBill,snapshotView);
+  };
+  if($("snapshotList"))$("snapshotList").onkeydown=e=>{
+    if(e.key!=="Enter"&&e.key!==" ")return;
+    const target=e.target instanceof Element?e.target:null;
+    if(!target||target.closest("[data-snapshot-paid]"))return;
+    const row=target.closest("[data-snapshot-bill]");
+    if(!row)return;
+    e.preventDefault();
+    openBillFromHome(row.dataset.snapshotBill,snapshotView);
   };
   if($("viewBillsFromSnapshot"))$("viewBillsFromSnapshot").onclick=()=>switchPage("bills");
   if($("snapshotViewAllBottom"))$("snapshotViewAllBottom").onclick=()=>switchPage("bills");
