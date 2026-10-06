@@ -2094,7 +2094,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:63};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:64};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -2810,46 +2810,100 @@ select{
   }
 
   function paychecksInMonth(year,month){
-    return incomeEvents(24).map(x=>x.date).filter(d=>d.getFullYear()===year&&d.getMonth()===month);
+    return incomeEvents(32).map(x=>x.date).filter(d=>d.getFullYear()===year&&d.getMonth()===month);
+  }
+
+  function paycheckEventsInMonth(year,month){
+    return incomeEvents(32).filter(x=>x.date.getFullYear()===year&&x.date.getMonth()===month);
+  }
+
+  function dateKey(date){
+    return Number.isNaN(date?.getTime?.())?"":`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+  }
+
+  function allocationShares(amount,events,mode="auto",priority="important",fullIndex=0){
+    const cents=Math.max(0,Math.round(clampMoney(amount)*100));
+    if(!events.length||!cents)return events.map(()=>0);
+    if(events.length===1)return[cents/100];
+
+    if(mode==="full"){
+      return events.map((_,i)=>i===Math.max(0,Math.min(events.length-1,fullIndex))?cents/100:0);
+    }
+
+    if(mode==="even"){
+      const base=Math.floor(cents/events.length),rem=cents-(base*events.length);
+      return events.map((_,i)=>(base+(i<rem?1:0))/100);
+    }
+
+    const cushion=clampMoney(state.cushion);
+    const priorityBoost=priority==="critical"?.14:priority==="important"?.06:0;
+    const weights=events.map((event,i)=>{
+      const usable=Math.max(1,clampMoney(event.income)-cushion);
+      const earlierBoost=1+((events.length-1-i)*priorityBoost);
+      return usable*earlierBoost;
+    });
+    const totalWeight=weights.reduce((s,x)=>s+x,0)||events.length;
+    const raw=weights.map(w=>(cents*w)/totalWeight);
+    const floors=raw.map(Math.floor);
+    let remainder=cents-floors.reduce((s,x)=>s+x,0);
+    const order=raw.map((x,i)=>({i,f:x-floors[i]})).sort((a,b)=>b.f-a.f);
+    for(let n=0;n<remainder;n++)floors[order[n%order.length].i]++;
+    return floors.map(x=>x/100);
+  }
+
+  function previousDueDate(bill,due){
+    const b=normalizedBill(bill);
+    let y=due.getFullYear(),m=due.getMonth()-1;
+    if(m<0){m=11;y--}
+    return dateAtDay(y,m,b.dueDay);
+  }
+
+  function nextDueDateOnOrAfter(bill,from){
+    const b=normalizedBill(bill);
+    if(b.dueMode!=="date"||Number.isNaN(from.getTime()))return null;
+    let due=dateAtDay(from.getFullYear(),from.getMonth(),b.dueDay);
+    if(due<from){
+      let y=from.getFullYear(),m=from.getMonth()+1;
+      if(m>11){m=0;y++}
+      due=dateAtDay(y,m,b.dueDay);
+    }
+    return due;
+  }
+
+  function eligiblePaychecksForDue(bill,due){
+    if(!due)return[];
+    const cycleStart=previousDueDate(bill,due);
+    return incomeEvents(40).filter(event=>event.date>cycleStart&&event.date<=due);
+  }
+
+  function datedBillAllocation(bill,periodStart){
+    const b=normalizedBill(bill),amount=clampMoney(b.amount);
+    if(b.dueMode!=="date"||Number.isNaN(periodStart.getTime())||amount<=0)return 0;
+    const due=nextDueDateOnOrAfter(b,periodStart);
+    const events=eligiblePaychecksForDue(b,due);
+    if(!events.length)return 0;
+    const idx=events.findIndex(event=>dateKey(event.date)===dateKey(periodStart));
+    if(idx<0)return 0;
+    const fullIndex=events.length-1;
+    const shares=allocationShares(amount,events,b.splitMode,b.priority||"important",fullIndex);
+    return clampMoney(shares[idx]||0);
   }
 
   function monthlyBillAllocation(bill,periodStart){
-    const b=normalizedBill(bill), amount=clampMoney(b.amount);
-    if(b.dueMode!=="monthly"||Number.isNaN(periodStart.getTime()))return 0;
-    const checks=paychecksInMonth(periodStart.getFullYear(),periodStart.getMonth());
-    if(!checks.length)return 0;
-
-    const thisKey=periodStart.toISOString().slice(0,10);
-    const idx=checks.findIndex(d=>d.toISOString().slice(0,10)===thisKey);
+    const b=normalizedBill(bill),amount=clampMoney(b.amount);
+    if(b.dueMode!=="monthly"||Number.isNaN(periodStart.getTime())||amount<=0)return 0;
+    const events=paycheckEventsInMonth(periodStart.getFullYear(),periodStart.getMonth());
+    if(!events.length)return 0;
+    const idx=events.findIndex(event=>dateKey(event.date)===dateKey(periodStart));
     if(idx<0)return 0;
-
-    if(b.splitMode==="full"){
-      return idx===0?amount:0;
-    }
-
-    // "even" always divides across checks in the month.
-    if(b.splitMode==="even"){
-      return Math.round((amount/checks.length)*100)/100;
-    }
-
-    // Stride recommended:
-    // - unknown-date monthly bills are distributed across all checks
-    // - if a check is forecast to be tighter, bias slightly away from it
-    const base=amount/checks.length;
-    if(checks.length===1)return amount;
-
-    // Lightweight weighting: later checks get a tiny bit less burden to preserve runway.
-    const weights=checks.map((_,i)=>1-(i*0.08));
-    const totalW=weights.reduce((a,b)=>a+b,0);
-    return Math.round((amount*(weights[idx]/totalW))*100)/100;
+    const shares=allocationShares(amount,events,b.splitMode,b.priority||"important",0);
+    return clampMoney(shares[idx]||0);
   }
 
   function billAmountInWindow(bill,start,end){
     const b=normalizedBill(bill);
-    if(b.dueMode==="monthly"){
-      return monthlyBillAllocation(b,start);
-    }
-    return dueBetween(b,start,end);
+    if(b.dueMode==="monthly")return monthlyBillAllocation(b,start);
+    return datedBillAllocation(b,start);
   }
 
   function billSplitLabel(bill){
@@ -2859,9 +2913,9 @@ select{
       if(b.splitMode==="even")return "Monthly · split evenly";
       return "Monthly · Stride split";
     }
-    if(b.splitMode==="full")return "Full on due-date check";
-    if(b.splitMode==="even")return "Split evenly when possible";
-    return "Stride recommended";
+    if(b.splitMode==="full")return "Full on last check before due date";
+    if(b.splitMode==="even")return "Split evenly before due date";
+    return "Stride capacity split";
   }
 
   function billDueDateInWindow(bill,start,end){
@@ -2903,12 +2957,11 @@ select{
     }else if(!Number.isNaN(start.getTime())&&!Number.isNaN(end.getTime())){
       rows=state.bills.map(raw=>{
         const b=normalizedBill(raw);
-        if(b.dueMode==="monthly"){
-          const alloc=monthlyBillAllocation(b,start);
-          return alloc>0?{bill:{...b,amount:alloc,_originalAmount:b.amount},due:null}:null;
-        }
-        const due=billDueDateInWindow(b,start,end);
-        return due?{bill:b,due}:null;
+        const alloc=billAmountInWindow(b,start,end);
+        if(alloc<=0)return null;
+        if(b.dueMode==="monthly")return{bill:{...b,amount:alloc,_originalAmount:b.amount},due:null};
+        const due=nextDueDateOnOrAfter(b,start);
+        return{bill:{...b,amount:alloc,_originalAmount:b.amount},due};
       }).filter(Boolean);
       range=`${start.toLocaleDateString(undefined,{month:"short",day:"numeric"})} – ${end.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`;
     }
