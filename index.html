@@ -1292,7 +1292,7 @@ input,select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:53};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:54};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -1388,14 +1388,16 @@ input,select{
     return Math.min(100,(hasIncomeSetup()?20:0)+(totalScheduledIncome()>0?20:0)+(state.bills.length>=3?20:state.bills.length?10:0)+(state.paycheckHistory.length>=2?20:state.paycheckHistory.length?10:0)+(state.paymentHistory.length>=3?20:state.paymentHistory.length?10:0));
   }
   function strategyEstimate(key){
-    const paycheck=clampMoney(state.paycheck),extra=clampMoney(state.extraIncome),baseCushion=clampMoney(state.cushion);
-    if(!hasIncomeSetup())return"—";
+    const events=incomeEvents(24),extra=clampMoney(state.extraIncome),baseCushion=clampMoney(state.cushion);
+    if(!events.length)return"—";
     let rem=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0),checks=0;
     const cushion=key==="fastest"?baseCushion*.35:key==="minimum"?baseCushion*1.5:baseCushion;
-    for(let i=0;i<12&&rem>0;i++){
-      const a=nextPayday(state.payday,state.frequency,i),b=nextPayday(state.payday,state.frequency,i+1);
+    for(let i=0;i<Math.min(12,events.length)&&rem>0;i++){
+      const a=events[i].date;
+      const b=events[i+1]?.date||nextPayday(a.toISOString().slice(0,10),events[i].sources[0]?.frequency||"biweekly",1);
       const due=state.bills.reduce((s,x)=>s+billAmountInWindow(x,a,b),0);
-      let avail=Math.max(0,paycheck+(i===0?extra:0)-due-cushion);if(key==="minimum")avail*=.65;
+      let avail=Math.max(0,events[i].income+(i===0?extra:0)-due-cushion);
+      if(key==="minimum")avail*=.65;
       rem=Math.max(0,rem-avail);checks++;
     }
     return rem>0?"12+ checks":checks===0?"Caught up":`${checks} check${checks===1?"":"s"}`;
@@ -1414,7 +1416,7 @@ input,select{
   function paycheckStats(){
     const rows=Array.isArray(state.paycheckHistory)?state.paycheckHistory.slice(-8):[];
     const values=rows.map(x=>clampMoney(x?.income??x?.paycheck??x?.amount??0)).filter(x=>x>0);
-    if(!values.length)return{count:0,avg:clampMoney(state.paycheck),variance:0,stability:"unknown"};
+    if(!values.length)return{count:0,avg:clampMoney(firstIncomeEvent()?.income||totalScheduledIncome()),variance:0,stability:"unknown"};
     const avg=values.reduce((a,b)=>a+b,0)/values.length;
     const variance=Math.sqrt(values.reduce((s,x)=>s+Math.pow(x-avg,2),0)/values.length);
     const pct=avg?variance/avg:0;
@@ -1601,7 +1603,7 @@ input,select{
     };
     const moneyPct=(err,base)=>Math.min(1,Math.abs(err)/Math.max(1,base));
     const incomeErrors=rows.map((x,i)=>{
-      const planned=i===0?clampMoney(state.paycheck)+clampMoney(state.extraIncome):clampMoney(rows[i-1]?.actualIncome||state.paycheck);
+      const planned=i===0?clampMoney(firstIncomeEvent()?.income)+clampMoney(state.extraIncome):clampMoney(rows[i-1]?.actualIncome||firstIncomeEvent()?.income||state.paycheck);
       return moneyPct(Number(x.actualIncome||0)-planned,planned);
     });
     const spendErrors=rows.map(x=>moneyPct(Number(x.unexpectedSpend||0),Number(x.actualIncome||1)));
@@ -1749,7 +1751,7 @@ input,select{
     const x=rows[rows.length-1], predicted=clampMoney(x.predictedLeft), actual=clampMoney(x.actualLeft), income=clampMoney(x.actualIncome), unexpected=clampMoney(x.unexpectedSpend);
     const miss=actual-predicted, absMiss=Math.abs(miss), tolerance=Math.max(35,income*.05);
     if(absMiss<=tolerance)return{status:"On target",headline:`Forecast landed within ${money(tolerance)} of actual.`,detail:`Predicted ${money(predicted)} left and actual was ${money(actual)}. No major correction is needed.`,cause:"none",severity:"low"};
-    const expectedIncome=clampMoney(state.paycheck);
+    const expectedIncome=clampMoney(firstIncomeEvent()?.income||state.paycheck);
     const incomeGap=income-expectedIncome;
     const residual=miss+unexpected-incomeGap;
     const candidates=[
