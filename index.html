@@ -932,7 +932,7 @@ input,select{
         <div class="field"><label>Next payday</label><input id="extraJobPayday" type="date" /></div>
         <div class="field"><label>Take-home pay</label><input id="extraJobPaycheck" type="number" min="0" step="0.01" /></div>
         <div class="field"><label>How often</label><select id="extraJobFrequency"><option value="weekly">Weekly</option><option value="biweekly" selected>Biweekly</option><option value="semimonthly">1st & 15th</option><option value="monthly">Monthly</option></select></div>
-        <button id="saveIncomeSource" type="button" class="primary-btn" onclick="window.checkstrideSubmitIncomeSource(event)">Add another job</button>
+        <button id="saveIncomeSource" type="button" class="primary-btn">Add another job</button>
         <button id="cancelIncomeSourceEdit" type="button" class="ghost hidden">Cancel</button>
         <div id="incomeSourceMsg" class="msg hidden"></div>
       </div>
@@ -1323,7 +1323,7 @@ input,select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:56};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:57};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -1448,6 +1448,16 @@ input,select{
     if(event){event.preventDefault();event.stopPropagation()}
     submitIncomeSource();
   };
+
+  let lastIncomeSourceTap=0;
+  function activateIncomeSource(event){
+    const now=Date.now();
+    if(now-lastIncomeSourceTap<500)return;
+    lastIncomeSourceTap=now;
+    if(event){event.preventDefault();event.stopPropagation()}
+    setMsg("incomeSourceMsg","Saving job…");
+    submitIncomeSource();
+  }
 
   function sourcePaydatesInMonth(src,year,month){
     if(!src?.payday)return[];
@@ -2584,7 +2594,11 @@ input,select{
 
   ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>$(id).addEventListener("change",e=>{state={...state,[id]:["paycheck","extraIncome","cushion"].includes(id)?Number(e.target.value):e.target.value};scheduleSave()}));
 
-  $("saveIncomeSource").onclick=window.checkstrideSubmitIncomeSource;
+  {
+    const incomeBtn=$("saveIncomeSource");
+    incomeBtn.addEventListener("click",activateIncomeSource);
+    incomeBtn.addEventListener("touchend",activateIncomeSource,{passive:false});
+  }
   $("cancelIncomeSourceEdit").onclick=()=>{
     editingIncomeSourceId=null;$("extraJobName").value="";$("extraJobPayday").value="";$("extraJobPaycheck").value="";$("extraJobFrequency").value="biweekly";
     $("saveIncomeSource").textContent="Add another job";$("cancelIncomeSourceEdit").classList.add("hidden");setMsg("incomeSourceMsg","");
