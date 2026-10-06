@@ -41,6 +41,7 @@ input,select{width:100%;border:1px solid var(--border);background:#0a1725;color:
 input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(42,169,160,.18)}
 .primary-btn{width:100%;border:0;border-radius:15px;padding:14px 16px;background:var(--primary);color:#031718;font-weight:800;margin-top:8px}
 .link-btn{border:0;background:transparent;color:var(--accent);padding:12px 0 0}
+.auth-recovery-row{display:flex;justify-content:space-between;gap:16px;align-items:center}.auth-recovery-row .link-btn{width:auto;text-align:left}.auth-recovery-row .link-btn:last-child{text-align:right}
 .msg{margin-top:12px;padding:11px 12px;border-radius:12px;background:var(--surface);color:var(--muted);font-size:13px}
 .app{max-width:760px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 10px) 14px calc(env(safe-area-inset-bottom) + 92px)}
 .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0 12px;background:linear-gradient(var(--bg) 72%,rgba(7,17,31,0))}
@@ -3236,7 +3237,7 @@ textarea:focus-visible{
     <div class="field"><label>Email</label><input id="email" type="email" autocomplete="email" /></div>
     <div class="field"><label>Password</label><div class="password-wrap"><input id="password" type="password" autocomplete="current-password" /><button id="togglePassword" type="button" aria-label="Show password">Show</button></div></div>
     <button id="authSubmit" class="primary-btn">Sign in</button>
-    <button id="resetPassword" class="link-btn">Forgot password?</button><div class="auth-note">Your plan is private to your account. Checkstride does not move money or make payments.</div>
+    <div class="auth-recovery-row"><button id="forgotUsername" class="link-btn" type="button">Forgot username/email?</button><button id="resetPassword" class="link-btn" type="button">Forgot password?</button></div><div class="auth-note">Your plan is private to your account. Checkstride does not move money or make payments.</div>
     <div id="authMsg" class="msg hidden"></div>
   </section>
 
@@ -5849,6 +5850,10 @@ textarea:focus-visible{
   $("tabLogin").onclick=()=>{authRevision++;mode="login";setMsg("authMsg","");$("tabLogin").classList.add("active");$("tabSignup").classList.remove("active");$("authSubmit").textContent="Sign in"};
   $("tabSignup").onclick=()=>{authRevision++;mode="signup";setMsg("authMsg","");$("tabSignup").classList.add("active");$("tabLogin").classList.remove("active");$("authSubmit").textContent="Create account"};
   $("authSubmit").onclick=submitAuth;
+  $("forgotUsername").onclick=()=>{
+    authRevision++;
+    setMsg("authMsg","Your Checkstride username is the email address you used to create your account. If you remember that email but not the password, tap Forgot password? and we’ll email you a reset link.");
+  };
   $("resetPassword").onclick=async()=>{
     const email=$("email").value.trim();
     if(!email)return setMsg("authMsg","Enter your email first.");
