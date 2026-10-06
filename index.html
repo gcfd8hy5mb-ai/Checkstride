@@ -5767,8 +5767,14 @@ textarea:focus-visible{
       const s={idToken:j.idToken,refreshToken:j.refreshToken,localId:j.localId,email:j.email||$("email").value.trim()};
       const loaded=await withTimeout(loadState(s),7000,"LOAD_TIMEOUT");
       session=s;state=loaded.state;localStorage.setItem(SESSION_KEY,JSON.stringify(s));hydrated=true;
-      if(loaded.migrationChanged){setCloud("Saving migration…","saving");await saveState(s,state)}
-      setCloud("Saved");
+      if(loaded.migrationChanged){
+        setCloud("Saving migration…","saving");
+        try{await saveState(s,state);setCloud("Saved")}
+        catch(migrationError){
+          console.error("Migration save warning",migrationError);
+          setCloud("Migration save paused — changes are still loaded","error");
+        }
+      }else setCloud("Saved");
       try{
         render();show("app");switchPage(sessionStorage.getItem("checkstride_page")||"home");
       }catch(renderError){
@@ -6515,8 +6521,14 @@ textarea:focus-visible{
       const loaded=await withTimeout(loadState(merged),7000,"LOAD_TIMEOUT");
       localStorage.setItem(SESSION_KEY,JSON.stringify(merged));
       session=merged;state=loaded.state;hydrated=true;
-      if(loaded.migrationChanged){setCloud("Saving migration…","saving");await saveState(merged,state)}
-      setCloud("Saved");
+      if(loaded.migrationChanged){
+        setCloud("Saving migration…","saving");
+        try{await saveState(merged,state);setCloud("Saved")}
+        catch(migrationError){
+          console.error("Migration save warning",migrationError);
+          setCloud("Migration save paused — changes are still loaded","error");
+        }
+      }else setCloud("Saved");
       try{render()}catch(renderError){console.error("Checkstride startup render warning",renderError);try{renderIncomeSources()}catch{}}
       show("app");switchPage(sessionStorage.getItem("checkstride_page")||"home");
     }catch(e){
