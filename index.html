@@ -3117,6 +3117,43 @@ select:focus-visible{
   outline:2px solid #55b8ff;
   outline-offset:2px;
 }
+
+/* v95 focused Plan details */
+.plan-direct-detail>summary{display:none!important}
+.plan-direct-detail[open]>.learning-dropdown-body,
+.plan-direct-detail[open]>.utility-dropdown-body,
+.plan-direct-detail[open]>.details-body{
+  padding-top:0!important
+}
+.plan-direct-detail{
+  margin-top:0!important;
+  border:0!important;
+  background:transparent!important
+}
+.plan-detail-list-item{
+  margin:0 0 8px!important;
+  border:1px solid var(--border)!important;
+  border-radius:14px!important;
+  background:#0c1e30!important;
+  overflow:hidden
+}
+.plan-detail-list-item>summary{
+  min-height:58px!important;
+  padding:11px 12px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  cursor:pointer;
+  touch-action:manipulation
+}
+.plan-detail-list-item>summary div{display:grid;gap:2px}
+.plan-detail-list-item>summary b{font-size:12px}
+.plan-detail-list-item>summary small{font-size:9px;color:#9fb5cf}
+.plan-detail-list-item>summary>span{font-size:10px;color:#7fc5ff}
+.plan-detail-list-item[open]>summary{border-bottom:1px solid var(--border)}
+.plan-detail-list-item[open]>.learning-dropdown-body,
+.plan-detail-list-item[open]>.details-body{padding:9px!important}
 </style>
 </head>
 <body>
@@ -3875,7 +3912,7 @@ select:focus-visible{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:94};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:95};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -5036,18 +5073,31 @@ select:focus-visible{
 
   function openPlanDetail(key){
     const map={
-      recommendation:{title:"Why this plan",text:"See Stride’s reasoning and confidence.",ids:["strideRecommendationDropdown"]},
-      scenario:{title:"Try a change",text:"Preview how a change would affect the plan.",ids:["scenarioSection"]},
-      complete:{title:"Record paycheck outcome",text:"Tell Stride what actually happened.",ids:["completePaycheckDropdown"]},
-      advanced:{title:"More plan details",text:"Learning, adjustments, system behavior, and forecast.",ids:["strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced"]}
+      recommendation:{title:"Why this plan",text:"See Stride’s reasoning and confidence.",ids:["strideRecommendationDropdown"],mode:"direct"},
+      scenario:{title:"Try a change",text:"Preview how a change would affect the plan.",ids:["scenarioSection"],mode:"direct"},
+      complete:{title:"Record paycheck outcome",text:"Tell Stride what actually happened.",ids:["completePaycheckDropdown"],mode:"direct"},
+      advanced:{title:"More plan details",text:"Open only the part of Stride you want to review.",ids:["strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced"],mode:"list"}
     };
     const cfg=map[key]; if(!cfg)return;
-    ["planOverviewSection","strideRecommendationDropdown","scenarioSection","completePaycheckDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced","autoplanSection"].forEach(id=>$(id)?.classList.add("appPageHidden"));
+    const all=["strideRecommendationDropdown","scenarioSection","completePaycheckDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced","autoplanSection"];
+    $("planOverviewSection")?.classList.add("appPageHidden");
+    all.forEach(id=>{
+      const el=$(id);if(!el)return;
+      el.classList.add("appPageHidden");
+      el.classList.remove("plan-direct-detail","plan-detail-list-item");
+      if(el.tagName==="DETAILS")el.open=false;
+    });
     $("planDetailShell")?.classList.remove("appPageHidden");
     cfg.ids.forEach(id=>{
       const el=$(id); if(!el)return;
       el.classList.remove("appPageHidden");
-      if(el.tagName==="DETAILS")el.open=true;
+      if(cfg.mode==="direct"){
+        el.classList.add("plan-direct-detail");
+        if(el.tagName==="DETAILS")el.open=true;
+      }else{
+        el.classList.add("plan-detail-list-item");
+        if(el.tagName==="DETAILS")el.open=false;
+      }
     });
     $("planDetailTitle").textContent=cfg.title;
     $("planDetailText").textContent=cfg.text;
@@ -5055,7 +5105,11 @@ select:focus-visible{
   }
 
   function closePlanDetail(){
-    ["planDetailShell","strideRecommendationDropdown","scenarioSection","completePaycheckDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced","autoplanSection"].forEach(id=>$(id)?.classList.add("appPageHidden"));
+    ["planDetailShell","strideRecommendationDropdown","scenarioSection","completePaycheckDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced","autoplanSection"].forEach(id=>{
+      const el=$(id);if(!el)return;
+      el.classList.add("appPageHidden");
+      el.classList.remove("plan-direct-detail","plan-detail-list-item");
+    });
     document.querySelectorAll(".learning-dropdown,.utility-dropdown,.compact-details").forEach(d=>d.removeAttribute("open"));
     $("planOverviewSection")?.classList.remove("appPageHidden");
     renderPlanOverview();
