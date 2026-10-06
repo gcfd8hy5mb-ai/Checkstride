@@ -1629,6 +1629,90 @@ select{
   .ratio-numbers b{font-size:12px}
   .bill-main b,.snapshot-bill b{font-size:13px}
 }
+
+/* v66 home bills clarity */
+.status-grid .status-card{
+  appearance:none;
+  -webkit-appearance:none;
+  width:100%;
+  text-align:left;
+  color:inherit;
+  font-family:inherit;
+  cursor:pointer;
+}
+.status-grid .status-card:active{
+  transform:scale(.985);
+}
+.status-grid .status-card::after{
+  content:"›";
+  position:absolute;
+  top:9px;
+  right:9px;
+  color:var(--muted);
+  font-size:14px;
+  opacity:.75;
+}
+.status-grid .status-card{position:relative;padding-right:24px}
+
+.snapshot-card .snapshot-head{
+  align-items:flex-start;
+}
+.snapshot-card .snapshot-head button{
+  min-height:36px;
+  padding:6px 2px 6px 10px;
+}
+.snapshot-card .snapshot-totals{
+  margin-top:2px;
+}
+.snapshot-list .snapshot-bill{
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  padding:12px 0;
+}
+.snapshot-list .snapshot-bill .amount{
+  text-align:right;
+}
+.snapshot-list .snapshot-bill .paid-toggle{
+  grid-column:1/-1;
+  width:100%;
+  min-height:38px;
+}
+.snapshot-list .split-primary{
+  display:block;
+  margin-top:4px;
+  color:#63b8ff;
+  font-size:11px;
+  font-weight:750;
+  line-height:1.35;
+}
+.snapshot-list .split-secondary{
+  display:block;
+  margin-top:2px;
+  color:var(--muted-readable-strong);
+  font-size:10px;
+  line-height:1.35;
+}
+.upcoming-home .bill-row-modern{
+  cursor:pointer;
+}
+.upcoming-home .bill-row-modern:active{
+  background:rgba(255,255,255,.025);
+}
+.upcoming-home .bill-main small{
+  margin-top:3px;
+}
+@media(max-width:480px){
+  .snapshot-list .snapshot-bill .paid-toggle{
+    font-size:11px;
+  }
+  .status-grid .status-card::after{
+    display:none;
+  }
+  .status-grid .status-card{
+    padding-right:9px;
+  }
+}
 </style>
 </head>
 <body>
@@ -1738,36 +1822,36 @@ select{
   </section>
 
   <section class="status-grid section" id="statusCards">
-    <div class="status-card overdue">
+    <button type="button" class="status-card overdue" data-home-bill-filter="overdue" aria-label="Show overdue bills">
       <span>Overdue</span>
       <b id="statusOverdueCount">0 bills</b>
       <strong id="quickOverdue">$0.00</strong>
-    </div>
-    <div class="status-card due">
+    </button>
+    <button type="button" class="status-card due" data-home-bill-filter="due" aria-label="Show bills due soon">
       <span>Due Soon</span>
       <b id="statusDueSoonCount">0 bills</b>
       <strong id="statusDueSoonAmount">$0.00</strong>
-    </div>
-    <div class="status-card upcoming">
+    </button>
+    <button type="button" class="status-card upcoming" data-home-bill-filter="upcoming" aria-label="Show upcoming bills">
       <span>Upcoming</span>
       <b id="statusUpcomingCount">0 bills</b>
       <strong id="statusUpcomingAmount">$0.00</strong>
-    </div>
+    </button>
   </section>
 
   <section class="card snapshot-card section" id="billSnapshot">
     <div class="snapshot-head">
       <div>
-        <h2>Bills Snapshot</h2>
-        <p>See your bills at a glance.</p>
+        <h2>Bills for this paycheck</h2>
+        <p>What Stride wants this check to cover.</p>
       </div>
       <button id="viewBillsFromSnapshot" type="button">View All</button>
     </div>
 
     <div class="snapshot-tabs" role="tablist" aria-label="Bills snapshot period">
-      <button type="button" class="active" data-snapshot="this">This Paycheck</button>
-      <button type="button" data-snapshot="next">Next Paycheck</button>
-      <button type="button" data-snapshot="totals">Totals</button>
+      <button type="button" class="active" data-snapshot="this">This Check</button>
+      <button type="button" data-snapshot="next">Next Check</button>
+      <button type="button" data-snapshot="totals">This Month</button>
     </div>
 
     <div class="snapshot-range-row">
@@ -1776,21 +1860,20 @@ select{
     </div>
 
     <div class="snapshot-totals">
-      <div><span>Total Bills</span><b id="snapshotTotal">$0.00</b></div>
-      <div><span>Paid</span><b id="snapshotPaid">$0.00</b></div>
-      <div><span>Remaining</span><b id="snapshotRemaining">$0.00</b></div>
+      <div><span>Set aside</span><b id="snapshotTotal">$0.00</b></div>
+      <div><span>Already paid</span><b id="snapshotPaid">$0.00</b></div>
+      <div><span>Still due</span><b id="snapshotRemaining">$0.00</b></div>
     </div>
 
     <div class="snapshot-progress"><i id="snapshotProgress"></i></div>
     <div class="snapshot-progress-copy"><span id="snapshotProgressText">0% paid</span></div>
     <div id="snapshotList" class="snapshot-list"></div>
-    <button type="button" id="snapshotViewAllBottom" class="snapshot-view-all">View All Bills</button>
   </section>
 
   <section class="card section upcoming-home" id="todayFocus">
     <div class="section-head-row">
-      <h2>Upcoming Bills</h2>
-      <span>Next 7 days</span>
+      <h2>Next bills</h2>
+      <span>By due date</span>
     </div>
     <div id="homeUpcomingList" class="list"></div>
   </section>
@@ -2208,7 +2291,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:65};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:66};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -3170,6 +3253,21 @@ select{
     renderStatusCards();
   };
 
+  function snapshotBillFundingText(item,view){
+    const b=normalizedBill(item.bill);
+    const original=clampMoney(item.bill._originalAmount??b.amount);
+    const allocation=clampMoney(item.bill.amount);
+    if(view==="totals"){
+      return {primary:`${money(original)} total bill`,secondary:item.due?`Due ${item.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:"Monthly bill"};
+    }
+    const future=Math.max(0,original-allocation);
+    const checkLabel=view==="next"?"next check":"this check";
+    return{
+      primary:`Set aside ${money(allocation)} from ${checkLabel}`,
+      secondary:future>0?`${money(original)} total · ${money(future)} planned from other checks`:`${money(original)} total · covered by this check`
+    };
+  }
+
   function renderSnapshot(){
     const snap=snapshotData(snapshotView);
     if(!$("billSnapshot"))return;
@@ -3193,12 +3291,21 @@ select{
   if($("homeAddBill"))$("homeAddBill").onclick=()=>{switchPage("bills");setTimeout(()=>{$("addBillPanel").open=true;$("billName")?.focus()},50)};
 
   document.querySelectorAll("[data-snapshot]").forEach(b=>b.classList.toggle("active",b.dataset.snapshot===snapshotView));
-    $("snapshotList").innerHTML=snap.rows.length?snap.rows.slice(0,5).map(x=>`
+    $("snapshotList").innerHTML=snap.rows.length?snap.rows.slice(0,5).map(x=>{
+      const funding=snapshotBillFundingText(x,snapshotView);
+      const dueText=x.due?`Due ${x.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:(normalizedBill(x.bill).dueMode==="monthly"?"Monthly bill":"");
+      return `
       <div class="snapshot-bill">
-        <div class="name"><b>${escapeHtml(x.bill.name)}</b><small>${x.due?`Due ${x.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:(normalizedBill(x.bill).dueMode==="monthly"?"Monthly bill":escapeHtml(x.bill.priority))}</small><small class="split-note">${escapeHtml(billSplitLabel(x.bill))}</small></div>
+        <div class="name">
+          <b>${escapeHtml(x.bill.name)}</b>
+          <small>${dueText}</small>
+          <span class="split-primary">${escapeHtml(funding.primary)}</span>
+          <span class="split-secondary">${escapeHtml(funding.secondary)}</span>
+        </div>
         <div class="amount">${money(x.bill.amount)}</div>
         <button type="button" class="paid-toggle ${x.paid?"paid":""}" data-snapshot-paid="${x.bill.id}" data-paid="${x.paid?"1":"0"}">${x.paid?"Paid":"Mark paid"}</button>
-      </div>`).join(""):'<div class="snapshot-empty">No bills in this view yet.</div>';
+      </div>`;
+    }).join(""):'<div class="snapshot-empty">Nothing needs to be set aside from this check yet.</div>';
   }
 
 
@@ -3208,8 +3315,9 @@ select{
     const paid=(state.paymentHistory||[]).some(p=>p.billId===bill.id && (view==="totals"?p.monthKey===snap.key:p.periodKey===snap.key));
     if(paid)return "paid";
     if(clampMoney(bill.overdue)>0)return "overdue";
-    if(due){
-      const diff=Math.ceil((due-new Date(today.getFullYear(),today.getMonth(),today.getDate(),12))/86400000);
+    const actualDue=due || (normalizedBill(bill).dueMode==="date"?nextDueDateOnOrAfter(bill,new Date(today.getFullYear(),today.getMonth(),today.getDate())):null);
+    if(actualDue){
+      const diff=Math.ceil((actualDue-new Date(today.getFullYear(),today.getMonth(),today.getDate(),12))/86400000);
       if(diff<=5)return "due";
     }
     return "upcoming";
@@ -3252,7 +3360,8 @@ select{
 
     const filtered=rows.filter(x=>{
       if(billFilter==="all")return true;
-      if(billFilter==="upcoming")return x.status==="upcoming"||x.status==="due";
+      if(billFilter==="upcoming")return x.status==="upcoming";
+      if(billFilter==="due")return x.status==="due";
       return x.status===billFilter;
     });
 
@@ -3280,8 +3389,9 @@ select{
     $("homeUpcomingList").innerHTML=rows.length?rows.map(b=>{
       const status=clampMoney(b.overdue)>0?"Overdue":b.daysAway<=5?"Due Soon":"Upcoming";
       const cls=status==="Overdue"?"overdue":status==="Due Soon"?"due":"upcoming";
-      return `<div class="bill-row-modern">
-        <div class="bill-main"><b>${escapeHtml(b.name)}</b><small>${b.daysAway===0?"Due today":b.daysAway===1?"Due tomorrow":`Due in ${b.daysAway} days`}</small></div>
+      const dueLabel=b.dueMode==="monthly"?"Monthly · date unknown":(b.daysAway===0?"Due today":b.daysAway===1?"Due tomorrow":`Due in ${b.daysAway} days`);
+      return `<div class="bill-row-modern" data-home-bill-row="${b.id}" role="button" tabindex="0">
+        <div class="bill-main"><b>${escapeHtml(b.name)}</b><small>${dueLabel}</small></div>
         <div class="bill-amount">${money(b.amount)}</div>
         <span class="bill-status ${cls}">${status}</span>
       </div>`;
@@ -3711,6 +3821,28 @@ select{
     $("togglePassword").setAttribute("aria-label",show?"Hide password":"Show password");
   };
 
+
+  const homeBillStatusClick=filter=>{
+    billsView="totals";
+    billFilter=filter==="due"?"due":filter;
+    switchPage("bills");
+    renderBillsPage();
+    setTimeout(()=>$("billList")?.scrollIntoView({behavior:"smooth",block:"start"}),60);
+  };
+  document.querySelectorAll("[data-home-bill-filter]").forEach(btn=>btn.onclick=()=>homeBillStatusClick(btn.dataset.homeBillFilter||"all"));
+  if($("homeUpcomingList")){
+    $("homeUpcomingList").onclick=e=>{
+      const row=(e.target instanceof Element)?e.target.closest("[data-home-bill-row]"):null;
+      if(!row)return;
+      billsView="totals";billFilter="all";switchPage("bills");renderBillsPage();
+    };
+    $("homeUpcomingList").onkeydown=e=>{
+      if(e.key!=="Enter"&&e.key!==" ")return;
+      const row=(e.target instanceof Element)?e.target.closest("[data-home-bill-row]"):null;
+      if(!row)return;
+      e.preventDefault();billsView="totals";billFilter="all";switchPage("bills");renderBillsPage();
+    };
+  }
 
   document.querySelectorAll("[data-snapshot]").forEach(btn=>btn.onclick=()=>{snapshotView=btn.dataset.snapshot||"this";renderSnapshot()});
   if($("snapshotList"))$("snapshotList").onclick=e=>{
