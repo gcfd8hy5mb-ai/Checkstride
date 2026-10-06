@@ -1770,6 +1770,94 @@ select{
   .bill-funding-primary{font-size:12px}
   .bill-funding-secondary{font-size:11px}
 }
+
+/* v68 navigation simplification */
+.page-head{
+  margin-bottom:10px;
+  padding:0 2px;
+}
+.page-head>div span{
+  font-size:10px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--muted-readable-strong);
+}
+.page-head h2{
+  margin:3px 0 0;
+  font-size:22px;
+  line-height:1.15;
+}
+.page-head .pill:empty{display:none}
+
+#billIncomeRatioCard,
+#statusCards,
+#autoplanSection,
+#scenarioSection,
+#planAdvanced{
+  transition:none;
+}
+
+/* Bills should read top-to-bottom: overview -> status -> list */
+#billIncomeRatioCard{
+  margin-bottom:8px;
+}
+#statusCards{
+  margin-bottom:8px;
+}
+#billsSection{
+  margin-top:0;
+}
+
+/* Plan screen: main plan first, deeper intelligence later */
+#autoplanSection{
+  border-color:rgba(71,151,230,.32);
+  background:linear-gradient(145deg,rgba(21,137,255,.08),rgba(255,255,255,.015));
+}
+#autoplanSection .title-row h2{
+  font-size:18px;
+}
+#scenarioSection{
+  margin-top:8px;
+}
+#strideRecommendationDropdown{
+  margin-top:8px;
+}
+#strideLearningDropdown,
+#strideAdaptiveDropdown,
+#strideSystemDropdown{
+  opacity:.98;
+}
+
+/* More should feel like setup, not another dashboard */
+#setupSection,
+#goalsSection,
+#accountSection{
+  box-shadow:none;
+}
+#moreAdvanced{
+  margin-top:8px;
+}
+
+/* clearer bottom nav */
+.bottom-nav button span:last-child{
+  font-weight:700;
+}
+.bottom-nav button.active{
+  box-shadow:inset 0 0 0 1px rgba(86,182,255,.18);
+}
+
+@media(max-width:768px){
+  .page-head h2{font-size:20px}
+  .page-head{margin-bottom:8px}
+  #autoplanSection,
+  #scenarioSection,
+  #strideRecommendationDropdown,
+  #strideLearningDropdown,
+  #strideAdaptiveDropdown,
+  #strideSystemDropdown{
+    margin-bottom:8px;
+  }
+}
 </style>
 </head>
 <body>
@@ -1840,13 +1928,13 @@ select{
 
   <section class="home-greeting section" id="homeSection">
     <h2 id="greetingText">Good morning</h2>
-    <p>Here’s where you stand.</p>
+    <p>Your next paycheck plan at a glance.</p>
   </section>
 
 
   <section class="home-actions section" id="homeActions">
-    <button type="button" id="homeEditPaycheck">Income setup</button>
-    <button type="button" id="homeAddBill">Add a bill</button>
+    <button type="button" id="homeEditPaycheck">Paychecks</button>
+    <button type="button" id="homeAddBill">Add bill</button>
   </section>
 
   <section class="home-summary section" id="quickStats">
@@ -2006,7 +2094,7 @@ select{
 
   <details class="learning-dropdown" id="strideLearningDropdown">
     <summary>
-      <div><b>Stride learning</b><small>Accuracy, patterns, and what Stride has learned from your history.</small></div>
+      <div><b>How Stride is learning</b><small>Optional details about accuracy and patterns.</small></div>
       <span>Open</span>
     </summary>
     <div class="learning-dropdown-body">
@@ -2033,7 +2121,7 @@ select{
 
   <details class="learning-dropdown" id="strideAdaptiveDropdown">
     <summary>
-      <div><b>Adaptive planning</b><small>How future paycheck plans are being adjusted</small></div>
+      <div><b>How future plans adjust</b><small>Optional details about upcoming paycheck changes.</small></div>
       <span>Open</span>
     </summary>
     <div class="learning-dropdown-body">
@@ -2159,8 +2247,8 @@ select{
 
 
   <section class="card section" id="autoplanSection">
-    <div class="title-row"><h2>Your paycheck plan</h2><span id="autoplanStatus">Draft</span></div>
-    <div class="ai-banner"><strong id="autoplanHeadline">Finish setup to generate a paycheck plan.</strong><p id="autoplanWhy">Checkstride will allocate the paycheck without moving money or paying bills.</p></div>
+    <div class="title-row"><h2>Your plan</h2><span id="autoplanStatus">Draft</span></div>
+    <div class="ai-banner"><strong id="autoplanHeadline">Finish setup to build your plan.</strong><p id="autoplanWhy">Checkstride will allocate the paycheck without moving money or paying bills.</p></div>
     <div id="autoplanList" class="plan-list"></div>
     <div class="approve-row">
       <button id="approvePlan" class="primary-btn">Approve plan</button>
@@ -2169,14 +2257,14 @@ select{
     <div id="planApprovalMsg" class="msg hidden"></div>
   </section>
   <section class="card section" id="scenarioSection">
-    <div class="title-row"><h2>What if?</h2><span>What if?</span></div>
+    <div class="title-row"><h2>Try a change</h2><span>Preview</span></div>
     <div class="scenario-grid">
       <div class="field"><label>Extra purchase</label><input id="scenarioPurchase" type="number" min="0" step="0.01" placeholder="0" /></div>
       <div class="field"><label>Income change</label><input id="scenarioIncome" type="number" step="0.01" placeholder="0" /></div>
       <div class="field"><label>Extra bill</label><input id="scenarioBill" type="number" min="0" step="0.01" placeholder="0" /></div>
     </div>
     <button id="runScenario" class="ghost" style="width:100%;margin-top:10px">Run scenario</button>
-    <div id="scenarioResult" class="scenario-result"><span style="color:var(--muted);font-size:12px">Enter a scenario to compare it with the current plan.</span></div>
+    <div id="scenarioResult" class="scenario-result"><span style="color:var(--muted);font-size:12px">Change an amount to see how it would affect your plan.</span></div>
   </section>
 
   <section class="card section" id="goalsSection">
@@ -2242,9 +2330,9 @@ select{
 </main>
 
 <nav id="bottomNav" class="bottom-nav hidden" aria-label="Primary">
-  <button data-page="home" class="active"><span class="navIcon">⌂</span><span>Home</span></button>
+  <button data-page="home" class="active"><span class="navIcon">⌂</span><span>Today</span></button>
   <button data-page="bills"><span class="navIcon">$</span><span>Bills</span></button>
-  <button data-page="coach"><span class="navIcon">✦</span><span>Stride</span></button>
+  <button data-page="coach"><span class="navIcon">✦</span><span>Plan</span></button>
   <button data-page="more"><span class="navIcon">•••</span><span>More</span></button>
 </nav>
 
@@ -2348,7 +2436,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:67};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:68};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -3945,21 +4033,24 @@ select{
 
   const PAGE_GROUPS={
     home:["setupGuide","homeSection","homeActions","quickStats","billSnapshot","todayFocus"],
-    bills:["billsSection","completePaycheckDropdown"],
-    coach:["strideRecommendationDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown"],
-    more:["setupSection","autoplanSection","goalsSection","scenarioSection","planAdvanced","moreAdvanced","accountSection"]
+    bills:["billIncomeRatioCard","statusCards","billsSection","completePaycheckDropdown"],
+    coach:["autoplanSection","strideRecommendationDropdown","scenarioSection","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced"],
+    more:["setupSection","goalsSection","moreAdvanced","accountSection"]
   };
   const PAGE_COPY={
-    home:["Today","Your money","Live"],
-    bills:["Bills","Bills & payments",""],
-    coach:["Stride","Your recommendation",""],
-    more:["More","Setup, goals & account",""]
+    home:["Today","What matters now",""],
+    bills:["Bills","What needs to be paid",""],
+    coach:["Plan","What Stride recommends",""],
+    more:["More","Income, goals & account",""]
   };
   function switchPage(page){
     document.querySelectorAll(".compact-details").forEach(d=>d.removeAttribute("open"));
     document.querySelectorAll(".learning-dropdown").forEach(d=>d.removeAttribute("open"));
     document.querySelectorAll(".smart-stride-dropdown,.learning-dropdown,.utility-dropdown").forEach(d=>d.removeAttribute("open"));
-    const allIds=[...new Set(Object.values(PAGE_GROUPS).flat())];
+    const allIds=[...new Set([
+      ...Object.values(PAGE_GROUPS).flat(),
+      "billIncomeRatioCard","statusCards","autoplanSection","scenarioSection","planAdvanced"
+    ])];
     allIds.forEach(id=>{const el=$(id);if(el)el.classList.add("appPageHidden")});
     (PAGE_GROUPS[page]||PAGE_GROUPS.home).forEach(id=>{const el=$(id);if(el)el.classList.remove("appPageHidden")});
     document.querySelectorAll("#bottomNav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
