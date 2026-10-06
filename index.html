@@ -6361,7 +6361,6 @@ textarea:focus-visible{
   document.querySelectorAll("[data-bills-view]").forEach(btn=>btn.onclick=()=>{billsView=btn.dataset.billsView||"this";billFilter="all";renderBillsPage()});
   document.querySelectorAll("[data-bill-filter]").forEach(btn=>btn.onclick=()=>{billFilter=btn.dataset.billFilter||"all";renderBillsPage()});
   if($("showAddBill"))$("showAddBill").onclick=()=>{resetBillForm();selectedBillId=null;$("billDetailsView")?.classList.add("hidden");$("billsOverviewView")?.classList.add("hidden");$("addBillPanel").open=true;window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>$("billName")?.focus({preventScroll:true}),180)};
-  if($("snapshotViewAllBottom"))$("snapshotViewAllBottom").onclick=()=>switchPage("bills");
 
 
   document.querySelectorAll("[data-home-period]").forEach(btn=>{
