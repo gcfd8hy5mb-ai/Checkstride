@@ -982,7 +982,7 @@ body{
   color:#b8c6d2;
   font-weight:650;
 }
-input,select,button{
+button{
   font-size:15px;
 }
 .home-greeting p,
@@ -3190,6 +3190,26 @@ select:focus-visible{
 /* v97 Bills visibility cleanup */
 #billsOverviewView.hidden,
 #billDetailsView.hidden{display:none!important}
+
+/* v101 cross-platform form controls */
+input,
+select,
+textarea{
+  font-size:16px!important;
+  min-height:46px!important;
+}
+input,
+select,
+textarea,
+button{
+  touch-action:manipulation;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible{
+  outline:2px solid #55b8ff;
+  outline-offset:1px;
+}
 </style>
 </head>
 <body>
@@ -3961,7 +3981,7 @@ select:focus-visible{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:100};
+      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:101};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
