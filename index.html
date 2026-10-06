@@ -5154,15 +5154,15 @@ textarea:focus-visible{
     const confidence=forecastReasoning().confidence||0;
 
     document.querySelectorAll("[data-plan-view]").forEach(btn=>btn.classList.toggle("active",btn.dataset.planView===planView));
-    $("planChartTitle").textContent=d.title;
-    $("planChartRange").textContent=d.range;
+    $("planChartTitle").textContent=display.title;
+    $("planChartRange").textContent=display.range;
     $("planIncome").textContent=money(display.income);
     $("planBillsAmount").textContent=money(display.bills);
     $("planProtectedAmount").textContent=money(display.protected);
     $("planSpendAmount").textContent=money(display.safe);
-    $("planBillsPct").textContent=`${d.income?billsPct:0}%`;
-    $("planProtectedPct").textContent=`${d.income?protectedPct:0}%`;
-    $("planSpendPct").textContent=`${d.income?spendPct:0}%`;
+    $("planBillsPct").textContent=`${display.income?billsPct:0}%`;
+    $("planProtectedPct").textContent=`${display.income?protectedPct:0}%`;
+    $("planSpendPct").textContent=`${display.income?spendPct:0}%`;
     $("planSummaryBills").textContent=money(display.bills);
     $("planSummaryProtected").textContent=money(display.protected);
     $("planSummarySafe").textContent=money(display.safe);
