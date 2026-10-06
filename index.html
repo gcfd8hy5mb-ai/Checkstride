@@ -3863,7 +3863,7 @@ textarea:focus-visible{
   const PROJECT_ID="paycheck-advisor";
   const SESSION_KEY="checkstride_rest_session";
   const blank={payday:"",paycheck:0,frequency:"biweekly",primaryJobName:"Primary job",additionalPaychecks:[],paycheckOverrides:{},setupReviewSeen:false,cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
-  let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null, saveRevision=0;
+  let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null, saveRevision=0, authRevision=0;
   let editingBillId=null;
   let selectedIncomeSourceId=null;
   let selectedPaydayKey=null;
@@ -4046,6 +4046,7 @@ textarea:focus-visible{
     $("loadingSignIn").classList.remove("hidden");
   }
   function resetToSignIn(){
+    authRevision++;
     clearTimeout(saveTimer);saveTimer=null;
     localStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem("checkstride_page");
@@ -5791,29 +5792,40 @@ textarea:focus-visible{
   }
 
   async function submitAuth(){
+    const attempt=++authRevision;
+    const stillCurrent=()=>attempt===authRevision;
     setMsg("authMsg","");hydrated=false;
     try{
       const j=await authRequest(mode==="signup"?"accounts:signUp":"accounts:signInWithPassword",{email:$("email").value.trim(),password:$("password").value,returnSecureToken:true});
+      if(!stillCurrent())return;
       const s={idToken:j.idToken,refreshToken:j.refreshToken,localId:j.localId,email:j.email||$("email").value.trim()};
       const loaded=await withTimeout(loadState(s),7000,"LOAD_TIMEOUT");
+      if(!stillCurrent())return;
       session=s;state=loaded.state;localStorage.setItem(SESSION_KEY,JSON.stringify(s));hydrated=true;
       if(loaded.migrationChanged){
         setCloud("Saving migration…","saving");
-        try{await saveState(s,state);setCloud("Saved")}
+        try{
+          await saveState(s,state);
+          if(stillCurrent() && session?.localId===s.localId)setCloud("Saved");
+        }
         catch(migrationError){
+          if(!stillCurrent() || session?.localId!==s.localId)return;
           console.error("Migration save warning",migrationError);
           setCloud("Migration save paused — changes are still loaded","error");
         }
-      }else setCloud("Saved");
+      }else if(stillCurrent() && session?.localId===s.localId)setCloud("Saved");
+      if(!stillCurrent() || session?.localId!==s.localId)return;
       try{
         render();show("app");switchPage(sessionStorage.getItem("checkstride_page")||"home");
       }catch(renderError){
+        if(!stillCurrent() || session?.localId!==s.localId)return;
         console.error("Checkstride render error",renderError);
         show("app");
         try{renderIncomeSources()}catch{}
         setCloud("Saved");
       }
     }catch(e){
+      if(!stillCurrent())return;
       clearTimeout(saveTimer);saveTimer=null;
       session=null;hydrated=false;const code=String(e?.message||"");
       setMsg("authMsg",code.includes("TOO_MANY_ATTEMPTS")?"Too many attempts. Try again later.":code.includes("EMAIL_EXISTS")?"An account already uses that email.":code.includes("WEAK_PASSWORD")?"Use a stronger password.":code.includes("INVALID_LOGIN_CREDENTIALS")||code.includes("INVALID_PASSWORD")||code.includes("EMAIL_NOT_FOUND")?"Could not sign in. Check your email and password.":code.includes("LOAD_TIMEOUT")?"Signed in, but your plan took too long to load. Try again.":code.includes("LOAD_FAILED")?"Signed in, but Checkstride could not load your saved plan.":"Could not sign in right now.");
@@ -5828,7 +5840,7 @@ textarea:focus-visible{
   $("tabSignup").onclick=()=>{mode="signup";$("tabSignup").classList.add("active");$("tabLogin").classList.remove("active");$("authSubmit").textContent="Create account"};
   $("authSubmit").onclick=submitAuth;
   $("resetPassword").onclick=async()=>{const email=$("email").value.trim();if(!email)return setMsg("authMsg","Enter your email first.");try{await authRequest("accounts:sendOobCode",{requestType:"PASSWORD_RESET",email});setMsg("authMsg","Password reset email sent.")}catch{setMsg("authMsg","If that email has an account, a reset email will be sent.")}};
-  $("logout").onclick=async()=>{clearTimeout(saveTimer);saveTimer=null;if(session&&hydrated){try{await saveState(session,state)}catch{try{const fresh=await withTimeout(refreshSession(session.refreshToken),6000,"REFRESH_TIMEOUT");await saveState({...fresh,email:session.email},state)}catch{}}}localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem("checkstride_page");sessionStorage.removeItem("checkstride_more_destination");session=null;hydrated=false;state={...blank};show("auth")};
+  $("logout").onclick=async()=>{authRevision++;clearTimeout(saveTimer);saveTimer=null;if(session&&hydrated){try{await saveState(session,state)}catch{try{const fresh=await withTimeout(refreshSession(session.refreshToken),6000,"REFRESH_TIMEOUT");await saveState({...fresh,email:session.email},state)}catch{}}}localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem("checkstride_page");sessionStorage.removeItem("checkstride_more_destination");session=null;hydrated=false;state={...blank};show("auth")};
 
   ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>$(id).addEventListener("change",e=>{
     const previousPayday=state.payday;
@@ -6570,6 +6582,7 @@ textarea:focus-visible{
     }catch(e){
       const code=String(e?.message||"");
       if(code.includes("SESSION_EXPIRED")||code.includes("INVALID")||code.includes("REFRESH_TIMEOUT")){
+        authRevision++;
         clearTimeout(saveTimer);saveTimer=null;
         localStorage.removeItem(SESSION_KEY);
         sessionStorage.removeItem("checkstride_page");
