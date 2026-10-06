@@ -2640,6 +2640,105 @@ select{
   .home-stride-card{grid-template-columns:1fr}
   #homeOpenPlan{width:100%}
 }
+
+/* v86 focused More */
+.more-menu{display:grid;gap:10px}
+.more-menu-intro{padding:2px 2px 6px}
+.more-menu-intro h2{margin:0;font-size:22px}
+.more-menu-intro p{margin:4px 0 0;color:var(--muted-readable-strong);font-size:11px;line-height:1.35}
+
+.more-menu-list{display:grid;gap:7px}
+.more-menu-list button{
+  width:100%;
+  min-height:66px;
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) 20px;
+  align-items:center;
+  gap:10px;
+  border:1px solid var(--border);
+  border-radius:15px;
+  background:#0c1e30;
+  color:inherit;
+  padding:10px 12px;
+  text-align:left;
+  font-family:inherit;
+  touch-action:manipulation
+}
+.more-menu-list button:active{transform:scale(.99);background:#102740}
+.more-menu-icon{
+  width:40px;height:40px;border-radius:12px;
+  display:grid;place-items:center;
+  background:#153a5d;
+  font-size:18px
+}
+.more-menu-list button>div{min-width:0}
+.more-menu-list button b{display:block;font-size:13px}
+.more-menu-list button small{
+  display:block;margin-top:2px;
+  color:#9fb5cf;
+  font-size:9px;
+  line-height:1.35
+}
+.more-menu-arrow{font-size:24px;color:#75bff7;text-align:right}
+
+.more-subpage-head{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:10px;
+  align-items:start;
+  padding:0 0 8px!important;
+  margin:0 0 4px!important
+}
+#moreBackButton{
+  min-height:44px;
+  border:0;
+  background:transparent;
+  color:#7fc5ff;
+  font-weight:800;
+  padding:0 6px 0 0;
+  touch-action:manipulation
+}
+.more-subpage-head h2{margin:0;font-size:20px}
+.more-subpage-head p{margin:3px 0 0;color:#9fb5cf;font-size:10px;line-height:1.35}
+
+/* The shared subpage header is the title; suppress repeated card titles beneath it. */
+#setupSection>.title-row,
+#setupSection>.section-helper,
+#goalsSection>.title-row,
+#goalsSection>#goalSectionHelper,
+#accountSection>.title-row{display:none!important}
+
+#setupSection,
+#goalsSection,
+#accountSection{
+  padding-top:12px;
+  margin-top:0
+}
+
+#setupSection .income-two-month{margin-top:0}
+#setupSection .income-job-cards{gap:8px}
+#setupSection .income-add-job{min-height:46px;margin-top:9px}
+
+#goalsSection .goal-row{margin-top:0}
+#goalsSection .field{margin:8px 0}
+#goalsSection #saveGoal{min-height:46px}
+
+#accountSection{display:grid;gap:10px}
+#accountSection #logout{min-height:46px;margin-top:0}
+
+#moreAdvanced{
+  margin-top:0;
+  border-radius:15px
+}
+#moreAdvanced>summary{
+  min-height:56px;
+  padding:11px 12px
+}
+
+@media(max-width:390px){
+  .more-menu-list button{grid-template-columns:38px minmax(0,1fr) 18px;padding:9px 10px}
+  .more-menu-icon{width:36px;height:36px}
+}
 </style>
 </head>
 <body>
@@ -2808,14 +2907,14 @@ select{
 
   <section class="more-menu section" id="moreMenuSection">
     <div class="more-menu-intro">
-      <h2>Settings & tools</h2>
-      <p>Choose what you want to update. You’ll only see one section at a time.</p>
+      <h2>More</h2>
+      <p>Manage the information and settings behind your plan.</p>
     </div>
     <div class="more-menu-list">
-      <button type="button" data-more-destination="income"><span class="more-menu-icon">💵</span><div><b>Paychecks & income</b><small>Add jobs, payday dates, take-home pay, and your protected cushion.</small></div><span class="more-menu-arrow">›</span></button>
-      <button type="button" data-more-destination="goals"><span class="more-menu-icon">◎</span><div><b>Savings goal</b><small>Set or update one savings target and see how it affects your plan.</small></div><span class="more-menu-arrow">›</span></button>
-      <button type="button" data-more-destination="learning"><span class="more-menu-icon">✦</span><div><b>Stride learning</b><small>Optional details about warnings, accuracy, and what Stride has learned.</small></div><span class="more-menu-arrow">›</span></button>
-      <button type="button" data-more-destination="account"><span class="more-menu-icon">◉</span><div><b>Account</b><small>See your signed-in account or sign out.</small></div><span class="more-menu-arrow">›</span></button>
+      <button type="button" data-more-destination="income"><span class="more-menu-icon">💵</span><div><b>Paychecks & income</b><small>Jobs, payday dates, and take-home amounts.</small></div><span class="more-menu-arrow">›</span></button>
+      <button type="button" data-more-destination="goals"><span class="more-menu-icon">◎</span><div><b>Savings goal</b><small>Set or update your current savings target.</small></div><span class="more-menu-arrow">›</span></button>
+      <button type="button" data-more-destination="learning"><span class="more-menu-icon">✦</span><div><b>Stride learning</b><small>Accuracy, warnings, and what Stride has learned.</small></div><span class="more-menu-arrow">›</span></button>
+      <button type="button" data-more-destination="account"><span class="more-menu-icon">◉</span><div><b>Account</b><small>Signed-in account and sign-out controls.</small></div><span class="more-menu-arrow">›</span></button>
     </div>
   </section>
   <section class="more-subpage-head section appPageHidden" id="moreSubpageHead">
@@ -3396,7 +3495,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:85};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:86};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -5550,7 +5649,7 @@ select{
     home:["Today","What matters now",""],
     bills:["Bills","What you need to pay",""],
     coach:["Plan","What Stride recommends",""],
-    more:["More","Income, goals & account",""]
+    more:["","More",""]
   };
 
   const MORE_DESTINATIONS={
@@ -5564,8 +5663,9 @@ select{
     ["setupSection","goalsSection","moreAdvanced","accountSection","moreSubpageHead"].forEach(id=>$(id)?.classList.add("appPageHidden"));
     $("moreMenuSection")?.classList.remove("appPageHidden");
     $("pageHead")?.classList.remove("appPageHidden");
-    $("pageEyebrow").textContent="More";
-    $("pageTitle").textContent="Income, goals & account";
+    if($("moreSubpageHead"))delete $("moreSubpageHead").dataset.destination;
+    $("pageEyebrow").textContent="";
+    $("pageTitle").textContent="More";
     window.scrollTo({top:0,behavior:"smooth"});
   }
 
@@ -5585,6 +5685,7 @@ select{
     }
     $("moreSubpageTitle").textContent=dest.title;
     $("moreSubpageText").textContent=dest.text;
+    if($("moreSubpageHead"))$("moreSubpageHead").dataset.destination=key;
     $("pageEyebrow").textContent="More";
     $("pageTitle").textContent=dest.title;
     sessionStorage.setItem("checkstride_more_destination",key);
