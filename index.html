@@ -2559,6 +2559,87 @@ select{
   .plan-donut{width:150px}
   .plan-legend{gap:8px}
 }
+
+/* v85 compact Today */
+#homeSection{display:none!important}
+#homeCollapsedPeriods{display:none!important}
+
+#quickStats{margin-bottom:8px}
+.home-summary{padding:13px 14px}
+.home-summary .safe-block strong{font-size:32px}
+.home-summary .payday-block strong{font-size:19px}
+.home-summary small{font-size:10px}
+
+#billIncomeRatioCard{padding:12px 13px;margin-bottom:8px}
+#billIncomeRatioCard .ratio-head h2{font-size:16px;line-height:1.2}
+#billIncomeRatioCard .ratio-head>strong{font-size:28px}
+#billIncomeRatioCard .ratio-bar{margin-top:8px;height:7px}
+#billIncomeRatioCard .bill-compact-summary{margin-top:7px;font-size:11px}
+
+.home-period-tabs{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:3px;
+  padding:3px;
+  margin-bottom:8px
+}
+.home-period-tabs button{
+  min-height:42px!important;
+  padding:6px 3px!important;
+  font-size:9px!important;
+  white-space:nowrap
+}
+
+.home-period-card{margin-bottom:8px}
+.home-period-header{min-height:58px;padding:12px 13px}
+.home-period-header h2{font-size:18px}
+.home-period-header p{font-size:10px}
+#homePeriodBody{padding:0 12px 12px}
+.home-setaside-total{padding:10px 11px}
+.home-setaside-total span{font-size:11px}
+.home-setaside-total b{font-size:19px}
+.home-setaside-help{margin:7px 2px;font-size:10px}
+.home-snapshot-secondary>div{padding:7px 8px}
+.home-snapshot-secondary span{font-size:9px}
+.home-snapshot-secondary b{font-size:11px}
+.snapshot-progress{margin-top:7px}
+.snapshot-progress-copy{margin-top:3px;font-size:9px}
+.snapshot-list{gap:6px}
+.snapshot-bill{min-height:58px;padding:8px 10px}
+.snapshot-bill .name b{font-size:12px}
+.snapshot-bill .name small{font-size:9px}
+.snapshot-bill .split-primary{font-size:9px}
+.snapshot-bill .amount{font-size:12px}
+.snapshot-bill .paid-toggle{min-height:40px;min-width:68px;font-size:9px}
+
+.home-view-all-bills{
+  width:100%;min-height:42px;margin-top:7px;border:1px solid rgba(88,184,255,.28);
+  border-radius:11px;background:#102235;color:#8fcfff;font:750 10px var(--font);
+  touch-action:manipulation
+}
+
+.home-stride-card{
+  padding:11px 12px;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px
+}
+.home-stride-copy{min-width:0}
+.home-stride-copy b{font-size:13px}
+.home-stride-copy small{
+  font-size:10px;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden
+}
+#homeOpenPlan{width:auto;min-width:92px;padding:9px 12px}
+
+@media(max-width:380px){
+  .home-period-tabs button{font-size:8px!important}
+  .home-summary .safe-block strong{font-size:29px}
+  .home-stride-card{grid-template-columns:1fr}
+  #homeOpenPlan{width:100%}
+}
 </style>
 </head>
 <body>
@@ -2665,10 +2746,10 @@ select{
   </section>
 
   <section class="home-period-tabs section" id="homePeriodTabs" role="tablist" aria-label="Home planning period">
-    <button type="button" class="active" data-home-period="this" role="tab">This paycheck</button>
-    <button type="button" data-home-period="next" role="tab">Next paycheck</button>
-    <button type="button" data-home-period="totals" role="tab">Whole month</button>
-    <button type="button" data-home-period="upcoming" role="tab">Upcoming bills</button>
+    <button type="button" class="active" data-home-period="this" role="tab">This check</button>
+    <button type="button" data-home-period="next" role="tab">Next check</button>
+    <button type="button" data-home-period="totals" role="tab">Month</button>
+    <button type="button" data-home-period="upcoming" role="tab">Upcoming</button>
   </section>
 
   <section class="card snapshot-card home-period-card section" id="billSnapshot">
@@ -2702,6 +2783,7 @@ select{
         <div class="snapshot-progress"><i id="snapshotProgress"></i></div>
         <div class="snapshot-progress-copy"><span id="snapshotProgressText">0% paid</span></div>
         <div id="snapshotList" class="snapshot-list"></div>
+        <button type="button" id="homeViewAllBills" class="home-view-all-bills">View all bills</button>
       </div>
 
       <div id="homeUpcomingWrap" class="hidden">
@@ -3314,7 +3396,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:84};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:85};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -4342,7 +4424,7 @@ select{
   if($("setupReviewStep"))$("setupReviewStep").onclick=()=>{$("billSnapshot")?.scrollIntoView({behavior:"smooth",block:"start"})};
 
   document.querySelectorAll("[data-snapshot]").forEach(b=>b.classList.toggle("active",b.dataset.snapshot===snapshotView));
-    $("snapshotList").innerHTML=snap.rows.length?snap.rows.slice(0,5).map(x=>{
+    $("snapshotList").innerHTML=snap.rows.length?snap.rows.slice(0,3).map(x=>{
       const funding=snapshotBillFundingText(x,snapshotView);
       const dueText=x.due?`Due ${x.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:(normalizedBill(x.bill).dueMode==="monthly"?"Monthly bill":"");
       return `
@@ -4662,16 +4744,7 @@ select{
       renderSnapshot();
     }
 
-    const order=["this","next","totals","upcoming"].filter(v=>v!==homePeriodView);
-    if($("homeCollapsedPeriods")){
-      $("homeCollapsedPeriods").innerHTML=order.map(v=>{
-        const m=homePeriodMeta(v);
-        return `<button type="button" data-home-collapsed="${v}" aria-label="Open ${escapeHtml(m.title)}">
-          <div><b>${escapeHtml(m.title)}</b><small>${escapeHtml(m.sub)}</small></div>
-          <span aria-hidden="true">⌄</span>
-        </button>`;
-      }).join("");
-    }
+    if($("homeCollapsedPeriods"))$("homeCollapsedPeriods").innerHTML="";
   }
 
   function setHomePeriod(view){
@@ -5461,13 +5534,14 @@ select{
     };
   }
 
+  if($("homeViewAllBills"))$("homeViewAllBills").onclick=()=>switchPage("bills");
   if($("homeOpenPlan"))$("homeOpenPlan").onclick=()=>switchPage("coach");
   document.querySelectorAll("[data-plan-view]").forEach(btn=>btn.onclick=()=>{planView=btn.dataset.planView||"this";renderPlanOverview()});
   document.querySelectorAll("[data-plan-detail]").forEach(btn=>btn.onclick=()=>openPlanDetail(btn.dataset.planDetail));
   if($("planDetailBack"))$("planDetailBack").onclick=closePlanDetail;
 
   const PAGE_GROUPS={
-    home:["homeSection","quickStats","billIncomeRatioCard","homePeriodTabs","billSnapshot","homeCollapsedPeriods","homeStrideCard"],
+    home:["quickStats","billIncomeRatioCard","homePeriodTabs","billSnapshot","homeStrideCard"],
     bills:["billsSection"],
     coach:["planOverviewSection"],
     more:["moreMenuSection"]
