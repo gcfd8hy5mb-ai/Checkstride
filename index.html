@@ -3418,16 +3418,6 @@ textarea:focus-visible{
         <input id="cushion" type="number" />
         <select id="frequency"><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option><option value="semimonthly">1st & 15th</option><option value="monthly">Monthly</option></select>
         <select id="strategy"><option value="fastest">Catch up faster</option><option value="balanced">Balanced</option><option value="minimum">Protect more cash</option></select>
-        <input id="extraJobName" />
-        <input id="extraJobPayday" type="date" />
-        <input id="extraJobPaycheck" type="number" />
-        <select id="extraJobFrequency"><option value="weekly">Weekly</option><option value="biweekly" selected>Biweekly</option><option value="semimonthly">1st & 15th</option><option value="monthly">Monthly</option></select>
-        <button id="saveIncomeSource" type="button">Add another job</button>
-        <button id="cancelIncomeSourceEdit" type="button" class="hidden">Cancel</button>
-        <div id="incomeSourceMsg" class="msg hidden"></div>
-        <b id="incomeJobEditorTitle">Add another job</b>
-        <span id="incomeSourceCount">1 job</span>
-        <div id="additionalIncomeList"></div>
       </div>
 
     </div>
@@ -3873,7 +3863,6 @@ textarea:focus-visible{
   const blank={payday:"",paycheck:0,frequency:"biweekly",primaryJobName:"Primary job",additionalPaychecks:[],paycheckOverrides:{},setupReviewSeen:false,cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
   let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null;
   let editingBillId=null;
-  let editingIncomeSourceId=null;
   let selectedIncomeSourceId=null;
   let selectedPaydayKey=null;
   let incomeCalendarOffset=0;
@@ -4031,7 +4020,7 @@ textarea:focus-visible{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:107};
+      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:108};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -4127,70 +4116,6 @@ textarea:focus-visible{
       if(globalThis.crypto && typeof globalThis.crypto.randomUUID==="function")return "income-"+globalThis.crypto.randomUUID();
     }catch{}
     return "income-"+Date.now()+"-"+Math.random().toString(36).slice(2,10);
-  }
-
-  function submitIncomeSource(){
-    try{
-      const name=$("extraJobName")?.value.trim()||"";
-      const payday=$("extraJobPayday")?.value||"";
-      const paycheck=clampMoney($("extraJobPaycheck")?.value);
-      const frequency=$("extraJobFrequency")?.value||"biweekly";
-      if(!name||!payday||paycheck<=0){
-        setMsg("incomeSourceMsg","Enter a job name, next payday, and take-home pay.");
-        return;
-      }
-
-      const rows=Array.isArray(state.additionalPaychecks)?[...state.additionalPaychecks]:[];
-      if(editingIncomeSourceId){
-        const existing=rows.find(x=>x.id===editingIncomeSourceId);
-        state={...state,additionalPaychecks:rows.map(x=>x.id===editingIncomeSourceId?{...x,name,payday,paycheck,frequency}:x)};
-        if(existing && (existing.payday!==payday || existing.frequency!==frequency)){
-          state={...state,paycheckOverrides:removeIncomeOverridesForSource(editingIncomeSourceId)};
-        }
-      }else if(!String(state.payday||"") || clampMoney(state.paycheck)<=0){
-        state={...state,primaryJobName:name,payday,paycheck,frequency};
-      }else{
-        state={...state,additionalPaychecks:[...rows,{id:newIncomeSourceId(),name,payday,paycheck,frequency}]};
-      }
-
-      editingIncomeSourceId=null;
-      $("extraJobName").value="";
-      $("extraJobPayday").value="";
-      $("extraJobPaycheck").value="";
-      $("extraJobFrequency").value="biweekly";
-      $("saveIncomeSource").textContent="Add another job";
-      if($("incomeJobEditorTitle"))$("incomeJobEditorTitle").textContent="Add another job";
-      $("cancelIncomeSourceEdit").classList.add("hidden");
-      setMsg("incomeSourceMsg","Job saved.");
-
-      try{
-        renderIncomeSources();
-        renderBillIncomeRatio();
-        renderPlanOverview();
-        renderSetupGuide();
-      }catch(renderErr){
-        console.error("Income source refresh error",renderErr);
-      }
-      scheduleSave();
-    }catch(err){
-      console.error("Add job failed",err);
-      setMsg("incomeSourceMsg","Could not add job. "+(err?.message||"Please try again."));
-    }
-  }
-
-  window.checkstrideSubmitIncomeSource=(event)=>{
-    if(event){event.preventDefault();event.stopPropagation()}
-    submitIncomeSource();
-  };
-
-  let lastIncomeSourceTap=0;
-  function activateIncomeSource(event){
-    const now=Date.now();
-    if(now-lastIncomeSourceTap<500)return;
-    lastIncomeSourceTap=now;
-    if(event){event.preventDefault();event.stopPropagation()}
-    setMsg("incomeSourceMsg","Saving job…");
-    submitIncomeSource();
   }
 
   function sourcePaydatesInMonth(src,year,month){
@@ -5495,19 +5420,7 @@ textarea:focus-visible{
     const sources=incomeSources();
     const otherRows=Array.isArray(state.additionalPaychecks)?state.additionalPaychecks:[];
 
-    if($("incomeSourceCount"))$("incomeSourceCount").textContent=`${sources.length} job${sources.length===1?"":"s"}`;
     if($("showAddIncomeJob"))$("showAddIncomeJob").textContent=sources.length?"＋ Add another job":"＋ Add your first job";
-
-    if($("additionalIncomeList")){
-      $("additionalIncomeList").innerHTML=otherRows.length?otherRows.map(x=>`
-        <div class="income-source-row">
-          <div><b>${escapeHtml(x.name||"Job")}</b><small>${money(x.paycheck)} · ${escapeHtml(x.frequency)} · next ${escapeHtml(x.payday)}</small></div>
-          <div class="income-source-actions">
-            <button type="button" data-income-edit="${x.id}">Edit</button>
-            <button type="button" class="remove" data-income-remove="${x.id}">Remove</button>
-          </div>
-        </div>`).join(""):'<div class="empty">No additional jobs.</div>';
-    }
 
     if($("incomeJobCards")){
       $("incomeJobCards").innerHTML=sources.length?sources.map(src=>{
@@ -6119,51 +6032,6 @@ textarea:focus-visible{
     },120);
   };
 
-  {
-    const incomeBtn=$("saveIncomeSource");
-    incomeBtn.addEventListener("click",activateIncomeSource);
-    incomeBtn.addEventListener("touchend",activateIncomeSource,{passive:false});
-  }
-  $("cancelIncomeSourceEdit").onclick=()=>{
-    editingIncomeSourceId=null;$("extraJobName").value="";$("extraJobPayday").value="";$("extraJobPaycheck").value="";$("extraJobFrequency").value="biweekly";
-    if($("incomeJobEditorTitle"))$("incomeJobEditorTitle").textContent="Add another job";$("saveIncomeSource").textContent="Add another job";$("cancelIncomeSourceEdit").classList.add("hidden");setMsg("incomeSourceMsg","");
-  };
-  $("additionalIncomeList").onclick=e=>{
-    const target=e.target instanceof Element?e.target:null;if(!target)return;
-    const edit=target.closest("[data-income-edit]"),remove=target.closest("[data-income-remove]");
-    if(edit){
-      const x=(state.additionalPaychecks||[]).find(y=>y.id===edit.dataset.incomeEdit);if(!x)return;
-      editingIncomeSourceId=x.id;$("extraJobName").value=x.name;$("extraJobPayday").value=x.payday;$("extraJobPaycheck").value=x.paycheck;$("extraJobFrequency").value=x.frequency;
-      $("incomeJobEditorTitle").textContent=`Edit ${x.name}`;$("saveIncomeSource").textContent="Save job";$("cancelIncomeSourceEdit").classList.remove("hidden");return;
-    }
-    if(remove){
-      const sourceId=remove.dataset.incomeRemove;
-      const src=incomeSources().find(x=>x.id===sourceId);
-      if(!src)return;
-      if(remove.dataset.armed!=="1"){
-        remove.dataset.armed="1";
-        remove.textContent="Tap again";
-        remove.classList.add("armed");
-        setTimeout(()=>{
-          if(remove && document.body.contains(remove)){
-            remove.dataset.armed="0";
-            remove.textContent="Remove";
-            remove.classList.remove("armed");
-          }
-        },3000);
-        return;
-      }
-      if(!removeIncomeSourceById(sourceId))return;
-      if(editingIncomeSourceId===sourceId)editingIncomeSourceId=null;
-      if(selectedIncomeSourceId===sourceId)selectedIncomeSourceId=null;
-      selectedPaydayKey=null;
-      renderIncomeSources();
-      renderBillIncomeRatio();
-      renderPlanOverview();
-      renderSetupGuide();
-      scheduleSave();
-    }
-  };
   document.querySelectorAll(".strategy").forEach(el=>el.onclick=()=>{state={...state,strategy:el.dataset.strategy};$("strategy").value=state.strategy;scheduleSave()});
   function newBillId(){
     try{
