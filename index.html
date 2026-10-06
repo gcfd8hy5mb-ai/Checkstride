@@ -5757,7 +5757,26 @@ textarea:focus-visible{
       }
     }
     render();if(!session||!hydrated)return;clearTimeout(saveTimer);setCloud("Saving…","saving");
-    saveTimer=setTimeout(async()=>{try{await saveState(session,state);setCloud("Saved")}catch{try{const fresh=await withTimeout(refreshSession(session.refreshToken),6000,"REFRESH_TIMEOUT");session={...fresh,email:session.email};localStorage.setItem(SESSION_KEY,JSON.stringify(session));await saveState(session,state);setCloud("Saved")}catch{setCloud("Save paused — sign in again","error")}}},650);
+    saveTimer=setTimeout(async()=>{
+      const snapshot=state;
+      try{await saveState(session,snapshot);setCloud("Saved")}
+      catch(firstError){
+        try{
+          const fresh=await withTimeout(refreshSession(session.refreshToken),6000,"REFRESH_TIMEOUT");
+          session={...fresh,email:session.email};
+          localStorage.setItem(SESSION_KEY,JSON.stringify(session));
+          await saveState(session,snapshot);
+          setCloud("Saved");
+        }catch(retryError){
+          const code=String(retryError?.message||firstError?.message||"");
+          setCloud(code.includes("SESSION_EXPIRED")||code.includes("INVALID")?"Save paused — sign in again":"Save paused — retrying","error");
+          if(session&&hydrated){
+            clearTimeout(saveTimer);
+            saveTimer=setTimeout(()=>scheduleSave(),5000);
+          }
+        }
+      }
+    },650);
   }
 
   async function submitAuth(){
