@@ -6619,7 +6619,7 @@ textarea:focus-visible{
     }catch(e){
       if(!stillCurrent())return;
       const code=String(e?.message||"");
-      if(code.includes("SESSION_EXPIRED")||code.includes("INVALID")||code.includes("REFRESH_TIMEOUT")){
+      if(code.includes("SESSION_EXPIRED")||code.includes("INVALID")){
         authRevision++;
         clearTimeout(saveTimer);saveTimer=null;
         localStorage.removeItem(SESSION_KEY);
@@ -6629,7 +6629,12 @@ textarea:focus-visible{
         show("auth");
         setMsg("authMsg","Your session expired. Sign in again.");
       }else{
-        showStartupRecovery(code.includes("LOAD_TIMEOUT")?"Your plan is taking too long to load.":"Checkstride could not restore your session. Your saved plan has not been changed.");
+        const recoveryMessage=code.includes("REFRESH_TIMEOUT")
+          ?"Checkstride could not reach the sign-in service. Your saved session is still here — retry when your connection improves."
+          :code.includes("LOAD_TIMEOUT")
+            ?"Your plan is taking too long to load."
+            :"Checkstride could not restore your session. Your saved plan has not been changed.";
+        showStartupRecovery(recoveryMessage);
       }
     }finally{
       clearTimeout(startupWatch);
