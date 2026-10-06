@@ -5747,6 +5747,14 @@ textarea:focus-visible{
     if(state.setupReviewSeen===true && (!hasIncomeSetup() || !Array.isArray(state.bills) || state.bills.length===0)){
       state={...state,setupReviewSeen:false};
     }
+    const approvedPlan=state.smartMemory?.autonomousPlan;
+    if(approvedPlan?.approvedAt){
+      const freshPlan=buildAutonomousPlan();
+      if(!freshPlan || !autonomousPlanMatches(approvedPlan,freshPlan)){
+        const m=getSmartMemory();
+        state={...state,smartMemory:{...m,autonomousPlan:freshPlan}};
+      }
+    }
     render();if(!session||!hydrated)return;clearTimeout(saveTimer);setCloud("Saving…","saving");
     saveTimer=setTimeout(async()=>{try{await saveState(session,state);setCloud("Saved")}catch{try{const fresh=await withTimeout(refreshSession(session.refreshToken),6000,"REFRESH_TIMEOUT");session={...fresh,email:session.email};localStorage.setItem(SESSION_KEY,JSON.stringify(session));await saveState(session,state);setCloud("Saved")}catch{setCloud("Save paused — sign in again","error")}}},650);
   }
