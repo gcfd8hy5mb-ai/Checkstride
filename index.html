@@ -3831,7 +3831,7 @@ select:focus-visible{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:88};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:89};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -4809,7 +4809,6 @@ select:focus-visible{
     renderBillsPage();
     renderSnapshot();
     renderHomeUpcoming();
-    renderStatusCards();
   };
 
   function snapshotBillFundingText(item,view){
@@ -5216,25 +5215,6 @@ select:focus-visible{
       :`Listed bills exceed scheduled monthly income by ${money(Math.abs(left))}.`;
   }
 
-  function renderStatusCards(){
-    const today=new Date(), day=today.getDate();
-    let overdueCount=0,overdueAmount=0,dueSoonCount=0,dueSoonAmount=0,upcomingCount=0,upcomingAmount=0;
-    state.bills.forEach(raw=>{
-      const b=normalizedBill(raw), amt=clampMoney(b.amount);
-      if(clampMoney(b.overdue)>0){overdueCount++;overdueAmount+=clampMoney(b.overdue);return}
-      if(b.dueMode==="monthly"){upcomingCount++;upcomingAmount+=amt;return}
-      let delta=Number(b.dueDay)-day;
-      if(delta<0)delta+=daysInMonth(today.getFullYear(),today.getMonth());
-      if(delta<=5){dueSoonCount++;dueSoonAmount+=amt}else{upcomingCount++;upcomingAmount+=amt}
-    });
-    if($("statusOverdueCount"))$("statusOverdueCount").textContent=`${overdueCount} bill${overdueCount===1?"":"s"}`;
-    if($("quickOverdue"))$("quickOverdue").textContent=money(overdueAmount);
-    if($("statusDueSoonCount"))$("statusDueSoonCount").textContent=`${dueSoonCount} bill${dueSoonCount===1?"":"s"}`;
-    if($("statusDueSoonAmount"))$("statusDueSoonAmount").textContent=money(dueSoonAmount);
-    if($("statusUpcomingCount"))$("statusUpcomingCount").textContent=`${upcomingCount} bill${upcomingCount===1?"":"s"}`;
-    if($("statusUpcomingAmount"))$("statusUpcomingAmount").textContent=money(upcomingAmount);
-  }
-
   function renderIncomeSources(){
     const sources=incomeSources();
     const otherRows=Array.isArray(state.additionalPaychecks)?state.additionalPaychecks:[];
@@ -5437,9 +5417,7 @@ select:focus-visible{
     try{
     const f=forecast(),first=f[0],overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0),conf=confidence();
     $("safeSpend").textContent=money(first?.safe||0);
-    if($("heroText"))if($("heroText"))$("heroText").textContent=first?`${money(first.due)} due before the next check · ${money(state.cushion)} protected cushion`:"Add at least one paycheck source to build the plan.";
     $("quickPayday").textContent=firstIncomeEvent()?firstIncomeEvent().date.toISOString().slice(0,10):"—";if($("quickOverdue"))$("quickOverdue").textContent=money(overdue);
-    if($("quickRisk"))if($("quickRisk"))$("quickRisk").textContent=!hasIncomeSetup()?"Finish setup":first?.short?`Short by ${money(first.short)}`:conf<50?"Needs more data":first&&first.safe<clampMoney(state.cushion)*.5?"Tight paycheck":"Low risk";
     ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>{const el=$(id);const key=id;const val=state[key]??""; if(document.activeElement!==el) el.value=val});
     if($("primaryJobNameInput")&&document.activeElement!==$("primaryJobNameInput"))$("primaryJobNameInput").value=state.primaryJobName||"Primary job";
     document.querySelectorAll(".strategy").forEach(el=>el.classList.toggle("active",el.dataset.strategy===state.strategy));
@@ -5495,11 +5473,7 @@ select:focus-visible{
     $("warningCount").textContent=`${warns.length} active`;
     $("warningList").innerHTML=warns.length?warns.map(w=>`<div class="warning-item ${w.severity}"><b>${escapeHtml(w.title)}</b><small>${escapeHtml(w.detail)}</small></div>`).join(""):'<p class="empty">No proactive warnings right now.</p>';
     const coachHome=closedLoopCoach(), homePlan=currentAutonomousPlan();
-    if($("todayAction"))if($("todayAction"))$("todayAction").textContent=coachHome.action;
-    if($("todayReason"))if($("todayReason"))$("todayReason").textContent=coachHome.reason;
     const topWarning=warns[0];
-    if($("todayState"))if($("todayState"))$("todayState").textContent=topWarning?.severity==="high"?"Needs attention":topWarning?.severity==="medium"?"Watch closely":homePlan?"On track":"Building plan";
-    if($("todayState"))if($("todayState"))$("todayState").className=`pill ${topWarning?.severity==="high"?"risk-high":topWarning?.severity==="medium"?"risk-medium":"risk-low"}`;
 
     const now=new Date(), currentDay=now.getDate();
     const upcoming=[...state.bills].map(b=>{
@@ -5507,7 +5481,6 @@ select:focus-visible{
       if(delta<0)delta+=daysInMonth(now.getFullYear(),now.getMonth());
       return {...b,daysAway:delta};
     }).sort((a,b)=>a.daysAway-b.daysAway).slice(0,4);
-    if($("upcomingCount"))if($("upcomingCount"))$("upcomingCount").textContent=`${upcoming.length} bill${upcoming.length===1?"":"s"}`;
     if($("upcomingList"))if($("upcomingList"))$("upcomingList").innerHTML=upcoming.length?upcoming.map(b=>{
       const label=b.daysAway===0?"Due today":b.daysAway===1?"Due tomorrow":`Due in ${b.daysAway} days`;
       const cls=b.daysAway<=1?"urgent":b.daysAway<=5?"soon":"later";
@@ -5551,7 +5524,6 @@ select:focus-visible{
         ? `Next payday is ${first.date.toLocaleDateString(undefined,{month:"short",day:"numeric"})}. Keep an eye on upcoming bills.`
         : "Add your paycheck schedule so Stride can build your plan.";
     }
-    renderStatusCards();
     renderBillIncomeRatio();
     renderGreeting();
     renderSetupGuide();
@@ -5780,7 +5752,7 @@ select:focus-visible{
     }
 
     $("billName").value="";$("billAmount").value="";$("billDueMode").value="date";$("billDay").value="1";$("billDayField").classList.remove("hidden");$("billSplitMode").value="auto";$("billPriority").value="important";
-    try{renderBillsPage();renderSnapshot();renderHomeUpcoming();renderStatusCards();renderBillIncomeRatio()}catch(renderErr){console.error("Bill refresh error",renderErr)}
+    try{renderBillsPage();renderSnapshot();renderHomeUpcoming();renderBillIncomeRatio()}catch(renderErr){console.error("Bill refresh error",renderErr)}
     scheduleSave();
     }catch(err){
       console.error("Add bill failed",err);
