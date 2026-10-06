@@ -1886,6 +1886,128 @@ select{
 #moreAdvanced[open] .details-body{padding-top:0}
 @media(max-width:480px){.more-menu-list>button{min-height:72px}.more-menu-list small{font-size:11px}#setupSection,#goalsSection,#accountSection{padding:13px}}
 
+
+/* v70 simplified Bills screen */
+#statusCards{display:none!important}
+
+/* Compact monthly context instead of a large dashboard card */
+#billIncomeRatioCard{
+  padding:12px 13px;
+  margin-bottom:10px;
+}
+#billIncomeRatioCard .ratio-head{
+  align-items:center;
+}
+#billIncomeRatioCard .ratio-head span{
+  font-size:10px;
+}
+#billIncomeRatioCard .ratio-head h2{
+  font-size:14px;
+  margin-top:2px;
+}
+#billIncomeRatioCard .ratio-head>strong{
+  font-size:24px;
+}
+#billIncomeRatioCard .ratio-bar{
+  margin:9px 0 6px;
+}
+#billIncomeRatioCard .ratio-numbers{
+  display:none;
+}
+#billIncomeRatioCard>p:not(.bill-compact-summary){
+  display:none;
+}
+.bill-compact-summary{
+  margin:0!important;
+  color:var(--muted-readable-strong)!important;
+  font-size:11px!important;
+  line-height:1.4!important;
+}
+
+/* Remove duplicate Bills heading inside the page */
+#billsSection>div:first-child{
+  display:none;
+}
+#billsSection{
+  padding-top:0;
+}
+.add-bill-top{
+  position:static;
+  width:100%;
+  min-height:46px;
+  margin:0 0 10px;
+  border-radius:13px;
+  font-size:13px;
+}
+.bills-tabs{
+  margin:0 0 10px;
+}
+.bills-tabs button{
+  min-height:44px;
+  font-size:11px;
+}
+.bills-summary{
+  padding:11px 12px;
+  margin-bottom:10px;
+}
+.bills-range-row{
+  font-size:11px;
+  margin-bottom:8px;
+}
+.bills-summary .snapshot-totals{
+  gap:6px;
+}
+.bills-summary .snapshot-totals>div{
+  padding:8px 6px;
+}
+.bills-summary .snapshot-totals span{
+  font-size:9px;
+}
+.bills-summary .snapshot-totals b{
+  font-size:13px;
+}
+.bill-filter-row{
+  gap:6px;
+  margin-bottom:9px;
+}
+.bill-filter-row button{
+  min-height:38px;
+  font-size:10px;
+  padding:7px 5px;
+}
+.bill-list-modern{
+  border-radius:14px;
+}
+.add-bill-panel{
+  margin-top:10px;
+}
+.add-bill-panel>summary{
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  font-size:12px;
+}
+
+/* No giant blank gaps */
+#billsSection .empty{
+  padding:18px 14px;
+  line-height:1.45;
+  font-size:12px;
+}
+
+/* Keep the screen visually simple on phones */
+@media(max-width:768px){
+  #billIncomeRatioCard{
+    margin-top:0;
+  }
+  .bills-summary .snapshot-progress,
+  .bills-summary .snapshot-progress-copy{
+    display:none;
+  }
+  .bill-filter-row{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+}
 </style>
 </head>
 <body>
@@ -1985,7 +2107,7 @@ select{
       </div>
       <strong id="billIncomeRatioPercent">—</strong>
     </div>
-    <div class="ratio-bar"><i id="billIncomeRatioBar"></i></div>
+    <div class="ratio-bar"><i id="billIncomeRatioBar"></i></div><p id="billCompactSummary" class="bill-compact-summary">Monthly bill summary</p>
     <div class="ratio-numbers">
       <div><span>Monthly income</span><b id="monthlyIncomeTotal">$0.00</b></div>
       <div><span>Monthly bills</span><b id="monthlyBillsTotal">$0.00</b></div>
@@ -2230,15 +2352,15 @@ select{
 
   <section class="bills-page-head section" id="billsSection">
     <div>
-      <h2>Bills</h2>
-      <p>See what’s due, what’s paid, and what still needs attention.</p>
+      <h2>Your bills</h2>
+      <p>Pick a period, then see what needs attention.</p>
     </div>
     <button id="showAddBill" type="button" class="add-bill-top">＋ Add Bill</button>
 
     <div class="bills-tabs" role="tablist">
-      <button class="active" type="button" data-bills-view="this">This Check</button>
+      <button type="button" data-bills-view="this">This Check</button>
       <button type="button" data-bills-view="next">Next Check</button>
-      <button type="button" data-bills-view="totals">This Month</button>
+      <button class="active" type="button" data-bills-view="totals">This Month</button>
     </div>
 
     <div class="bills-summary">
@@ -2481,7 +2603,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:69};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:70};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -3165,7 +3287,7 @@ select{
 
 
   let snapshotView="this";
-  let billsView="this", billFilter="all";
+  let billsView="totals", billFilter="all";
 
   function previousPayday(nextDate,frequency){
     const base=new Date(nextDate+"T12:00:00");
@@ -3543,6 +3665,8 @@ select{
     if($("billsTotalLabel"))$("billsTotalLabel").textContent=billsView==="totals"?"Monthly bills":"Set aside";
     if($("billsPaidLabel"))$("billsPaidLabel").textContent="Already paid";
     if($("billsRemainingLabel"))$("billsRemainingLabel").textContent=billsView==="totals"?"Unpaid":"Still due";
+    const filterRow=document.querySelector(".bill-filter-row");
+    if(filterRow)filterRow.classList.toggle("hidden",billsView!=="totals");
 
   
   if($("cancelBillEdit"))$("cancelBillEdit").onclick=()=>{
@@ -3591,7 +3715,7 @@ select{
         <button type="button" class="bill-update-modern" data-bill-update="${x.bill.id}" aria-label="Update ${escapeHtml(x.bill.name)}">Edit</button>
         <button type="button" class="bill-remove-modern" data-bill-remove="${x.bill.id}" onclick="window.checkstrideRemoveBill('${x.bill.id}',this)" aria-label="Remove ${escapeHtml(x.bill.name)}">Remove</button>
       </div>`;
-    }).join(""):'<div class="empty">No bills in this view.</div>';
+    }).join(""):billsView==="totals"?'<div class="empty">No bills added yet.</div>':'<div class="empty">Nothing from this paycheck needs to be set aside for bills.</div>';
   }
 
   function renderHomeUpcoming(){
@@ -3625,6 +3749,7 @@ select{
       $("billIncomeRatioHeadline").textContent="Finish paycheck setup";
       $("billIncomeRatioNote").textContent="Add at least one paycheck schedule to calculate your monthly bill-to-income ratio.";
       $("billIncomeRatioBar").style.width="0%";
+      if($("billCompactSummary"))$("billCompactSummary").textContent="Add your paycheck schedule to compare bills with income.";
       return;
     }
     const rounded=Math.round(m.percent);
@@ -3632,6 +3757,7 @@ select{
     $("billIncomeRatioRaw").textContent=`${m.ratio.toFixed(2)} : 1`;
     $("billIncomeRatioHeadline").textContent=`${rounded}% of monthly income goes to bills`;
     $("billIncomeRatioBar").style.width=`${Math.min(100,Math.max(0,m.percent))}%`;
+    if($("billCompactSummary"))$("billCompactSummary").textContent=`${money(m.bills)} in bills · ${money(Math.max(0,m.remaining))} left after bills`;
     const left=m.remaining;
     $("billIncomeRatioNote").textContent=left>=0
       ?`${money(left)} remains after this month’s listed bills, before other spending and savings.`
@@ -4078,13 +4204,13 @@ select{
 
   const PAGE_GROUPS={
     home:["setupGuide","homeSection","homeActions","quickStats","billSnapshot","todayFocus"],
-    bills:["billIncomeRatioCard","statusCards","billsSection","completePaycheckDropdown"],
-    coach:["autoplanSection","strideRecommendationDropdown","scenarioSection","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced"],
+    bills:["billIncomeRatioCard","billsSection"],
+    coach:["autoplanSection","strideRecommendationDropdown","scenarioSection","completePaycheckDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced"],
     more:["moreMenuSection"]
   };
   const PAGE_COPY={
     home:["Today","What matters now",""],
-    bills:["Bills","What needs to be paid",""],
+    bills:["Bills","What you need to pay",""],
     coach:["Plan","What Stride recommends",""],
     more:["More","Income, goals & account",""]
   };
