@@ -3963,38 +3963,64 @@ textarea:focus-visible{
       seen.add(id);
       return {...b,id};
     });
-    const additionalPaychecks=(Array.isArray(decoded.additionalPaychecks)?decoded.additionalPaychecks:[]).map((x,i)=>({
+    let additionalPaychecks=(Array.isArray(decoded.additionalPaychecks)?decoded.additionalPaychecks:[]).map((x,i)=>({
       id:String(x?.id||`income-${i}-${Date.now()}`),
       name:String(x?.name||`Job ${i+2}`),
       payday:String(x?.payday||""),
       paycheck:clampMoney(x?.paycheck),
       frequency:["weekly","biweekly","semimonthly","monthly"].includes(x?.frequency)?x.frequency:"biweekly"
     })).filter(x=>x.payday&&x.paycheck>0);
-    const legacySetupComplete=(
-      (String(decoded.payday||"") && clampMoney(decoded.paycheck)>0) ||
-      additionalPaychecks.length>0
-    ) && fixedBills.length>0;
+
+    let primaryJobName=String(decoded.primaryJobName||"Primary job");
+    let payday=String(decoded.payday||"");
+    let paycheck=clampMoney(decoded.paycheck);
+    let frequency=["weekly","biweekly","semimonthly","monthly"].includes(decoded.frequency)?decoded.frequency:"biweekly";
+    const decodedOverrides=(decoded.paycheckOverrides&&typeof decoded.paycheckOverrides==="object")?decoded.paycheckOverrides:{};
+    let normalizedOverrides={...decodedOverrides};
+
+    // Repair accounts created during the old first-job-as-additional bug.
+    if((!payday||paycheck<=0) && additionalPaychecks.length){
+      const promote=additionalPaychecks[0];
+      const promoteId=String(promote.id);
+      const promotePrefix=promoteId+"|";
+      const remapped={};
+      Object.entries(normalizedOverrides).forEach(([key,value])=>{
+        if(key.startsWith("primary|"))return;
+        if(key.startsWith(promotePrefix)){
+          remapped["primary|"+key.slice(promotePrefix.length)]=value;
+        }else{
+          remapped[key]=value;
+        }
+      });
+      primaryJobName=String(promote.name||"Primary job");
+      payday=String(promote.payday||"");
+      paycheck=clampMoney(promote.paycheck);
+      frequency=promote.frequency||"biweekly";
+      additionalPaychecks=additionalPaychecks.slice(1);
+      normalizedOverrides=remapped;
+    }
+
+    const legacySetupComplete=((payday&&paycheck>0)||additionalPaychecks.length>0) && fixedBills.length>0;
     const setupReviewSeen=typeof decoded.setupReviewSeen==="boolean"
       ? decoded.setupReviewSeen
       : legacySetupComplete;
     const validIncomeIds=new Set([
-      ...(String(decoded.payday||"")&&clampMoney(decoded.paycheck)>0?["primary"]:[]),
+      ...(payday&&paycheck>0?["primary"]:[]),
       ...additionalPaychecks.map(x=>String(x.id))
     ]);
-    const decodedOverrides=(decoded.paycheckOverrides&&typeof decoded.paycheckOverrides==="object")?decoded.paycheckOverrides:{};
     const paycheckOverrides=Object.fromEntries(
-      Object.entries(decodedOverrides).filter(([key])=>{
+      Object.entries(normalizedOverrides).filter(([key])=>{
         const split=String(key).indexOf("|");
         if(split<1)return false;
         return validIncomeIds.has(String(key).slice(0,split));
       })
     );
-    return {...blank,...decoded,setupReviewSeen,additionalPaychecks,paycheckOverrides,bills:fixedBills,paycheckHistory:Array.isArray(decoded.paycheckHistory)?decoded.paycheckHistory:[],paymentHistory:Array.isArray(decoded.paymentHistory)?decoded.paymentHistory:[]};
+    return {...blank,...decoded,primaryJobName,payday,paycheck,frequency,setupReviewSeen,additionalPaychecks,paycheckOverrides,bills:fixedBills,paycheckHistory:Array.isArray(decoded.paycheckHistory)?decoded.paycheckHistory:[],paymentHistory:Array.isArray(decoded.paymentHistory)?decoded.paymentHistory:[]};
   }
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:106};
+      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:107};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
