@@ -1,4 +1,4 @@
-const CACHE='checkstride-shell-v4';
+const CACHE='checkstride-shell-v5';
 const SHELL=['./','./index.html','./checkstride-logo.svg','./manifest.webmanifest'];
 
 self.addEventListener('install',event=>{
@@ -28,8 +28,10 @@ self.addEventListener('fetch',event=>{
     event.respondWith(
       fetch(event.request)
         .then(response=>{
-          const copy=response.clone();
-          caches.open(CACHE).then(cache=>cache.put('./index.html',copy)).catch(()=>{});
+          if(response.ok){
+            const copy=response.clone();
+            caches.open(CACHE).then(cache=>cache.put('./index.html',copy)).catch(()=>{});
+          }
           return response;
         })
         .catch(()=>caches.match('./index.html'))
