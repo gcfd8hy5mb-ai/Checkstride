@@ -3849,7 +3849,7 @@ select:focus-visible{
   const API_KEY="AIzaSyDoLHFn-sHVa9LROJOg3TFA6m4xFZCfhos";
   const PROJECT_ID="paycheck-advisor";
   const SESSION_KEY="checkstride_rest_session";
-  const blank={payday:"",paycheck:0,frequency:"biweekly",primaryJobName:"Primary job",additionalPaychecks:[],paycheckOverrides:{},cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
+  const blank={payday:"",paycheck:0,frequency:"biweekly",primaryJobName:"Primary job",additionalPaychecks:[],paycheckOverrides:{},setupReviewSeen:false,cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
   let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null;
   let editingBillId=null;
   let editingIncomeSourceId=null;
@@ -3949,12 +3949,19 @@ select:focus-visible{
       paycheck:clampMoney(x?.paycheck),
       frequency:["weekly","biweekly","semimonthly","monthly"].includes(x?.frequency)?x.frequency:"biweekly"
     })).filter(x=>x.payday&&x.paycheck>0);
-    return {...blank,...decoded,additionalPaychecks,bills:fixedBills,paycheckHistory:Array.isArray(decoded.paycheckHistory)?decoded.paycheckHistory:[],paymentHistory:Array.isArray(decoded.paymentHistory)?decoded.paymentHistory:[]};
+    const legacySetupComplete=(
+      (String(decoded.payday||"") && clampMoney(decoded.paycheck)>0) ||
+      additionalPaychecks.length>0
+    ) && fixedBills.length>0;
+    const setupReviewSeen=typeof decoded.setupReviewSeen==="boolean"
+      ? decoded.setupReviewSeen
+      : legacySetupComplete;
+    return {...blank,...decoded,setupReviewSeen,additionalPaychecks,bills:fixedBills,paycheckHistory:Array.isArray(decoded.paycheckHistory)?decoded.paycheckHistory:[],paymentHistory:Array.isArray(decoded.paymentHistory)?decoded.paymentHistory:[]};
   }
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:99};
+      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:100};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -4994,6 +5001,19 @@ select:focus-visible{
     setTimeout(()=>$("showAddBill")?.click(),60);
   };
   if($("setupReviewStep"))$("setupReviewStep").onclick=()=>{
+    const s=setupProgress();
+    if(!s.paycheckDone){
+      switchPage("more");
+      showMoreDestination("income");
+      return;
+    }
+    if(!s.billsDone){
+      switchPage("bills");
+      setTimeout(()=>$("showAddBill")?.click(),60);
+      return;
+    }
+    state={...state,setupReviewSeen:true};
+    scheduleSave();
     switchPage("home");
     setTimeout(()=>$("billSnapshot")?.scrollIntoView({behavior:"smooth",block:"start"}),60);
   };
@@ -5553,7 +5573,7 @@ select:focus-visible{
   function setupProgress(){
     const paycheckDone=hasIncomeSetup();
     const billsDone=Array.isArray(state.bills)&&state.bills.length>0;
-    const reviewDone=paycheckDone&&billsDone;
+    const reviewDone=paycheckDone&&billsDone&&state.setupReviewSeen===true;
     return {paycheckDone,billsDone,reviewDone,count:[paycheckDone,billsDone,reviewDone].filter(Boolean).length};
   }
 
@@ -5696,6 +5716,9 @@ select:focus-visible{
   }
   function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
   function scheduleSave(){
+    if(state.setupReviewSeen===true && (!hasIncomeSetup() || !Array.isArray(state.bills) || state.bills.length===0)){
+      state={...state,setupReviewSeen:false};
+    }
     render();if(!session||!hydrated)return;clearTimeout(saveTimer);setCloud("Saving…","saving");
     saveTimer=setTimeout(async()=>{try{await saveState(session,state);setCloud("Saved")}catch{try{const fresh=await withTimeout(refreshSession(session.refreshToken),6000,"REFRESH_TIMEOUT");session={...fresh,email:session.email};localStorage.setItem(SESSION_KEY,JSON.stringify(session));await saveState(session,state);setCloud("Saved")}catch{setCloud("Save paused — sign in again","error")}}},650);
   }
