@@ -3746,6 +3746,7 @@ select:focus-visible{
   let selectedPaydayKey=null;
   let incomeCalendarOffset=0;
   let editingIncomeTargetId=null;
+  let incomeEditReturnSourceId=null;
 
   const $=id=>document.getElementById(id);
   const money=n=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(clampMoney(n));
@@ -3837,7 +3838,7 @@ select:focus-visible{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:91};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:92};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -5333,6 +5334,7 @@ select:focus-visible{
     const src=incomeSources().find(x=>x.id===sourceId);
     if(!src)return;
 
+    incomeEditReturnSourceId=selectedIncomeSourceId===sourceId?sourceId:null;
     editingIncomeTargetId=src.id;
     selectedIncomeSourceId=null;
     selectedPaydayKey=null;
@@ -5353,6 +5355,7 @@ select:focus-visible{
   }
 
   function openNewIncomeJob(){
+    incomeEditReturnSourceId=null;
     editingIncomeTargetId="new";
     selectedIncomeSourceId=null;
     selectedPaydayKey=null;
@@ -5677,11 +5680,21 @@ select:focus-visible{
 
 
   function closeIncomeJobEdit(){
+    const returnSource=incomeEditReturnSourceId;
     editingIncomeTargetId=null;
+    incomeEditReturnSourceId=null;
     $("incomeJobEditView")?.classList.add("hidden");
-    $("incomeScheduleView")?.classList.add("hidden");
-    $("incomeJobOverview")?.classList.remove("hidden");
     setMsg("editJobMsg","");
+    if(returnSource && incomeSources().some(x=>x.id===returnSource)){
+      selectedIncomeSourceId=returnSource;
+      selectedPaydayKey=null;
+      $("incomeJobOverview")?.classList.add("hidden");
+      $("incomeScheduleView")?.classList.remove("hidden");
+      renderIncomeSchedule();
+    }else{
+      $("incomeScheduleView")?.classList.add("hidden");
+      $("incomeJobOverview")?.classList.remove("hidden");
+    }
     window.scrollTo({top:0,behavior:"smooth"});
   }
 
@@ -5711,12 +5724,23 @@ select:focus-visible{
       state={...state,additionalPaychecks:rows.map(x=>x.id===sourceId?{...x,name,payday,paycheck,frequency}:x)};
     }
 
+    const returnSource=incomeEditReturnSourceId;
     setMsg("editJobMsg",sourceId==="new"?"Job added.":"Job saved.");
     editingIncomeTargetId=null;
+    incomeEditReturnSourceId=null;
     scheduleSave();
     setTimeout(()=>{
       $("incomeJobEditView")?.classList.add("hidden");
-      $("incomeJobOverview")?.classList.remove("hidden");
+      if(returnSource && incomeSources().some(x=>x.id===returnSource)){
+        selectedIncomeSourceId=returnSource;
+        selectedPaydayKey=null;
+        $("incomeJobOverview")?.classList.add("hidden");
+        $("incomeScheduleView")?.classList.remove("hidden");
+        renderIncomeSchedule();
+      }else{
+        $("incomeScheduleView")?.classList.add("hidden");
+        $("incomeJobOverview")?.classList.remove("hidden");
+      }
       window.scrollTo({top:0,behavior:"smooth"});
     },120);
   };
@@ -6007,7 +6031,7 @@ select:focus-visible{
     $(dest.target)?.classList.remove("appPageHidden");
     if(dest.target==="moreAdvanced")$(dest.target).open=true;
     if(key==="income"){
-      editingIncomeTargetId=null;selectedIncomeSourceId=null;selectedPaydayKey=null;incomeCalendarOffset=0;
+      incomeEditReturnSourceId=null;editingIncomeTargetId=null;selectedIncomeSourceId=null;selectedPaydayKey=null;incomeCalendarOffset=0;
       $("incomeJobEditView")?.classList.add("hidden");
       $("incomeScheduleView")?.classList.add("hidden");
       $("incomeJobOverview")?.classList.remove("hidden");
