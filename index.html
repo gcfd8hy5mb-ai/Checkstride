@@ -4970,6 +4970,9 @@ textarea:focus-visible{
     renderBillsPage();
     renderSnapshot();
     renderHomeUpcoming();
+    renderBillIncomeRatio();
+    renderPlanOverview();
+    renderSetupGuide();
   };
 
   function snapshotBillFundingText(item,view){
@@ -6084,7 +6087,7 @@ textarea:focus-visible{
       setMsg("billMsg","Bill added.");
     }
 
-    try{renderBillsPage();renderSnapshot();renderHomeUpcoming();renderBillIncomeRatio()}catch(renderErr){console.error("Bill refresh error",renderErr)}
+    try{renderBillsPage();renderSnapshot();renderHomeUpcoming();renderBillIncomeRatio();renderPlanOverview();renderSetupGuide()}catch(renderErr){console.error("Bill refresh error",renderErr)}
     scheduleSave();
     setTimeout(closeBillForm,80);
     }catch(err){
