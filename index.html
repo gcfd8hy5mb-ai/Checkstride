@@ -1246,6 +1246,136 @@ input,select,button{
     grid-column:1;
   }
 }
+
+/* v62 cross-platform mobile polish */
+html{
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+}
+button,input,select,textarea{
+  touch-action:manipulation;
+}
+button{
+  -webkit-tap-highlight-color:transparent;
+}
+input,select,textarea{
+  width:100%;
+  box-sizing:border-box;
+}
+select{
+  appearance:auto;
+  -webkit-appearance:menulist;
+}
+.primary-btn,.ghost,.add-bill-top,
+.home-actions button,.bottom-nav button,
+.bill-filter-row button,.bills-tabs button{
+  min-height:44px;
+}
+
+@media(max-width:768px){
+  .app{
+    padding-left:10px;
+    padding-right:10px;
+    padding-bottom:calc(92px + env(safe-area-inset-bottom));
+  }
+
+  .topbar{
+    top:0;
+    padding-top:max(8px,env(safe-area-inset-top));
+  }
+
+  .home-summary,
+  .bill-income-ratio,
+  .snapshot-card,
+  .upcoming-home,
+  #setupSection,
+  .bills-summary,
+  .add-bill-panel{
+    border-radius:16px;
+  }
+
+  #setupSection .form-grid,
+  .income-source-editor,
+  .add-bill-panel .bill-form{
+    grid-template-columns:1fr 1fr;
+  }
+
+  #setupSection input,
+  #setupSection select,
+  .income-source-editor input,
+  .income-source-editor select,
+  .add-bill-panel input,
+  .add-bill-panel select{
+    min-height:46px;
+    height:46px;
+    font-size:16px;
+  }
+
+  .home-actions button,
+  .add-bill-top,
+  .primary-btn,
+  .ghost{
+    font-size:12px;
+  }
+
+  .bottom-nav{
+    width:min(calc(100% - 14px),520px);
+    bottom:max(8px,env(safe-area-inset-bottom));
+  }
+
+  .bottom-nav button{
+    min-height:50px;
+    font-size:10px;
+  }
+
+  .bill-row-modern{
+    grid-template-columns:minmax(0,1fr) auto auto;
+    gap:7px;
+  }
+
+  .bill-update-modern,
+  .bill-remove-modern{
+    min-height:34px;
+  }
+
+  .status-card,
+  .ratio-numbers>div,
+  .snapshot-totals>div{
+    min-width:0;
+  }
+}
+
+@media(max-width:480px){
+  .home-summary{
+    grid-template-columns:1.08fr .92fr;
+  }
+
+  #setupSection .form-grid,
+  .income-source-editor,
+  .add-bill-panel .bill-form{
+    grid-template-columns:1fr;
+  }
+
+  .income-source-editor .primary-btn,
+  .income-source-editor .ghost,
+  .income-source-editor .msg,
+  .add-bill-panel .primary-btn,
+  .add-bill-panel .ghost{
+    grid-column:1;
+  }
+
+  .ratio-numbers{
+    grid-template-columns:1fr 1fr 1fr;
+  }
+
+  .bill-filter-row{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+
+  .bills-tabs{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
 </style>
 </head>
 <body>
@@ -1825,7 +1955,7 @@ input,select,button{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:61};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:62};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
