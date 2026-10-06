@@ -4131,7 +4131,11 @@ textarea:focus-visible{
 
       const rows=Array.isArray(state.additionalPaychecks)?[...state.additionalPaychecks]:[];
       if(editingIncomeSourceId){
+        const existing=rows.find(x=>x.id===editingIncomeSourceId);
         state={...state,additionalPaychecks:rows.map(x=>x.id===editingIncomeSourceId?{...x,name,payday,paycheck,frequency}:x)};
+        if(existing && (existing.payday!==payday || existing.frequency!==frequency)){
+          state={...state,paycheckOverrides:removeIncomeOverridesForSource(editingIncomeSourceId)};
+        }
       }else{
         state={...state,additionalPaychecks:[...rows,{id:newIncomeSourceId(),name,payday,paycheck,frequency}]};
       }
@@ -6093,8 +6097,15 @@ textarea:focus-visible{
       $("incomeJobEditorTitle").textContent=`Edit ${x.name}`;$("saveIncomeSource").textContent="Save job";$("cancelIncomeSourceEdit").classList.remove("hidden");return;
     }
     if(remove){
-      state={...state,additionalPaychecks:(state.additionalPaychecks||[]).filter(x=>x.id!==remove.dataset.incomeRemove)};
-      if(editingIncomeSourceId===remove.dataset.incomeRemove)editingIncomeSourceId=null;
+      const sourceId=remove.dataset.incomeRemove;
+      if(!removeIncomeSourceById(sourceId))return;
+      if(editingIncomeSourceId===sourceId)editingIncomeSourceId=null;
+      if(selectedIncomeSourceId===sourceId)selectedIncomeSourceId=null;
+      selectedPaydayKey=null;
+      renderIncomeSources();
+      renderBillIncomeRatio();
+      renderPlanOverview();
+      renderSetupGuide();
       scheduleSave();
     }
   };
