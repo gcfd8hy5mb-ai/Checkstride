@@ -1062,7 +1062,7 @@ input,select{
           </select>
         </div>
         <div class="field"><label>Priority</label><select id="billPriority"><option value="critical">Critical</option><option value="important" selected>Important</option><option value="flexible">Flexible</option></select></div>
-        <button id="addBill" class="primary-btn">Add bill</button><button id="cancelBillEdit" type="button" class="ghost hidden">Cancel</button>
+        <button id="addBill" type="button" class="primary-btn" data-action="add-bill">Add bill</button><button id="cancelBillEdit" type="button" class="ghost hidden">Cancel</button>
       </div>
       <div id="billMsg" class="msg hidden"></div><div class="bill-helper">If you don’t know the exact due date, choose <b>Monthly — date unknown</b>. Stride will reserve the bill across your paychecks instead of forcing you to guess a date.</div>
     </details>
@@ -2362,7 +2362,7 @@ input,select{
 
   ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>$(id).addEventListener("change",e=>{state={...state,[id]:["paycheck","extraIncome","cushion"].includes(id)?Number(e.target.value):e.target.value};scheduleSave()}));
   document.querySelectorAll(".strategy").forEach(el=>el.onclick=()=>{state={...state,strategy:el.dataset.strategy};$("strategy").value=state.strategy;scheduleSave()});
-  $("addBill").onclick=()=>{
+  function submitBill(){
     const name=$("billName").value.trim(),amount=clampMoney($("billAmount").value),dueMode=$("billDueMode").value,day=Math.trunc(Number($("billDay").value)),splitMode=$("billSplitMode").value,priority=$("billPriority").value;
     if(!name||amount<=0)return setMsg("billMsg","Enter a bill name and amount.");
     if(dueMode==="date"&&(day<1||day>31))return setMsg("billMsg","Enter a due day from 1–31, or choose Monthly — date unknown.");
@@ -2383,7 +2383,17 @@ input,select{
 
     $("billName").value="";$("billAmount").value="";$("billDueMode").value="date";$("billDay").value="1";$("billDayField").classList.remove("hidden");$("billSplitMode").value="auto";$("billPriority").value="important";
     scheduleSave();
-  };
+  }
+
+  document.addEventListener("click",e=>{
+    const target=e.target instanceof Element?e.target:null;
+    const addBillBtn=target?.closest('[data-action="add-bill"]');
+    if(!addBillBtn)return;
+    e.preventDefault();
+    e.stopPropagation();
+    submitBill();
+  });
+
   $("billList").onclick=e=>{
     const target=e.target instanceof Element?e.target:null;
     if(!target)return;
