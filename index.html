@@ -1074,6 +1074,178 @@ input,select,button{
     font-size:10px;
   }
 }
+
+/* v61 bills screen polish */
+.bills-page-head{
+  padding:4px 0 0;
+}
+.bills-page-head>div:first-child{
+  margin-bottom:8px;
+}
+.bills-page-head h2{
+  font-size:20px;
+}
+.bills-page-head p{
+  font-size:11px;
+  line-height:1.4;
+}
+.add-bill-top{
+  min-height:38px;
+  border-radius:11px;
+  padding:8px 11px;
+  font-size:11px;
+}
+
+.bills-tabs{
+  margin:8px 0;
+  padding:3px;
+  border-radius:12px;
+}
+.bills-tabs button{
+  min-height:34px;
+  font-size:10px;
+}
+
+.bills-summary{
+  padding:10px;
+  margin-bottom:8px;
+  border-radius:13px;
+}
+.bills-range-row{
+  margin-bottom:6px;
+  font-size:10px;
+}
+.bills-summary .snapshot-totals{
+  gap:6px;
+}
+.bills-summary .snapshot-totals>div{
+  padding:7px 6px;
+  border-radius:10px;
+}
+.bills-summary .snapshot-progress{
+  margin-top:7px;
+}
+.bills-summary .snapshot-progress-copy{
+  margin-top:4px;
+  font-size:9px;
+}
+
+.bill-filter-row{
+  gap:4px;
+  margin-bottom:7px;
+}
+.bill-filter-row button{
+  padding:7px 4px;
+  font-size:10px;
+  border-radius:10px;
+}
+.bill-filter-row span{
+  font-size:9px;
+}
+
+.bill-list-modern{
+  border-radius:13px;
+}
+.bill-row-modern{
+  gap:7px;
+  padding:10px 9px;
+}
+.bill-main b{
+  font-size:13px;
+  line-height:1.25;
+}
+.bill-main small{
+  font-size:10px;
+  line-height:1.35;
+}
+.bill-amount{
+  font-size:13px;
+}
+.bill-status{
+  padding:5px 7px;
+  font-size:9px;
+}
+.bill-update-modern,
+.bill-remove-modern{
+  min-height:30px;
+  padding:5px 7px;
+  font-size:9px;
+  border-radius:9px;
+}
+.bill-status.paid{
+  border:1px solid rgba(42,166,125,.28);
+}
+.bill-status.overdue{
+  border:1px solid rgba(214,90,100,.28);
+}
+.bill-status.due{
+  border:1px solid rgba(31,132,255,.25);
+}
+
+.add-bill-panel{
+  margin-top:8px;
+  border-radius:12px;
+}
+.add-bill-panel>summary{
+  padding:10px 11px;
+  font-size:11px;
+}
+.add-bill-panel .bill-form{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  padding:0 9px 9px;
+}
+.add-bill-panel .bill-form .field{
+  min-width:0;
+}
+.add-bill-panel .bill-form input,
+.add-bill-panel .bill-form select{
+  min-height:44px;
+  height:44px;
+  font-size:16px;
+  border-radius:11px;
+}
+.add-bill-panel .bill-form .primary-btn,
+.add-bill-panel .bill-form .ghost{
+  min-height:42px;
+  height:42px;
+  border-radius:11px;
+}
+.add-bill-panel .bill-form .primary-btn{
+  grid-column:1/-1;
+}
+.add-bill-panel .bill-form .ghost{
+  grid-column:1/-1;
+}
+.bill-helper{
+  margin:0 9px 10px;
+  font-size:10px;
+  line-height:1.45;
+  color:var(--muted-readable);
+}
+
+@media(max-width:390px){
+  .bills-page-head h2{font-size:19px}
+  .add-bill-top{font-size:10px;padding:7px 9px}
+  .bill-row-modern{
+    grid-template-columns:minmax(0,1fr) auto auto;
+    align-items:start;
+  }
+  .bill-main{padding-top:1px}
+  .bill-update-modern,.bill-remove-modern{
+    grid-row:2;
+  }
+  .bill-update-modern{grid-column:2}
+  .bill-remove-modern{grid-column:3}
+  .add-bill-panel .bill-form{
+    grid-template-columns:1fr;
+  }
+  .add-bill-panel .bill-form .primary-btn,
+  .add-bill-panel .bill-form .ghost{
+    grid-column:1;
+  }
+}
 </style>
 </head>
 <body>
@@ -1403,7 +1575,7 @@ input,select,button{
   <section class="bills-page-head section" id="billsSection">
     <div>
       <h2>Bills</h2>
-      <p>Manage your bills and payments.</p>
+      <p>See what’s due, what’s paid, and what still needs attention.</p>
     </div>
     <button id="showAddBill" type="button" class="add-bill-top">＋ Add Bill</button>
 
@@ -1653,7 +1825,7 @@ input,select,button{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:60};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:61};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
