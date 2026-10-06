@@ -5803,8 +5803,13 @@ textarea:focus-visible{
   }
 
   async function submitAuth(){
+    const button=$("authSubmit");
+    if(button.disabled)return;
     const attempt=++authRevision;
     const stillCurrent=()=>attempt===authRevision;
+    const label=mode==="signup"?"Create account":"Sign in";
+    button.disabled=true;
+    button.textContent=mode==="signup"?"Creating account…":"Signing in…";
     setMsg("authMsg","");hydrated=false;
     try{
       const j=await authRequest(mode==="signup"?"accounts:signUp":"accounts:signInWithPassword",{email:$("email").value.trim(),password:$("password").value,returnSecureToken:true});
@@ -5840,6 +5845,11 @@ textarea:focus-visible{
       clearTimeout(saveTimer);saveTimer=null;
       session=null;hydrated=false;const code=String(e?.message||"");
       setMsg("authMsg",code.includes("TOO_MANY_ATTEMPTS")?"Too many attempts. Try again later.":code.includes("EMAIL_EXISTS")?"An account already uses that email.":code.includes("WEAK_PASSWORD")?"Use a stronger password.":code.includes("INVALID_LOGIN_CREDENTIALS")||code.includes("INVALID_PASSWORD")||code.includes("EMAIL_NOT_FOUND")?"Could not sign in. Check your email and password.":code.includes("LOAD_TIMEOUT")?"Signed in, but your plan took too long to load. Try again.":code.includes("LOAD_FAILED")?"Signed in, but Checkstride could not load your saved plan.":"Could not sign in right now.");
+    }finally{
+      if(stillCurrent()){
+        button.disabled=false;
+        button.textContent=label;
+      }
     }
   }
 
