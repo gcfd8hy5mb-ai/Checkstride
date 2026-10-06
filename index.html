@@ -4048,6 +4048,7 @@ textarea:focus-visible{
     clearTimeout(saveTimer);saveTimer=null;
     localStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem("checkstride_page");
+    sessionStorage.removeItem("checkstride_more_destination");
     session=null;hydrated=false;state={...blank};
     finishStartup();
     show("auth");
@@ -5818,7 +5819,7 @@ textarea:focus-visible{
   $("tabSignup").onclick=()=>{mode="signup";$("tabSignup").classList.add("active");$("tabLogin").classList.remove("active");$("authSubmit").textContent="Create account"};
   $("authSubmit").onclick=submitAuth;
   $("resetPassword").onclick=async()=>{const email=$("email").value.trim();if(!email)return setMsg("authMsg","Enter your email first.");try{await authRequest("accounts:sendOobCode",{requestType:"PASSWORD_RESET",email});setMsg("authMsg","Password reset email sent.")}catch{setMsg("authMsg","If that email has an account, a reset email will be sent.")}};
-  $("logout").onclick=async()=>{clearTimeout(saveTimer);saveTimer=null;if(session&&hydrated){try{await saveState(session,state)}catch{try{const fresh=await withTimeout(refreshSession(session.refreshToken),6000,"REFRESH_TIMEOUT");await saveState({...fresh,email:session.email},state)}catch{}}}localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem("checkstride_page");session=null;hydrated=false;state={...blank};show("auth")};
+  $("logout").onclick=async()=>{clearTimeout(saveTimer);saveTimer=null;if(session&&hydrated){try{await saveState(session,state)}catch{try{const fresh=await withTimeout(refreshSession(session.refreshToken),6000,"REFRESH_TIMEOUT");await saveState({...fresh,email:session.email},state)}catch{}}}localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem("checkstride_page");sessionStorage.removeItem("checkstride_more_destination");session=null;hydrated=false;state={...blank};show("auth")};
 
   ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>$(id).addEventListener("change",e=>{
     const previousPayday=state.payday;
