@@ -1713,6 +1713,63 @@ select{
     padding-right:9px;
   }
 }
+
+/* v67 Bills page funding clarity */
+.bill-plan-row{
+  align-items:start;
+}
+.bill-funding-primary{
+  display:block;
+  margin-top:5px;
+  color:#63b8ff;
+  font-size:11px;
+  font-weight:750;
+  line-height:1.4;
+}
+.bill-funding-secondary{
+  display:block;
+  margin-top:2px;
+  color:var(--muted-readable-strong);
+  font-size:10px;
+  line-height:1.4;
+}
+.bill-plan-row .bill-amount{
+  padding-top:1px;
+}
+@media(max-width:768px){
+  .bill-plan-row{
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:8px 10px;
+    padding:13px 11px;
+  }
+  .bill-plan-row .bill-main{
+    grid-column:1;
+  }
+  .bill-plan-row .bill-amount{
+    grid-column:2;
+    grid-row:1;
+    font-size:14px;
+  }
+  .bill-plan-row .bill-status{
+    grid-column:2;
+    grid-row:2;
+    justify-self:end;
+  }
+  .bill-plan-row .bill-update-modern{
+    grid-column:1;
+    grid-row:2;
+    justify-self:start;
+    min-width:64px;
+  }
+  .bill-plan-row .bill-remove-modern{
+    grid-column:1;
+    grid-row:3;
+    justify-self:start;
+    min-width:64px;
+  }
+  .bill-funding-primary{font-size:12px}
+  .bill-funding-secondary{font-size:11px}
+}
 </style>
 </head>
 <body>
@@ -2046,9 +2103,9 @@ select{
     <button id="showAddBill" type="button" class="add-bill-top">＋ Add Bill</button>
 
     <div class="bills-tabs" role="tablist">
-      <button class="active" type="button" data-bills-view="this">This Paycheck</button>
-      <button type="button" data-bills-view="next">Next Paycheck</button>
-      <button type="button" data-bills-view="totals">Totals</button>
+      <button class="active" type="button" data-bills-view="this">This Check</button>
+      <button type="button" data-bills-view="next">Next Check</button>
+      <button type="button" data-bills-view="totals">This Month</button>
     </div>
 
     <div class="bills-summary">
@@ -2057,9 +2114,9 @@ select{
         <span id="billsCount">0 bills</span>
       </div>
       <div class="snapshot-totals">
-        <div><span>Total Bills</span><b id="billsTotal">$0.00</b></div>
-        <div><span>Paid</span><b id="billsPaid">$0.00</b></div>
-        <div><span>Remaining</span><b id="billsRemaining">$0.00</b></div>
+        <div><span id="billsTotalLabel">Set aside</span><b id="billsTotal">$0.00</b></div>
+        <div><span id="billsPaidLabel">Already paid</span><b id="billsPaid">$0.00</b></div>
+        <div><span id="billsRemainingLabel">Still due</span><b id="billsRemaining">$0.00</b></div>
       </div>
       <div class="snapshot-progress"><i id="billsProgress"></i></div>
       <div class="snapshot-progress-copy"><span id="billsProgressText">0% paid</span></div>
@@ -2291,7 +2348,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:66};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:67};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -3323,6 +3380,23 @@ select{
     return "upcoming";
   }
 
+  function billsPageFundingText(item,view){
+    const original=clampMoney(item.bill._originalAmount??item.bill.amount);
+    const allocation=clampMoney(item.bill.amount);
+    if(view==="totals"){
+      return{
+        primary:`${money(original)} total bill`,
+        secondary:item.due?`Due ${item.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:"Monthly bill"
+      };
+    }
+    const other=Math.max(0,original-allocation);
+    const which=view==="next"?"next check":"this check";
+    return{
+      primary:`Stride: set aside ${money(allocation)} from ${which}`,
+      secondary:other>0?`${money(original)} total · ${money(other)} planned from other checks`:`${money(original)} total · fully covered by ${which}`
+    };
+  }
+
   function renderBillsPage(){
     if(!$("billsSection"))return;
     const snap=snapshotData(billsView);
@@ -3333,6 +3407,9 @@ select{
     $("billsRemaining").textContent=money(snap.remaining);
     $("billsProgress").style.width=`${snap.pct}%`;
     $("billsProgressText").textContent=`${snap.pct}% paid`;
+    if($("billsTotalLabel"))$("billsTotalLabel").textContent=billsView==="totals"?"Monthly bills":"Set aside";
+    if($("billsPaidLabel"))$("billsPaidLabel").textContent="Already paid";
+    if($("billsRemainingLabel"))$("billsRemainingLabel").textContent=billsView==="totals"?"Unpaid":"Still due";
 
   
   if($("cancelBillEdit"))$("cancelBillEdit").onclick=()=>{
@@ -3368,8 +3445,14 @@ select{
     $("billList").innerHTML=filtered.length?filtered.map(x=>{
       const label=x.status==="paid"?"Paid":x.status==="overdue"?"Overdue":x.status==="due"?"Due Soon":"Upcoming";
       const dueText=x.due?`Due ${x.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:(normalizedBill(x.bill).dueMode==="monthly"?"Monthly · date unknown":`Due day ${x.bill.dueDay}`);
-      return `<div class="bill-row-modern">
-        <div class="bill-main"><b>${escapeHtml(x.bill.name)}</b><small>${dueText}</small><small class="split-note">${escapeHtml(billSplitLabel(x.bill))}</small></div>
+      const funding=billsPageFundingText(x,billsView);
+      return `<div class="bill-row-modern bill-plan-row">
+        <div class="bill-main">
+          <b>${escapeHtml(x.bill.name)}</b>
+          <small>${dueText}</small>
+          <span class="bill-funding-primary">${escapeHtml(funding.primary)}</span>
+          <span class="bill-funding-secondary">${escapeHtml(funding.secondary)}</span>
+        </div>
         <div class="bill-amount">${money(x.bill.amount)}</div>
         <button class="bill-status ${x.status}" data-bill-toggle="${x.bill.id}" data-paid="${x.status==="paid"?"1":"0"}">${label}</button>
         <button type="button" class="bill-update-modern" data-bill-update="${x.bill.id}" aria-label="Update ${escapeHtml(x.bill.name)}">Edit</button>
