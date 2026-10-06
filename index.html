@@ -3982,7 +3982,7 @@ textarea:focus-visible{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:104};
+      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:105};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -4036,6 +4036,12 @@ textarea:focus-visible{
   function incomeOverrideKey(sourceId,date){
     const key=typeof date==="string"?date:dateKey(date);
     return `${sourceId}|${key}`;
+  }
+
+  function removeIncomeOverridesForSource(sourceId){
+    const overrides=(state.paycheckOverrides&&typeof state.paycheckOverrides==="object")?state.paycheckOverrides:{};
+    const prefix=String(sourceId||"")+"|";
+    return Object.fromEntries(Object.entries(overrides).filter(([key])=>!key.startsWith(prefix)));
   }
 
   function paycheckAmountForSourceDate(src,date){
@@ -5979,6 +5985,7 @@ textarea:focus-visible{
   if($("saveEditedJob"))$("saveEditedJob").onclick=()=>{
     const sourceId=editingIncomeTargetId;
     if(!sourceId)return;
+    const existingSource=(sourceId==="new"||sourceId==="new-primary")?null:incomeSources().find(x=>x.id===sourceId);
     const name=($("editJobName").value||"").trim();
     const payday=$("editJobPayday").value||"";
     const paycheck=clampMoney($("editJobPaycheck").value);
@@ -5999,6 +6006,10 @@ textarea:focus-visible{
     }else{
       const rows=Array.isArray(state.additionalPaychecks)?state.additionalPaychecks:[];
       state={...state,additionalPaychecks:rows.map(x=>x.id===sourceId?{...x,name,payday,paycheck,frequency}:x)};
+    }
+
+    if(existingSource && (existingSource.payday!==payday || existingSource.frequency!==frequency)){
+      state={...state,paycheckOverrides:removeIncomeOverridesForSource(sourceId)};
     }
 
     const returnSource=incomeEditReturnSourceId;
