@@ -2486,6 +2486,79 @@ select{
 /* v82 Bills overview recovery */
 #billsSection:not(.appPageHidden) #billsOverviewView:not(.hidden){display:block!important}
 #billDetailsView.hidden{display:none!important}
+
+/* v84 compact Plan overview */
+.plan-overview{display:grid;gap:10px}
+.plan-tabs{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:4px;
+  border:1px solid var(--border);background:#0a1724;border-radius:14px;padding:4px
+}
+.plan-tabs button{
+  min-height:46px;border:0;border-radius:10px;background:transparent;color:#a9bdd4;
+  font-weight:800;font-size:10px;touch-action:manipulation
+}
+.plan-tabs button.active{background:#1689ff;color:#fff}
+.plan-chart-card{
+  border:1px solid var(--border);border-radius:18px;
+  background:linear-gradient(145deg,#0e2235,#0a1827);padding:14px
+}
+.plan-chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px}
+.plan-chart-head>div{display:grid;gap:2px}
+.plan-chart-head b{font-size:16px}
+.plan-chart-head small{font-size:10px;color:var(--muted-readable-strong)}
+#planConfidencePill{font-size:9px;color:#8fcfff;border:1px solid rgba(86,182,255,.3);border-radius:999px;padding:5px 8px}
+.plan-chart-grid{display:grid;grid-template-columns:minmax(150px,.9fr) 1.1fr;gap:16px;align-items:center}
+.plan-donut{width:min(48vw,190px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;margin:auto}
+.plan-donut-hole{
+  width:61%;aspect-ratio:1;border-radius:50%;background:#091725;display:grid;place-content:center;text-align:center
+}
+.plan-donut-hole b{font-size:22px}
+.plan-donut-hole small{font-size:10px;color:#a8bdd6}
+.plan-legend{display:grid;gap:11px}
+.plan-legend>div{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:7px;align-items:center}
+.plan-legend i{width:11px;height:11px;border-radius:50%}
+.plan-legend i.bills{background:#ff5562}
+.plan-legend i.protected{background:#1689ff}
+.plan-legend i.spend{background:#28d486}
+.plan-legend span{font-size:11px;color:#c2d0df}
+.plan-legend b{font-size:12px}
+.plan-legend small{grid-column:3;font-size:9px;color:var(--muted-readable-strong)}
+.plan-recommendation-card{
+  border:1px solid rgba(22,137,255,.5);border-radius:16px;padding:13px;
+  background:linear-gradient(135deg,#0e355c,#0a2138);display:grid;gap:9px
+}
+.plan-recommendation-head{display:flex;align-items:center;gap:9px}
+.plan-recommendation-head>span{font-size:22px;color:#36c4ff}
+.plan-recommendation-head>div{display:grid;gap:2px}
+.plan-recommendation-head b{font-size:13px}
+.plan-recommendation-head small{font-size:10px;color:#a8bdd6}
+.plan-recommendation-card>strong{font-size:13px;line-height:1.4}
+.plan-summary-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+  border:1px solid var(--border);border-radius:15px;background:#0b1b2b;overflow:hidden
+}
+.plan-summary-grid>div{padding:11px;text-align:center;border-right:1px solid var(--border)}
+.plan-summary-grid>div:last-child{border-right:0}
+.plan-summary-grid span{display:block;font-size:9px;color:#9fb5cf}
+.plan-summary-grid b{display:block;margin-top:3px;font-size:13px}
+.plan-actions{display:grid;gap:7px}
+.plan-actions button{
+  width:100%;min-height:62px;border:1px solid var(--border);border-radius:14px;
+  background:#0c1e30;color:inherit;padding:11px 12px;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;text-align:left;font-family:inherit;touch-action:manipulation
+}
+.plan-actions button span{font-size:13px;font-weight:800}
+.plan-actions button small{grid-column:1;color:#9fb5cf;font-size:9px;margin-top:2px}
+.plan-actions button b{grid-column:2;grid-row:1/3;align-self:center;font-size:22px;color:#75bff7}
+.plan-actions button:active{transform:scale(.99);background:#102740}
+.plan-detail-shell{display:grid;gap:8px}
+.plan-detail-head h2{margin:0;font-size:20px}
+.plan-detail-head p{margin:3px 0 0;color:var(--muted-readable-strong);font-size:10px}
+@media(max-width:430px){
+  .plan-chart-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .plan-donut{width:150px}
+  .plan-legend{gap:8px}
+}
 </style>
 </head>
 <body>
@@ -2992,6 +3065,61 @@ select{
   </section>
 
 
+  <section class="plan-overview section" id="planOverviewSection">
+    <div class="plan-tabs" role="tablist" aria-label="Plan period">
+      <button type="button" class="active" data-plan-view="this">This Check</button>
+      <button type="button" data-plan-view="next">Next Check</button>
+      <button type="button" data-plan-view="month">This Month</button>
+    </div>
+
+    <section class="plan-chart-card">
+      <div class="plan-chart-head">
+        <div><b id="planChartTitle">This Check</b><small id="planChartRange">Current plan</small></div>
+        <span id="planConfidencePill">Learning</span>
+      </div>
+
+      <div class="plan-chart-grid">
+        <div class="plan-donut" id="planDonut">
+          <div class="plan-donut-hole">
+            <b id="planIncome">$0.00</b>
+            <small>Income</small>
+          </div>
+        </div>
+        <div class="plan-legend">
+          <div><i class="bills"></i><span>Bills</span><b id="planBillsAmount">$0.00</b><small id="planBillsPct">0%</small></div>
+          <div><i class="protected"></i><span>Protected</span><b id="planProtectedAmount">$0.00</b><small id="planProtectedPct">0%</small></div>
+          <div><i class="spend"></i><span>Left to spend</span><b id="planSpendAmount">$0.00</b><small id="planSpendPct">0%</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="plan-recommendation-card">
+      <div class="plan-recommendation-head">
+        <span>✦</span>
+        <div><b>Stride recommends</b><small id="planRecommendationWhy">Building your recommendation.</small></div>
+      </div>
+      <strong id="planRecommendationAction">Finish setup to build your plan.</strong>
+    </section>
+
+    <div class="plan-summary-grid">
+      <div><span>Bills</span><b id="planSummaryBills">$0.00</b></div>
+      <div><span>Protected</span><b id="planSummaryProtected">$0.00</b></div>
+      <div><span>Safe to spend</span><b id="planSummarySafe">$0.00</b></div>
+    </div>
+
+    <div class="plan-actions">
+      <button type="button" data-plan-detail="recommendation"><span>Why this plan</span><small>Reasoning and confidence</small><b>›</b></button>
+      <button type="button" data-plan-detail="scenario"><span>Try a change</span><small>Preview a purchase or income change</small><b>›</b></button>
+      <button type="button" data-plan-detail="complete"><span>Record paycheck outcome</span><small>Tell Stride what actually happened</small><b>›</b></button>
+      <button type="button" data-plan-detail="advanced"><span>More plan details</span><small>Learning, adjustments, and forecast</small><b>›</b></button>
+    </div>
+  </section>
+
+  <section class="plan-detail-shell section appPageHidden" id="planDetailShell">
+    <button type="button" id="planDetailBack" class="income-back">‹ Plan</button>
+    <div class="plan-detail-head"><h2 id="planDetailTitle">Plan details</h2><p id="planDetailText">More information about this plan.</p></div>
+  </section>
+
   <section class="card section" id="autoplanSection">
     <div class="title-row"><h2>Your plan</h2><span id="autoplanStatus">Draft</span></div>
     <div class="ai-banner"><strong id="autoplanHeadline">Finish setup to build your plan.</strong><p id="autoplanWhy">Checkstride will allocate the paycheck without moving money or paying bills.</p></div>
@@ -3186,7 +3314,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:83};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:84};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -3309,6 +3437,7 @@ select{
       try{
         renderIncomeSources();
         renderBillIncomeRatio();
+    renderPlanOverview();
       }catch(renderErr){
         console.error("Income source refresh error",renderErr);
       }
@@ -3885,6 +4014,7 @@ select{
   let homePeriodView="this";
   let homePeriodExpanded=true;
   let billsView="totals", billFilter="all", selectedBillId=null;
+  let planView="this";
 
   function previousPayday(nextDate,frequency){
     const base=new Date(nextDate+"T12:00:00");
@@ -4259,6 +4389,106 @@ select{
       primary:`Stride: set aside ${money(allocation)} from ${which}`,
       secondary:other>0?`${money(original)} total · ${money(other)} planned from other checks`:`${money(original)} total · fully covered by ${which}`
     };
+  }
+
+  function planPeriodData(view=planView){
+    const rows=adaptiveFourCheckPlan();
+    if(view==="this"){
+      const r=rows[0];
+      if(!r)return{title:"This Check",range:"Current plan",income:0,bills:0,protected:0,safe:0};
+      return{
+        title:"This Check",
+        range:r.date?.toLocaleDateString(undefined,{month:"short",day:"numeric"})||"Current plan",
+        income:clampMoney(r.income),
+        bills:clampMoney(r.due)+clampMoney(r.catchup),
+        protected:clampMoney(r.cushion),
+        safe:clampMoney(r.safe)
+      };
+    }
+    if(view==="next"){
+      const r=rows[1]||rows[0];
+      if(!r)return{title:"Next Check",range:"Next plan",income:0,bills:0,protected:0,safe:0};
+      return{
+        title:"Next Check",
+        range:r.date?.toLocaleDateString(undefined,{month:"short",day:"numeric"})||"Next plan",
+        income:clampMoney(r.income),
+        bills:clampMoney(r.due)+clampMoney(r.catchup),
+        protected:clampMoney(r.cushion),
+        safe:clampMoney(r.safe)
+      };
+    }
+
+    const now=new Date();
+    const monthEvents=incomeEvents(32).filter(x=>x.date.getFullYear()===now.getFullYear()&&x.date.getMonth()===now.getMonth());
+    const income=monthEvents.reduce((s,x)=>s+clampMoney(x.income),0);
+    const bills=state.bills.reduce((s,b)=>s+clampMoney(b.amount)+clampMoney(b.overdue),0);
+    const protectedAmt=Math.min(income,clampMoney(state.cushion)*Math.max(1,monthEvents.length));
+    const safe=Math.max(0,income-bills-protectedAmt);
+    return{
+      title:"This Month",
+      range:now.toLocaleDateString(undefined,{month:"long",year:"numeric"}),
+      income,bills,protected:protectedAmt,safe
+    };
+  }
+
+  function renderPlanOverview(){
+    if(!$("planOverviewSection"))return;
+    const d=planPeriodData(planView);
+    const total=Math.max(.01,d.income);
+    const billsPct=Math.max(0,Math.min(100,Math.round((d.bills/total)*100)));
+    const protectedPct=Math.max(0,Math.min(100-billsPct,Math.round((d.protected/total)*100)));
+    const spendPct=Math.max(0,100-billsPct-protectedPct);
+    const protectedStop=billsPct+protectedPct;
+    const coach=closedLoopCoach();
+    const confidence=forecastReasoning().confidence||0;
+
+    document.querySelectorAll("[data-plan-view]").forEach(btn=>btn.classList.toggle("active",btn.dataset.planView===planView));
+    $("planChartTitle").textContent=d.title;
+    $("planChartRange").textContent=d.range;
+    $("planIncome").textContent=money(d.income);
+    $("planBillsAmount").textContent=money(d.bills);
+    $("planProtectedAmount").textContent=money(d.protected);
+    $("planSpendAmount").textContent=money(d.safe);
+    $("planBillsPct").textContent=`${d.income?billsPct:0}%`;
+    $("planProtectedPct").textContent=`${d.income?protectedPct:0}%`;
+    $("planSpendPct").textContent=`${d.income?spendPct:0}%`;
+    $("planSummaryBills").textContent=money(d.bills);
+    $("planSummaryProtected").textContent=money(d.protected);
+    $("planSummarySafe").textContent=money(d.safe);
+    $("planRecommendationAction").textContent=coach.action;
+    $("planRecommendationWhy").textContent=coach.reason;
+    $("planConfidencePill").textContent=confidence>=80?"High confidence":confidence>=60?"Medium confidence":confidence>=35?"Low confidence":"Learning";
+    $("planDonut").style.background=d.income
+      ?`conic-gradient(#ff5562 0 ${billsPct}%, #1689ff ${billsPct}% ${protectedStop}%, #28d486 ${protectedStop}% 100%)`
+      :"conic-gradient(#17304a 0 100%)";
+  }
+
+  function openPlanDetail(key){
+    const map={
+      recommendation:{title:"Why this plan",text:"See Stride’s reasoning and confidence.",ids:["strideRecommendationDropdown"]},
+      scenario:{title:"Try a change",text:"Preview how a change would affect the plan.",ids:["scenarioSection"]},
+      complete:{title:"Record paycheck outcome",text:"Tell Stride what actually happened.",ids:["completePaycheckDropdown"]},
+      advanced:{title:"More plan details",text:"Learning, adjustments, system behavior, and forecast.",ids:["strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced"]}
+    };
+    const cfg=map[key]; if(!cfg)return;
+    ["planOverviewSection","strideRecommendationDropdown","scenarioSection","completePaycheckDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced","autoplanSection"].forEach(id=>$(id)?.classList.add("appPageHidden"));
+    $("planDetailShell")?.classList.remove("appPageHidden");
+    cfg.ids.forEach(id=>{
+      const el=$(id); if(!el)return;
+      el.classList.remove("appPageHidden");
+      if(el.tagName==="DETAILS")el.open=true;
+    });
+    $("planDetailTitle").textContent=cfg.title;
+    $("planDetailText").textContent=cfg.text;
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  function closePlanDetail(){
+    ["planDetailShell","strideRecommendationDropdown","scenarioSection","completePaycheckDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced","autoplanSection"].forEach(id=>$(id)?.classList.add("appPageHidden"));
+    document.querySelectorAll(".learning-dropdown,.utility-dropdown,.compact-details").forEach(d=>d.removeAttribute("open"));
+    $("planOverviewSection")?.classList.remove("appPageHidden");
+    renderPlanOverview();
+    window.scrollTo({top:0,behavior:"smooth"});
   }
 
   function renderBillsPage(){
@@ -5232,10 +5462,14 @@ select{
   }
 
   if($("homeOpenPlan"))$("homeOpenPlan").onclick=()=>switchPage("coach");
+  document.querySelectorAll("[data-plan-view]").forEach(btn=>btn.onclick=()=>{planView=btn.dataset.planView||"this";renderPlanOverview()});
+  document.querySelectorAll("[data-plan-detail]").forEach(btn=>btn.onclick=()=>openPlanDetail(btn.dataset.planDetail));
+  if($("planDetailBack"))$("planDetailBack").onclick=closePlanDetail;
+
   const PAGE_GROUPS={
     home:["homeSection","quickStats","billIncomeRatioCard","homePeriodTabs","billSnapshot","homeCollapsedPeriods","homeStrideCard"],
     bills:["billsSection"],
-    coach:["autoplanSection","strideRecommendationDropdown","scenarioSection","completePaycheckDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced"],
+    coach:["planOverviewSection"],
     more:["moreMenuSection"]
   };
   const PAGE_COPY={
@@ -5291,13 +5525,18 @@ select{
       $("billDetailsView")?.classList.add("hidden");
       $("addBillPanel")?.removeAttribute("open");
     }
+    if(page==="coach"){
+      ["planDetailShell","strideRecommendationDropdown","scenarioSection","completePaycheckDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced","autoplanSection"].forEach(id=>$(id)?.classList.add("appPageHidden"));
+      $("planOverviewSection")?.classList.remove("appPageHidden");
+      renderPlanOverview();
+    }
     document.querySelectorAll(".compact-details").forEach(d=>d.removeAttribute("open"));
     document.querySelectorAll(".learning-dropdown").forEach(d=>d.removeAttribute("open"));
     document.querySelectorAll(".smart-stride-dropdown,.learning-dropdown,.utility-dropdown").forEach(d=>d.removeAttribute("open"));
     const allIds=[...new Set([
       ...Object.values(PAGE_GROUPS).flat(),
       "setupGuide","billIncomeRatioCard","statusCards","homePeriodTabs","homeCollapsedPeriods","homeStrideCard","autoplanSection","scenarioSection","planAdvanced",
-      "moreMenuSection","moreSubpageHead","setupSection","goalsSection","moreAdvanced","accountSection"
+      "moreMenuSection","moreSubpageHead","setupSection","goalsSection","moreAdvanced","accountSection","planOverviewSection","planDetailShell","strideRecommendationDropdown","scenarioSection","completePaycheckDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced","autoplanSection"
     ])];
     allIds.forEach(id=>{const el=$(id);if(el)el.classList.add("appPageHidden")});
     (PAGE_GROUPS[page]||PAGE_GROUPS.home).forEach(id=>{const el=$(id);if(el)el.classList.remove("appPageHidden")});
