@@ -1,4 +1,4 @@
-const CACHE='checkstride-shell-v3';
+const CACHE='checkstride-shell-v4';
 const SHELL=['./','./index.html','./checkstride-logo.svg','./manifest.webmanifest'];
 
 self.addEventListener('install',event=>{
