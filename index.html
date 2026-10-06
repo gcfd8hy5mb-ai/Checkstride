@@ -3981,7 +3981,7 @@ textarea:focus-visible{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:102};
+      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:103};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -6097,6 +6097,8 @@ textarea:focus-visible{
   $("completePaycheck").onclick=()=>{
     const actualIncome=clampMoney($("actualIncome").value), actualExtra=clampMoney($("actualExtra").value), unexpected=clampMoney($("unexpectedSpend").value), actualLeft=clampMoney($("actualLeft").value);
     if(actualIncome<=0){setMsg("completeMsg","Enter the actual take-home pay for this paycheck.");return}
+    const completedEvent=firstIncomeEvent();
+    if(!completedEvent){setMsg("completeMsg","No scheduled paycheck is ready to record.");return}
     const f=forecast(), first=f[0], predictedLeft=clampMoney(first?.safe||0);
     const m=getSmartMemory(), preds=predictionHistory();
     const nextPred=[...preds,{at:new Date().toISOString(),predictedLeft,actualLeft,actualIncome:actualIncome+actualExtra,unexpectedSpend:unexpected,overdue:state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0),strategy:state.strategy}].slice(-24);
@@ -6107,15 +6109,22 @@ textarea:focus-visible{
     const newContexts={...dmem.contexts,[dkey]:{wins:Number(oldCtx.wins||0)+(worked?1:0),misses:Number(oldCtx.misses||0)+(worked?0:1),lastAction:decision.action,lastAt:new Date().toISOString()}};
 
     state={...state,
-      paycheckHistory:[...(state.paycheckHistory||[]),{date:state.payday,income:actualIncome+actualExtra,predictedLeft,actualLeft,unexpectedSpend:unexpected,strategy:state.strategy}].slice(-52),
+      paycheckHistory:[...(state.paycheckHistory||[]),{
+        date:dateKey(completedEvent.date),
+        sourceIds:completedEvent.sources.map(s=>s.sourceId),
+        sourceNames:completedEvent.sources.map(s=>s.sourceName),
+        income:actualIncome+actualExtra,
+        predictedLeft,
+        actualLeft,
+        unexpectedSpend:unexpected,
+        strategy:state.strategy
+      }].slice(-52),
       payday:(()=>{
-        const ev=firstIncomeEvent();if(!ev)return state.payday;
-        const primaryPaid=ev.sources.some(s=>s.primary);
+        const primaryPaid=completedEvent.sources.some(s=>s.primary);
         return primaryPaid?advancePayday(state.payday,state.frequency):state.payday;
       })(),
       additionalPaychecks:(()=>{
-        const ev=firstIncomeEvent();if(!ev)return state.additionalPaychecks||[];
-        const ids=new Set(ev.sources.filter(s=>!s.primary).map(s=>s.sourceId));
+        const ids=new Set(completedEvent.sources.filter(s=>!s.primary).map(s=>s.sourceId));
         return (state.additionalPaychecks||[]).map(x=>ids.has(x.id)?{...x,payday:advancePayday(x.payday,x.frequency)}:x);
       })(),
       extraIncome:0,
