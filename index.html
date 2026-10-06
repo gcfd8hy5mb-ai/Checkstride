@@ -5194,40 +5194,35 @@ textarea:focus-visible{
   function renderPlanOverview(){
     if(!$("planOverviewSection"))return;
     const d=planPeriodData(planView);
-    const total=Math.max(.01,d.income);
-    const billsPct=Math.max(0,Math.min(100,Math.round((d.bills/total)*100)));
-    const protectedPct=Math.max(0,Math.min(100-billsPct,Math.round((d.protected/total)*100)));
+    const currentPlan=currentAutonomousPlan();
+    const display=planView==="this"&&currentPlan
+      ?{...d,bills:clampMoney(currentPlan.due)+clampMoney(currentPlan.catchup),protected:clampMoney(currentPlan.cushion)+clampMoney(currentPlan.goalAllocation),safe:clampMoney(currentPlan.safe)}
+      :d;
+    const total=Math.max(.01,display.income);
+    const billsPct=Math.max(0,Math.min(100,Math.round((display.bills/total)*100)));
+    const protectedPct=Math.max(0,Math.min(100-billsPct,Math.round((display.protected/total)*100)));
     const spendPct=Math.max(0,100-billsPct-protectedPct);
     const protectedStop=billsPct+protectedPct;
     const coach=closedLoopCoach();
-    const currentPlan=currentAutonomousPlan();
     const confidence=forecastReasoning().confidence||0;
 
     document.querySelectorAll("[data-plan-view]").forEach(btn=>btn.classList.toggle("active",btn.dataset.planView===planView));
     $("planChartTitle").textContent=d.title;
     $("planChartRange").textContent=d.range;
-    $("planIncome").textContent=money(d.income);
-    $("planBillsAmount").textContent=money(d.bills);
-    $("planProtectedAmount").textContent=money(d.protected);
-    $("planSpendAmount").textContent=money(d.safe);
+    $("planIncome").textContent=money(display.income);
+    $("planBillsAmount").textContent=money(display.bills);
+    $("planProtectedAmount").textContent=money(display.protected);
+    $("planSpendAmount").textContent=money(display.safe);
     $("planBillsPct").textContent=`${d.income?billsPct:0}%`;
     $("planProtectedPct").textContent=`${d.income?protectedPct:0}%`;
     $("planSpendPct").textContent=`${d.income?spendPct:0}%`;
-    $("planSummaryBills").textContent=money(d.bills);
-    $("planSummaryProtected").textContent=money(d.protected);
-    $("planSummarySafe").textContent=money(d.safe);
-    if(planView==="this" && currentPlan){
-      $("planBillsAmount").textContent=money(currentPlan.due+currentPlan.catchup);
-      $("planProtectedAmount").textContent=money(currentPlan.cushion+currentPlan.goalAllocation);
-      $("planSpendAmount").textContent=money(currentPlan.safe);
-      $("planSummaryBills").textContent=money(currentPlan.due+currentPlan.catchup);
-      $("planSummaryProtected").textContent=money(currentPlan.cushion+currentPlan.goalAllocation);
-      $("planSummarySafe").textContent=money(currentPlan.safe);
-    }
+    $("planSummaryBills").textContent=money(display.bills);
+    $("planSummaryProtected").textContent=money(display.protected);
+    $("planSummarySafe").textContent=money(display.safe);
     $("planRecommendationAction").textContent=coach.action;
     $("planRecommendationWhy").textContent=coach.reason;
     $("planConfidencePill").textContent=confidence>=80?"High confidence":confidence>=60?"Medium confidence":confidence>=35?"Low confidence":"Learning";
-    $("planDonut").style.background=d.income
+    $("planDonut").style.background=display.income
       ?`conic-gradient(#ff5562 0 ${billsPct}%, #1689ff ${billsPct}% ${protectedStop}%, #28d486 ${protectedStop}% 100%)`
       :"conic-gradient(#17304a 0 100%)";
   }
