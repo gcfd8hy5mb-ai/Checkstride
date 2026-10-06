@@ -3935,7 +3935,16 @@ textarea:focus-visible{
   }
   async function refreshSession(refreshToken){
     const r=await fetch(`https://securetoken.googleapis.com/v1/token?key=${API_KEY}`,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({grant_type:"refresh_token",refresh_token:refreshToken})});
-    const j=await r.json();if(!r.ok)throw new Error("SESSION_EXPIRED");return{idToken:j.id_token,refreshToken:j.refresh_token,localId:j.user_id};
+    const raw=await r.text();
+    let j={};
+    try{j=raw?JSON.parse(raw):{}}catch{}
+    if(!r.ok){
+      const detail=String(j?.error_description||j?.error?.message||j?.error||raw||"");
+      const permanent=r.status===400||r.status===401||/INVALID_GRANT|TOKEN_EXPIRED|USER_DISABLED|USER_NOT_FOUND/i.test(detail);
+      if(permanent)throw new Error("SESSION_EXPIRED");
+      throw new Error(`REFRESH_FAILED_${r.status}`);
+    }
+    return{idToken:j.id_token,refreshToken:j.refresh_token,localId:j.user_id};
   }
   async function loadState(s){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
