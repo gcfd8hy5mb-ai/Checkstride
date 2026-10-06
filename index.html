@@ -1376,6 +1376,145 @@ select{
     grid-template-columns:repeat(3,minmax(0,1fr));
   }
 }
+
+/* v63 Stride screen hierarchy */
+#strideRecommendationDropdown,
+#strideLearningDropdown{
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface);
+  margin-bottom:10px;
+  overflow:hidden;
+}
+#strideRecommendationDropdown>summary,
+#strideLearningDropdown>summary{
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:13px 14px;
+  cursor:pointer;
+}
+#strideRecommendationDropdown>summary::-webkit-details-marker,
+#strideLearningDropdown>summary::-webkit-details-marker{display:none}
+#strideRecommendationDropdown>summary b,
+#strideLearningDropdown>summary b{
+  display:block;
+  font-size:14px;
+}
+#strideRecommendationDropdown>summary small,
+#strideLearningDropdown>summary small{
+  display:block;
+  color:var(--muted-readable);
+  font-size:10px;
+  line-height:1.4;
+  margin-top:2px;
+}
+#strideRecommendationDropdown>summary>span,
+#strideLearningDropdown>summary>span{
+  font-size:10px;
+  color:var(--accent);
+  font-weight:700;
+}
+.learning-dropdown-body{
+  padding:0 10px 10px;
+}
+.learning-dropdown-body>.card{
+  box-shadow:none;
+  border-radius:14px;
+  margin-bottom:8px;
+  padding:12px;
+}
+#coachSection{
+  background:linear-gradient(145deg,rgba(21,137,255,.10),rgba(255,255,255,.02));
+  border-color:rgba(71,151,230,.35);
+}
+#coachSection .title-row h2{
+  font-size:17px;
+}
+#coachSection .smart-rows{
+  gap:7px;
+}
+#coachSection .smart-row:first-child{
+  background:rgba(21,137,255,.10);
+  border-color:rgba(71,151,230,.32);
+}
+#coachSection .smart-row:first-child span{
+  color:#b7cee2;
+}
+#coachSection .smart-row:first-child b{
+  font-size:14px;
+  line-height:1.4;
+}
+#coachSection .smart-row{
+  padding:10px;
+}
+#coachSection .smart-row span,
+#reasoningSection .smart-row span{
+  font-size:10px;
+}
+#coachSection .smart-row b,
+#reasoningSection .smart-row b{
+  font-size:12px;
+  line-height:1.45;
+}
+#coachSection .ghost{
+  min-height:42px;
+  font-size:11px;
+}
+#reasoningSection{
+  background:rgba(255,255,255,.015);
+}
+#reasoningSection .title-row h2{
+  font-size:15px;
+}
+#reasoningSection .smart-rows{
+  gap:6px;
+}
+#reasoningSection .smart-row{
+  padding:9px 10px;
+}
+
+#diagnosisSection,
+#contextSection{
+  background:rgba(255,255,255,.015);
+}
+#diagnosisSection .ai-banner,
+#contextSection .smart-row{
+  box-shadow:none;
+}
+#autoplanSection .ai-banner{
+  border-radius:14px;
+}
+#autoplanSection .approve-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+#autoplanSection .approve-row button{
+  min-height:44px;
+}
+#scenarioSection,
+#goalsSection{
+  box-shadow:none;
+}
+
+@media(max-width:480px){
+  #strideRecommendationDropdown>summary,
+  #strideLearningDropdown>summary{
+    padding:12px;
+  }
+  .learning-dropdown-body{
+    padding:0 8px 8px;
+  }
+  #coachSection .smart-row:first-child b{
+    font-size:13px;
+  }
+  #autoplanSection .approve-row{
+    grid-template-columns:1fr;
+  }
+}
 </style>
 </head>
 <body>
@@ -1573,7 +1712,7 @@ select{
 
   <details class="learning-dropdown" id="strideRecommendationDropdown">
     <summary>
-      <div><b>Stride recommendation</b><small>What Stride recommends and why</small></div>
+      <div><b>Stride recommendation</b><small>Your best next move and why Stride picked it.</small></div>
       <span>Open</span>
     </summary>
     <div class="learning-dropdown-body">
@@ -1613,7 +1752,7 @@ select{
 
   <details class="learning-dropdown" id="strideLearningDropdown">
     <summary>
-      <div><b>Stride learning</b><small>Accuracy, patterns, and what Stride is learning</small></div>
+      <div><b>Stride learning</b><small>Accuracy, patterns, and what Stride has learned from your history.</small></div>
       <span>Open</span>
     </summary>
     <div class="learning-dropdown-body">
@@ -1955,7 +2094,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:62};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:63};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
