@@ -3863,7 +3863,7 @@ textarea:focus-visible{
   const PROJECT_ID="paycheck-advisor";
   const SESSION_KEY="checkstride_rest_session";
   const blank={payday:"",paycheck:0,frequency:"biweekly",primaryJobName:"Primary job",additionalPaychecks:[],paycheckOverrides:{},setupReviewSeen:false,cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
-  let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null;
+  let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null, saveRevision=0;
   let editingBillId=null;
   let selectedIncomeSourceId=null;
   let selectedPaydayKey=null;
@@ -5760,22 +5760,30 @@ textarea:focus-visible{
       }
     }
     render();if(!session||!hydrated)return;clearTimeout(saveTimer);setCloud("Saving…","saving");
+    const revision=++saveRevision;
+    const saveSession=session;
     saveTimer=setTimeout(async()=>{
       const snapshot=state;
-      try{await saveState(session,snapshot);setCloud("Saved")}
-      catch(firstError){
+      const stillCurrent=()=>revision===saveRevision && session?.localId===saveSession.localId && hydrated;
+      try{
+        await saveState(saveSession,snapshot);
+        if(stillCurrent())setCloud("Saved");
+      }catch(firstError){
         try{
-          const fresh=await withTimeout(refreshSession(session.refreshToken),6000,"REFRESH_TIMEOUT");
-          session={...fresh,email:session.email};
+          if(!stillCurrent())return;
+          const fresh=await withTimeout(refreshSession(saveSession.refreshToken),6000,"REFRESH_TIMEOUT");
+          if(!stillCurrent())return;
+          session={...fresh,email:saveSession.email};
           localStorage.setItem(SESSION_KEY,JSON.stringify(session));
           await saveState(session,snapshot);
-          setCloud("Saved");
+          if(stillCurrent())setCloud("Saved");
         }catch(retryError){
+          if(!stillCurrent())return;
           const code=String(retryError?.message||firstError?.message||"");
           setCloud(code.includes("SESSION_EXPIRED")||code.includes("INVALID")?"Save paused — sign in again":"Save paused — retrying","error");
-          if(session&&hydrated){
+          if(stillCurrent()){
             clearTimeout(saveTimer);
-            saveTimer=setTimeout(()=>scheduleSave(),5000);
+            saveTimer=setTimeout(()=>{if(stillCurrent())scheduleSave()},5000);
           }
         }
       }
