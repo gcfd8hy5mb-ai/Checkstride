@@ -5830,7 +5830,15 @@ textarea:focus-visible{
   $("resetPassword").onclick=async()=>{const email=$("email").value.trim();if(!email)return setMsg("authMsg","Enter your email first.");try{await authRequest("accounts:sendOobCode",{requestType:"PASSWORD_RESET",email});setMsg("authMsg","Password reset email sent.")}catch{setMsg("authMsg","If that email has an account, a reset email will be sent.")}};
   $("logout").onclick=async()=>{if(session&&hydrated){try{await saveState(session,state)}catch{try{const fresh=await withTimeout(refreshSession(session.refreshToken),6000,"REFRESH_TIMEOUT");await saveState({...fresh,email:session.email},state)}catch{}}}localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem("checkstride_page");session=null;hydrated=false;state={...blank};show("auth")};
 
-  ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>$(id).addEventListener("change",e=>{state={...state,[id]:["paycheck","extraIncome","cushion"].includes(id)?Number(e.target.value):e.target.value};scheduleSave()}));
+  ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>$(id).addEventListener("change",e=>{
+    const previousPayday=state.payday;
+    const previousFrequency=state.frequency;
+    state={...state,[id]:["paycheck","extraIncome","cushion"].includes(id)?Number(e.target.value):e.target.value};
+    if((id==="payday" && previousPayday!==state.payday) || (id==="frequency" && previousFrequency!==state.frequency)){
+      state={...state,paycheckOverrides:removeIncomeOverridesForSource("primary")};
+    }
+    scheduleSave();
+  }));
   if($("primaryJobNameInput"))$("primaryJobNameInput").addEventListener("change",e=>{
     state={...state,primaryJobName:(e.target.value||"Primary job").trim()||"Primary job"};
     scheduleSave();
