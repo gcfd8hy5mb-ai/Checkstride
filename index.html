@@ -1166,6 +1166,7 @@ input,select{
   const SESSION_KEY="checkstride_rest_session";
   const blank={payday:"",paycheck:0,frequency:"biweekly",cushion:100,extraIncome:0,strategy:"balanced",bills:["billsSection","completePaycheckDropdown"],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
   let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null;
+  let editingBillId=null;
 
   const $=id=>document.getElementById(id);
   const money=n=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(clampMoney(n));
