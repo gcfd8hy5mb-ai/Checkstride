@@ -744,6 +744,59 @@ input,select{
 .ratio-numbers b{display:block;margin-top:3px;font-size:12px;font-variant-numeric:tabular-nums}
 .bill-income-ratio p{margin:10px 0 0;color:var(--muted);font-size:10px;line-height:1.45}
 @media(max-width:420px){.ratio-numbers{grid-template-columns:1fr 1fr 1fr}.ratio-numbers>div{padding:8px 6px}}
+
+/* v58 iPhone UI/UX compact pass */
+#setupSection{padding:13px}
+#setupSection>.title-row{margin-bottom:10px}
+#setupSection>.title-row h2{margin:0;font-size:16px}
+#setupSection .form-grid{gap:8px}
+#setupSection .field label,.income-source-editor .field label{font-size:10px;margin-bottom:5px}
+#setupSection input,#setupSection select{min-height:44px;height:44px;padding:9px 11px;font-size:15px;border-radius:12px}
+#setupSection .primary-btn,#setupSection .ghost{min-height:44px;height:44px;border-radius:12px;padding:0 12px}
+.income-sources{margin-top:11px;padding-top:11px}
+.income-sources-head{margin-bottom:7px;align-items:center}
+.income-sources-head b{font-size:12px}
+.income-sources-head small{font-size:9px;line-height:1.35;max-width:290px}
+.income-source-list{gap:6px;margin-bottom:8px}
+.income-source-list .empty{padding:7px 4px;font-size:10px;text-align:left}
+.income-source-row{padding:8px 9px;border-radius:11px}
+.income-source-row b{font-size:11px}
+.income-source-row small{font-size:9px;line-height:1.35}
+.income-source-actions button{padding:5px 7px;font-size:9px}
+.income-source-editor{gap:8px}
+.bill-income-ratio{padding:12px;margin-bottom:9px}
+.ratio-head h2{font-size:14px}
+.ratio-head>strong{font-size:23px}
+.ratio-bar{margin:9px 0;height:7px}
+.ratio-numbers{gap:6px}
+.ratio-numbers>div{padding:7px}
+.ratio-numbers span{font-size:8px}
+.ratio-numbers b{font-size:11px}
+.bill-income-ratio p{margin-top:8px;font-size:9px}
+.home-summary{padding:13px;border-radius:16px}
+.safe-block strong{font-size:33px}
+.status-card{padding:9px}
+.snapshot-card{padding:12px}
+.home-actions{gap:7px}
+.home-actions button{min-height:40px;padding:8px 11px}
+.bills-page-head{padding-top:2px}
+.add-bill-panel .bill-form{gap:8px}
+.add-bill-panel input,.add-bill-panel select{min-height:44px;height:44px;font-size:15px}
+.add-bill-panel .primary-btn,.add-bill-panel .ghost{min-height:44px;height:44px}
+.bottom-nav{bottom:max(7px,env(safe-area-inset-bottom));border-radius:16px}
+.bottom-nav button{min-height:47px;padding:7px 5px}
+
+@media(max-width:640px){
+  #setupSection .form-grid{grid-template-columns:1fr 1fr}
+  #setupSection .form-grid .field:nth-child(3),
+  #setupSection .form-grid .field:nth-child(4){grid-column:auto}
+  .income-source-editor{grid-template-columns:1fr 1fr}
+  .app{padding-left:9px;padding-right:9px}
+}
+@media(max-width:370px){
+  #setupSection .form-grid,.income-source-editor{grid-template-columns:1fr}
+  .income-source-editor .primary-btn,.income-source-editor .ghost,.income-source-editor .msg{grid-column:1}
+}
 </style>
 </head>
 <body>
@@ -911,7 +964,7 @@ input,select{
   </section>
 
   <section class="card section" id="setupSection">
-    <div class="title-row"><h2>Your paycheck</h2><span id="cloudStatus" class="status-saved">Saved</span></div>
+    <div class="title-row"><h2>Income & paychecks</h2><span id="cloudStatus" class="status-saved">Saved</span></div>
     <div class="form-grid">
       <div class="field"><label>Next payday</label><input id="payday" type="date" /></div>
       <div class="field"><label>Take-home pay</label><input id="paycheck" type="number" min="0" step="0.01" /></div>
@@ -923,7 +976,7 @@ input,select{
 
     <div class="income-sources">
       <div class="income-sources-head">
-        <div><b>Additional jobs</b><small>Add another paycheck schedule if you work more than one job.</small></div>
+        <div><b>Additional jobs</b><small>Add another job only if you have a separate paycheck schedule.</small></div>
         <span id="incomeSourceCount">1 job</span>
       </div>
       <div id="additionalIncomeList" class="income-source-list"></div>
@@ -1323,7 +1376,7 @@ input,select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:57};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:58};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
