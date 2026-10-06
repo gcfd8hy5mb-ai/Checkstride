@@ -3849,7 +3849,7 @@ select:focus-visible{
   const API_KEY="AIzaSyDoLHFn-sHVa9LROJOg3TFA6m4xFZCfhos";
   const PROJECT_ID="paycheck-advisor";
   const SESSION_KEY="checkstride_rest_session";
-  const blank={payday:"",paycheck:0,frequency:"biweekly",primaryJobName:"Primary job",additionalPaychecks:[],paycheckOverrides:{},cushion:100,extraIncome:0,strategy:"balanced",bills:["billsSection","completePaycheckDropdown"],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
+  const blank={payday:"",paycheck:0,frequency:"biweekly",primaryJobName:"Primary job",additionalPaychecks:[],paycheckOverrides:{},cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
   let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null;
   let editingBillId=null;
   let editingIncomeSourceId=null;
@@ -3929,7 +3929,12 @@ select:focus-visible{
     const r=await fetch(url,{headers:{Authorization:`Bearer ${s.idToken}`}});
     if(r.status===404)return {...blank};if(!r.ok)throw new Error("LOAD_FAILED");
     const j=await r.json(),fields=j.fields||{},decoded=Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,decodeValue(v)]));
-    const rawBills=Array.isArray(decoded.bills)?decoded.bills:[];
+    const rawBills=(Array.isArray(decoded.bills)?decoded.bills:[]).filter(b=>{
+      if(!b||typeof b!=="object"||Array.isArray(b))return false;
+      const name=String(b.name||"").trim();
+      const amount=clampMoney(b.amount);
+      return !!name && amount>0;
+    });
     const seen=new Set();
     const fixedBills=rawBills.map((b,i)=>{
       let id=String(b?.id||"").trim();
@@ -3949,7 +3954,7 @@ select:focus-visible{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:97};
+      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:98};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
