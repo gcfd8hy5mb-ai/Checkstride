@@ -4015,7 +4015,18 @@ textarea:focus-visible{
         return validIncomeIds.has(String(key).slice(0,split));
       })
     );
-    return {...blank,...decoded,primaryJobName,payday,paycheck,frequency,setupReviewSeen,additionalPaychecks,paycheckOverrides,bills:fixedBills,paycheckHistory:Array.isArray(decoded.paycheckHistory)?decoded.paycheckHistory:[],paymentHistory:Array.isArray(decoded.paymentHistory)?decoded.paymentHistory:[]};
+    const normalized={...blank,...decoded,primaryJobName,payday,paycheck,frequency,setupReviewSeen,additionalPaychecks,paycheckOverrides,bills:fixedBills,paycheckHistory:Array.isArray(decoded.paycheckHistory)?decoded.paycheckHistory:[],paymentHistory:Array.isArray(decoded.paymentHistory)?decoded.paymentHistory:[]};
+    const migrationChanged=
+      String(decoded.primaryJobName||"Primary job")!==primaryJobName ||
+      String(decoded.payday||"")!==payday ||
+      clampMoney(decoded.paycheck)!==paycheck ||
+      (["weekly","biweekly","semimonthly","monthly"].includes(decoded.frequency)?decoded.frequency:"biweekly")!==frequency ||
+      decoded.setupReviewSeen!==setupReviewSeen ||
+      JSON.stringify(Array.isArray(decoded.additionalPaychecks)?decoded.additionalPaychecks:[])!==JSON.stringify(additionalPaychecks) ||
+      JSON.stringify(decodedOverrides)!==JSON.stringify(paycheckOverrides) ||
+      JSON.stringify(Array.isArray(decoded.bills)?decoded.bills:[])!==JSON.stringify(fixedBills) ||
+      Number(decoded.version||0)<107;
+    return {state:normalized,migrationChanged};
   }
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
@@ -5821,7 +5832,9 @@ textarea:focus-visible{
       const j=await authRequest(mode==="signup"?"accounts:signUp":"accounts:signInWithPassword",{email:$("email").value.trim(),password:$("password").value,returnSecureToken:true});
       const s={idToken:j.idToken,refreshToken:j.refreshToken,localId:j.localId,email:j.email||$("email").value.trim()};
       const loaded=await withTimeout(loadState(s),7000,"LOAD_TIMEOUT");
-      session=s;state=loaded;localStorage.setItem(SESSION_KEY,JSON.stringify(s));hydrated=true;setCloud("Saved");
+      session=s;state=loaded.state;localStorage.setItem(SESSION_KEY,JSON.stringify(s));hydrated=true;
+      if(loaded.migrationChanged){setCloud("Saving migration…","saving");await saveState(s,state)}
+      setCloud("Saved");
       try{
         render();show("app");switchPage(sessionStorage.getItem("checkstride_page")||"home");
       }catch(renderError){
@@ -6583,7 +6596,9 @@ textarea:focus-visible{
       $("loadingDetail").textContent="Loading your paycheck plan…";
       const loaded=await withTimeout(loadState(merged),7000,"LOAD_TIMEOUT");
       localStorage.setItem(SESSION_KEY,JSON.stringify(merged));
-      session=merged;state=loaded;hydrated=true;
+      session=merged;state=loaded.state;hydrated=true;
+      if(loaded.migrationChanged){setCloud("Saving migration…","saving");await saveState(merged,state)}
+      setCloud("Saved");
       try{render()}catch(renderError){console.error("Checkstride startup render warning",renderError);try{renderIncomeSources()}catch{}}
       show("app");switchPage(sessionStorage.getItem("checkstride_page")||"home");
     }catch(e){
