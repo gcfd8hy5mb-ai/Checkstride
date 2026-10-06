@@ -797,6 +797,176 @@ input,select{
   #setupSection .form-grid,.income-source-editor{grid-template-columns:1fr}
   .income-source-editor .primary-btn,.income-source-editor .ghost,.income-source-editor .msg{grid-column:1}
 }
+
+/* v59 home hierarchy polish */
+.home-greeting{padding:2px 2px 5px}
+.home-greeting h2{font-size:23px}
+.home-greeting p{font-size:11px;margin-top:3px}
+
+.home-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  margin:0 0 8px;
+}
+.home-actions button{
+  min-height:38px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--fg);
+  border-radius:11px;
+  font-size:10px;
+  font-weight:700;
+  padding:7px 10px;
+}
+.home-actions button:active{transform:scale(.985)}
+
+.home-summary{
+  margin-bottom:8px;
+  border-radius:17px;
+  box-shadow:0 10px 28px rgba(0,0,0,.18);
+}
+.safe-block span,.payday-block span{
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.055em;
+  font-weight:700;
+}
+.safe-block strong{font-size:35px}
+.payday-block strong{font-size:17px}
+.payday-block small{font-size:9px}
+
+.bill-income-ratio{
+  border-radius:16px;
+  box-shadow:none;
+}
+.bill-income-ratio .ratio-head{
+  align-items:center;
+}
+.bill-income-ratio .ratio-head span{
+  font-size:9px;
+  letter-spacing:.05em;
+}
+.bill-income-ratio .ratio-head h2{
+  font-size:13px;
+  line-height:1.25;
+  max-width:230px;
+}
+.bill-income-ratio .ratio-head>strong{
+  font-size:24px;
+}
+.ratio-numbers{
+  grid-template-columns:1fr 1fr 1fr;
+}
+.ratio-numbers>div{
+  min-width:0;
+  padding:7px 6px;
+}
+.ratio-numbers span{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.ratio-numbers b{
+  font-size:10px;
+  white-space:nowrap;
+}
+
+.status-grid{
+  gap:6px;
+  margin-bottom:8px;
+}
+.status-card{
+  min-width:0;
+  border-radius:12px;
+  padding:9px 8px;
+  box-shadow:none;
+}
+.status-card span{
+  font-size:8px;
+  text-transform:uppercase;
+  letter-spacing:.045em;
+  font-weight:700;
+}
+.status-card b{
+  font-size:9px;
+  margin-top:4px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.status-card strong{
+  font-size:12px;
+  margin-top:1px;
+}
+
+.snapshot-card{
+  border-radius:16px;
+  box-shadow:none;
+}
+.snapshot-head h2{
+  font-size:16px;
+}
+.snapshot-head p{
+  font-size:10px;
+}
+.snapshot-tabs{
+  margin-top:9px;
+}
+.snapshot-tabs button{
+  min-height:34px;
+  font-size:9px;
+}
+.snapshot-totals>div{
+  padding:8px 6px;
+}
+.snapshot-totals span{
+  font-size:8px;
+}
+.snapshot-totals b{
+  font-size:12px;
+}
+.snapshot-view-all{
+  min-height:38px;
+  font-size:10px;
+}
+
+.upcoming-home{
+  padding:12px;
+  border-radius:16px;
+  box-shadow:none;
+}
+.upcoming-home .section-head-row h2{
+  font-size:15px;
+}
+.upcoming-home .section-head-row span{
+  font-size:9px;
+}
+.upcoming-home .bill-row-modern{
+  padding:8px 0;
+}
+
+@media(max-width:390px){
+  .home-summary{
+    grid-template-columns:1.1fr .9fr;
+    padding:12px;
+  }
+  .safe-block{
+    padding-right:10px;
+  }
+  .payday-block{
+    padding-left:10px;
+  }
+  .safe-block strong{
+    font-size:31px;
+  }
+  .ratio-numbers span{
+    font-size:7px;
+  }
+  .ratio-numbers b{
+    font-size:9px;
+  }
+}
 </style>
 </head>
 <body>
@@ -872,8 +1042,8 @@ input,select{
 
 
   <section class="home-actions section" id="homeActions">
-    <button type="button" id="homeEditPaycheck">Edit paycheck</button>
-    <button type="button" id="homeAddBill">Add bill</button>
+    <button type="button" id="homeEditPaycheck">Income setup</button>
+    <button type="button" id="homeAddBill">Add a bill</button>
   </section>
 
   <section class="home-summary section" id="quickStats">
@@ -1376,7 +1546,7 @@ input,select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:58};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:59};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
