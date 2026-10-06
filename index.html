@@ -2372,6 +2372,116 @@ select{
   .home-period-tabs{grid-template-columns:1fr 1fr}
   .home-period-tabs button{min-height:44px}
 }
+
+/* v81 chart-first Bills */
+.bills-title-row{display:flex!important;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px!important}
+.bills-title-row h2{margin:0;font-size:22px}
+.bills-title-row p{margin:3px 0 0;color:var(--muted-readable-strong);font-size:11px}
+.add-bill-top{position:static!important;min-height:44px;padding:9px 12px;touch-action:manipulation}
+.bills-tabs button{min-height:46px;touch-action:manipulation}
+.bills-chart-card{
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:linear-gradient(145deg,#0e2235,#0a1827);
+  padding:14px;
+  margin-bottom:10px;
+}
+.bills-chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px}
+.bills-chart-head>div{display:grid;gap:2px}
+.bills-chart-head b{font-size:16px}
+.bills-chart-head small,.bills-chart-head>span{color:var(--muted-readable-strong);font-size:10px}
+.bills-chart-grid{display:grid;grid-template-columns:minmax(150px,.9fr) 1.1fr;gap:16px;align-items:center}
+.bills-donut{
+  width:min(48vw,190px);
+  aspect-ratio:1;
+  border-radius:50%;
+  margin:auto;
+  display:grid;
+  place-items:center;
+  background:conic-gradient(#17304a 0 100%);
+}
+.bills-donut-hole{
+  width:61%;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:#091725;
+  display:grid;
+  place-content:center;
+  text-align:center;
+  box-shadow:0 0 0 1px rgba(95,160,215,.12);
+}
+.bills-donut-hole b{font-size:22px}
+.bills-donut-hole small{color:#a8bdd6;font-size:10px;margin-top:2px}
+.bills-chart-legend{display:grid;gap:11px}
+.bills-chart-legend>div{
+  display:grid;
+  grid-template-columns:12px minmax(0,1fr) auto;
+  gap:7px;
+  align-items:center;
+}
+.bills-chart-legend i{width:11px;height:11px;border-radius:50%}
+.bills-chart-legend i.paid{background:#28d486}
+.bills-chart-legend i.upcoming{background:#1689ff}
+.bills-chart-legend i.overdue{background:#ff5562}
+.bills-chart-legend span{font-size:11px;color:#c2d0df}
+.bills-chart-legend b{font-size:12px}
+.bills-chart-legend small{grid-column:3;color:var(--muted-readable-strong);font-size:9px}
+.compact-bills-summary{padding:10px 12px}
+.compact-bills-summary .snapshot-totals{margin:0}
+.compact-bills-summary .snapshot-progress{margin-top:8px}
+.bill-filter-row{margin:9px 0}
+.bill-filter-row button{min-height:42px;touch-action:manipulation}
+.bills-list-heading{display:flex;justify-content:space-between;align-items:center;margin:10px 2px 7px}
+.bills-list-heading b{font-size:14px}
+.bill-list-modern{border:0;background:transparent;gap:7px;overflow:visible}
+.bill-row-modern.bill-list-row{
+  width:100%;
+  min-height:68px;
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) auto 18px!important;
+  gap:10px;
+  align-items:center;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:#0c1e30;
+  color:inherit;
+  padding:10px 12px;
+  text-align:left;
+  font-family:inherit;
+  touch-action:manipulation;
+}
+.bill-list-row:active{transform:scale(.99);background:#102740}
+.bill-row-icon{
+  width:40px;height:40px;border-radius:50%;
+  display:grid;place-items:center;
+  background:#153a5d;color:#76c4ff;font-weight:900;font-size:16px;
+}
+.bill-list-row .bill-main b{font-size:13px}
+.bill-list-row .bill-main small{font-size:10px}
+.bill-list-row .bill-amount{font-size:14px}
+.bill-chevron{font-size:25px;color:#75bff7}
+.bill-focused-view{display:grid;gap:10px}
+.bill-detail-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border:1px solid var(--border);border-radius:16px;background:#0d2032;padding:14px
+}
+.bill-detail-head>div{display:flex;align-items:center;gap:10px}
+.bill-detail-icon{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#153a5d;color:#76c4ff;font-weight:900}
+.bill-detail-head h3{margin:0;font-size:18px}
+.bill-detail-head p{margin:3px 0 0;color:var(--muted-readable-strong);font-size:10px}
+.bill-detail-head>b{font-size:20px}
+.bill-detail-card{border:1px solid var(--border);border-radius:16px;background:#0b1b2b;overflow:hidden}
+.bill-detail-card>div{display:flex;justify-content:space-between;gap:16px;padding:12px 13px;border-bottom:1px solid var(--border)}
+.bill-detail-card>div:last-child{border-bottom:0}
+.bill-detail-card span{color:var(--muted-readable-strong);font-size:11px}
+.bill-detail-card b{font-size:11px;text-align:right}
+.bill-focused-view>.primary-btn,.bill-focused-view>.ghost{min-height:46px;width:100%}
+.add-bill-panel{margin-top:12px}
+@media(max-width:430px){
+  .bills-chart-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .bills-donut{width:150px}
+  .bills-chart-legend{gap:8px}
+}
 </style>
 </head>
 <body>
@@ -2773,40 +2883,81 @@ select{
 
 
   <section class="bills-page-head section" id="billsSection">
-    <div>
-      <h2>Your bills</h2>
-      <p>Pick a period, then see what needs attention.</p>
-    </div>
-    <button id="showAddBill" type="button" class="add-bill-top">＋ Add Bill</button>
-
-    <div class="bills-tabs" role="tablist">
-      <button type="button" data-bills-view="this">This Check</button>
-      <button type="button" data-bills-view="next">Next Check</button>
-      <button class="active" type="button" data-bills-view="totals">This Month</button>
-    </div>
-
-    <div class="bills-summary">
-      <div class="bills-range-row">
-        <span id="billsRange">—</span>
-        <span id="billsCount">0 bills</span>
+    <div id="billsOverviewView">
+      <div class="bills-title-row">
+        <div><h2>Bills</h2><p>See what each paycheck and the month need to cover.</p></div>
+        <button id="showAddBill" type="button" class="add-bill-top">＋ Add bill</button>
       </div>
-      <div class="snapshot-totals">
-        <div><span id="billsTotalLabel">Set aside</span><b id="billsTotal">$0.00</b></div>
-        <div><span id="billsPaidLabel">Already paid</span><b id="billsPaid">$0.00</b></div>
-        <div><span id="billsRemainingLabel">Still due</span><b id="billsRemaining">$0.00</b></div>
+
+      <div class="bills-tabs" role="tablist" aria-label="Bills period">
+        <button type="button" data-bills-view="this">This Check</button>
+        <button type="button" data-bills-view="next">Next Check</button>
+        <button class="active" type="button" data-bills-view="totals">This Month</button>
       </div>
-      <div class="snapshot-progress"><i id="billsProgress"></i></div>
-      <div class="snapshot-progress-copy"><span id="billsProgressText">0% paid</span></div>
+
+      <section class="bills-chart-card" aria-label="Bills breakdown">
+        <div class="bills-chart-head">
+          <div><b id="billsChartTitle">This Month</b><small id="billsRange">—</small></div>
+          <span id="billsCount">0 bills</span>
+        </div>
+        <div class="bills-chart-grid">
+          <div class="bills-donut" id="billsDonut" aria-label="Bill status chart">
+            <div class="bills-donut-hole">
+              <b id="billsDonutTotal">$0.00</b>
+              <small id="billsDonutLabel">This Month</small>
+            </div>
+          </div>
+          <div class="bills-chart-legend">
+            <div><i class="paid"></i><span>Paid</span><b id="billsChartPaid">$0.00</b><small id="billsChartPaidPct">0%</small></div>
+            <div><i class="upcoming"></i><span>Upcoming</span><b id="billsChartUpcoming">$0.00</b><small id="billsChartUpcomingPct">0%</small></div>
+            <div><i class="overdue"></i><span>Overdue</span><b id="billsChartOverdue">$0.00</b><small id="billsChartOverduePct">0%</small></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="bills-summary compact-bills-summary">
+        <div class="snapshot-totals">
+          <div><span id="billsTotalLabel">Total bills</span><b id="billsTotal">$0.00</b></div>
+          <div><span id="billsPaidLabel">Paid</span><b id="billsPaid">$0.00</b></div>
+          <div><span id="billsRemainingLabel">Remaining</span><b id="billsRemaining">$0.00</b></div>
+        </div>
+        <div class="snapshot-progress"><i id="billsProgress"></i></div>
+        <div class="snapshot-progress-copy"><span id="billsProgressText">0% paid</span></div>
+      </div>
+
+      <div class="bill-filter-row">
+        <button class="active" type="button" data-bill-filter="all">All <span id="filterAllCount">0</span></button>
+        <button type="button" data-bill-filter="paid">Paid <span id="filterPaidCount">0</span></button>
+        <button type="button" data-bill-filter="upcoming">Upcoming <span id="filterUpcomingCount">0</span></button>
+        <button type="button" data-bill-filter="overdue">Overdue <span id="filterOverdueCount">0</span></button>
+      </div>
+
+      <div class="bills-list-heading">
+        <b id="billsListTitle">Bills this month</b>
+      </div>
+      <div id="billList" class="bill-list-modern"></div>
     </div>
 
-    <div class="bill-filter-row">
-      <button class="active" type="button" data-bill-filter="all">All <span id="filterAllCount">0</span></button>
-      <button type="button" data-bill-filter="paid">Paid <span id="filterPaidCount">0</span></button>
-      <button type="button" data-bill-filter="upcoming">Upcoming <span id="filterUpcomingCount">0</span></button>
-      <button type="button" data-bill-filter="overdue">Overdue <span id="filterOverdueCount">0</span></button>
+    <div id="billDetailsView" class="bill-focused-view hidden">
+      <button type="button" id="billDetailsBack" class="income-back">‹ Bills</button>
+      <div class="bill-detail-head">
+        <div>
+          <span class="bill-detail-icon">$</span>
+          <div><h3 id="billDetailsName">Bill</h3><p id="billDetailsDue">Monthly bill</p></div>
+        </div>
+        <b id="billDetailsAmount">$0.00</b>
+      </div>
+      <div class="bill-detail-card">
+        <div><span>Status</span><b id="billDetailsStatus">Upcoming</b></div>
+        <div><span>Current period</span><b id="billDetailsPeriod">This Month</b></div>
+        <div><span>Stride funding</span><b id="billDetailsFunding">—</b></div>
+        <div><span>Paycheck split</span><b id="billDetailsSplit">—</b></div>
+        <div><span>Priority</span><b id="billDetailsPriority">—</b></div>
+      </div>
+      <button type="button" id="billDetailsPaid" class="primary-btn">Mark paid</button>
+      <button type="button" id="billDetailsEdit" class="ghost">Edit bill</button>
+      <button type="button" id="billDetailsRemove" class="ghost danger-lite">Remove bill</button>
     </div>
-
-    <div id="billList" class="bill-list-modern"></div>
 
     <details class="add-bill-panel" id="addBillPanel">
       <summary>Add or edit a bill</summary>
@@ -2828,9 +2979,11 @@ select{
           </select>
         </div>
         <div class="field"><label>Priority</label><select id="billPriority"><option value="critical">Critical</option><option value="important" selected>Important</option><option value="flexible">Flexible</option></select></div>
-        <button id="addBill" type="button" class="primary-btn" onclick="window.checkstrideSubmitBill(event)">Add bill</button><button id="cancelBillEdit" type="button" class="ghost hidden">Cancel</button>
+        <button id="addBill" type="button" class="primary-btn" onclick="window.checkstrideSubmitBill(event)">Add bill</button>
+        <button id="cancelBillEdit" type="button" class="ghost hidden">Cancel</button>
       </div>
-      <div id="billMsg" class="msg hidden"></div><div class="bill-helper">If you don’t know the exact due date, choose <b>Monthly — date unknown</b>. Stride will reserve the bill across your paychecks instead of forcing you to guess a date.</div>
+      <div id="billMsg" class="msg hidden"></div>
+      <div class="bill-helper">If you don’t know the exact due date, choose <b>Monthly — date unknown</b>.</div>
     </details>
   </section>
 
@@ -3029,7 +3182,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:80};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:81};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -3727,7 +3880,7 @@ select{
   let snapshotView="this";
   let homePeriodView="this";
   let homePeriodExpanded=true;
-  let billsView="totals", billFilter="all";
+  let billsView="totals", billFilter="all", selectedBillId=null;
 
   function previousPayday(nextDate,frequency){
     const base=new Date(nextDate+"T12:00:00");
@@ -3964,6 +4117,9 @@ select{
     editingBillId=id;
     const b=normalizedBill(bill);
     switchPage("bills");
+    selectedBillId=null;
+    $("billDetailsView")?.classList.add("hidden");
+    $("billsOverviewView")?.classList.remove("hidden");
     $("addBillPanel").open=true;
     $("billName").value=b.name||"";
     $("billAmount").value=clampMoney(b.amount)||"";
@@ -4104,29 +4260,27 @@ select{
   function renderBillsPage(){
     if(!$("billsSection"))return;
     const snap=snapshotData(billsView);
+    const titleMap={this:"This Check",next:"Next Check",totals:"This Month"};
+    const listMap={this:"Bills on this check",next:"Bills on next check",totals:"Bills this month"};
+    const title=titleMap[billsView]||"This Month";
+
     $("billsRange").textContent=snap.range;
     $("billsCount").textContent=`${snap.rows.length} bill${snap.rows.length===1?"":"s"}`;
+    $("billsChartTitle").textContent=title;
+    $("billsDonutLabel").textContent=title;
+    $("billsDonutTotal").textContent=money(snap.total);
+    $("billsListTitle").textContent=listMap[billsView]||"Bills";
+
     $("billsTotal").textContent=money(snap.total);
     $("billsPaid").textContent=money(snap.paid);
     $("billsRemaining").textContent=money(snap.remaining);
     $("billsProgress").style.width=`${snap.pct}%`;
     $("billsProgressText").textContent=`${snap.pct}% paid`;
-    if($("billsTotalLabel"))$("billsTotalLabel").textContent=billsView==="totals"?"Monthly bills":"Set aside";
-    if($("billsPaidLabel"))$("billsPaidLabel").textContent="Already paid";
-    if($("billsRemainingLabel"))$("billsRemainingLabel").textContent=billsView==="totals"?"Unpaid":"Still due";
-    const filterRow=document.querySelector(".bill-filter-row");
-    if(filterRow)filterRow.classList.toggle("hidden",billsView!=="totals");
+    $("billsTotalLabel").textContent=billsView==="totals"?"Total bills":"Set aside";
+    $("billsPaidLabel").textContent="Paid";
+    $("billsRemainingLabel").textContent="Remaining";
 
-  
-  if($("cancelBillEdit"))$("cancelBillEdit").onclick=()=>{
-    editingBillId=null;
-    $("billName").value="";$("billAmount").value="";$("billDueMode").value="date";$("billDay").value="1";$("billDayField").classList.remove("hidden");$("billSplitMode").value="auto";$("billPriority").value="important";
-    $("addBill").textContent="Add bill";
-    $("cancelBillEdit").classList.add("hidden");
-    setMsg("billMsg","");
-  };
-
-  document.querySelectorAll("[data-bills-view]").forEach(b=>b.classList.toggle("active",b.dataset.billsView===billsView));
+    document.querySelectorAll("[data-bills-view]").forEach(b=>b.classList.toggle("active",b.dataset.billsView===billsView));
 
     const rows=snap.rows.map(x=>({...x,status:billStatusFor(x,billsView)}));
     const counts={
@@ -4141,30 +4295,84 @@ select{
     $("filterOverdueCount").textContent=String(counts.overdue);
     document.querySelectorAll("[data-bill-filter]").forEach(b=>b.classList.toggle("active",b.dataset.billFilter===billFilter));
 
+    const statusAmount=status=>rows.filter(x=>status.includes(x.status)).reduce((s,x)=>s+clampMoney(x.bill.amount),0);
+    const paidAmount=statusAmount(["paid"]);
+    const upcomingAmount=statusAmount(["upcoming","due"]);
+    const overdueAmount=statusAmount(["overdue"]);
+    const denom=Math.max(0.01,snap.total);
+    const paidPct=Math.round((paidAmount/denom)*100);
+    const upcomingPct=Math.round((upcomingAmount/denom)*100);
+    const overduePct=Math.max(0,100-paidPct-upcomingPct);
+
+    $("billsChartPaid").textContent=money(paidAmount);
+    $("billsChartUpcoming").textContent=money(upcomingAmount);
+    $("billsChartOverdue").textContent=money(overdueAmount);
+    $("billsChartPaidPct").textContent=`${snap.total?paidPct:0}%`;
+    $("billsChartUpcomingPct").textContent=`${snap.total?upcomingPct:0}%`;
+    $("billsChartOverduePct").textContent=`${snap.total?overduePct:0}%`;
+    const paidStop=Math.max(0,Math.min(100,paidPct));
+    const upcomingStop=Math.max(paidStop,Math.min(100,paidStop+upcomingPct));
+    $("billsDonut").style.background=snap.total
+      ?`conic-gradient(#28d486 0 ${paidStop}%, #1689ff ${paidStop}% ${upcomingStop}%, #ff5562 ${upcomingStop}% 100%)`
+      :"conic-gradient(#17304a 0 100%)";
+
     const filtered=rows.filter(x=>{
       if(billFilter==="all")return true;
-      if(billFilter==="upcoming")return x.status==="upcoming";
-      if(billFilter==="due")return x.status==="due";
+      if(billFilter==="upcoming")return x.status==="upcoming"||x.status==="due";
       return x.status===billFilter;
     });
 
     $("billList").innerHTML=filtered.length?filtered.map(x=>{
-      const label=x.status==="paid"?"Paid":x.status==="overdue"?"Overdue":x.status==="due"?"Due Soon":"Upcoming";
       const dueText=x.due?`Due ${x.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:(normalizedBill(x.bill).dueMode==="monthly"?"Monthly · date unknown":`Due day ${x.bill.dueDay}`);
-      const funding=billsPageFundingText(x,billsView);
-      return `<div class="bill-row-modern bill-plan-row">
-        <div class="bill-main">
-          <b>${escapeHtml(x.bill.name)}</b>
-          <small>${dueText}</small>
-          <span class="bill-funding-primary">${escapeHtml(funding.primary)}</span>
-          <span class="bill-funding-secondary">${escapeHtml(funding.secondary)}</span>
-        </div>
-        <div class="bill-amount">${money(x.bill.amount)}</div>
-        <button class="bill-status ${x.status}" data-bill-toggle="${x.bill.id}" data-paid="${x.status==="paid"?"1":"0"}">${label}</button>
-        <button type="button" class="bill-update-modern" data-bill-update="${x.bill.id}" aria-label="Update ${escapeHtml(x.bill.name)}">Edit</button>
-        <button type="button" class="bill-remove-modern" data-bill-remove="${x.bill.id}" onclick="window.checkstrideRemoveBill('${x.bill.id}',this)" aria-label="Remove ${escapeHtml(x.bill.name)}">Remove</button>
-      </div>`;
+      return `<button type="button" class="bill-row-modern bill-list-row" data-bill-open="${x.bill.id}" aria-label="Open ${escapeHtml(x.bill.name)}">
+        <span class="bill-row-icon" aria-hidden="true">${x.status==="paid"?"✓":"$"}</span>
+        <span class="bill-main"><b>${escapeHtml(x.bill.name)}</b><small>${escapeHtml(dueText)}</small></span>
+        <span class="bill-amount">${money(x.bill.amount)}</span>
+        <span class="bill-chevron" aria-hidden="true">›</span>
+      </button>`;
     }).join(""):billsView==="totals"?'<div class="empty">No bills added yet.</div>':'<div class="empty">Nothing from this paycheck needs to be set aside for bills.</div>';
+
+    if(selectedBillId)$("billDetailsView")?.classList.contains("hidden")||renderBillDetails();
+  }
+
+  function renderBillDetails(){
+    const bill=state.bills.find(b=>b.id===selectedBillId);
+    if(!bill)return closeBillDetails();
+    const snap=snapshotData(billsView);
+    const row=snap.rows.find(x=>x.bill.id===bill.id) || {bill:normalizedBill(bill),due:null};
+    const status=billStatusFor(row,billsView);
+    const statusLabel=status==="paid"?"Paid":status==="overdue"?"Overdue":status==="due"?"Due soon":"Upcoming";
+    const due=row.due?`Due ${row.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:(normalizedBill(bill).dueMode==="monthly"?"Monthly · date unknown":`Due day ${normalizedBill(bill).dueDay}`);
+    const funding=billsPageFundingText(row,billsView);
+    const period={this:"This Check",next:"Next Check",totals:"This Month"}[billsView]||"This Month";
+
+    $("billDetailsName").textContent=bill.name;
+    $("billDetailsDue").textContent=due;
+    $("billDetailsAmount").textContent=money(row.bill.amount);
+    $("billDetailsStatus").textContent=statusLabel;
+    $("billDetailsPeriod").textContent=period;
+    $("billDetailsFunding").textContent=funding.primary;
+    $("billDetailsSplit").textContent=billSplitLabel(bill);
+    $("billDetailsPriority").textContent=String(bill.priority||"important").replace(/^./,x=>x.toUpperCase());
+    $("billDetailsPaid").textContent=status==="paid"?"Mark unpaid":"Mark paid";
+    $("billDetailsPaid").dataset.paid=status==="paid"?"1":"0";
+  }
+
+  function openBillDetails(id){
+    if(!state.bills.some(b=>b.id===id))return;
+    selectedBillId=id;
+    $("billsOverviewView")?.classList.add("hidden");
+    $("addBillPanel")?.removeAttribute("open");
+    $("billDetailsView")?.classList.remove("hidden");
+    renderBillDetails();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  function closeBillDetails(){
+    selectedBillId=null;
+    $("billDetailsView")?.classList.add("hidden");
+    $("billsOverviewView")?.classList.remove("hidden");
+    window.scrollTo({top:0,behavior:"smooth"});
   }
 
   function renderHomeUpcoming(){
@@ -4842,25 +5050,29 @@ select{
   };
 
   $("billList").onclick=e=>{
-    const target=e.target instanceof Element?e.target:null;
+    const target=e.target instanceof Element?e.target.closest("[data-bill-open]"):null;
     if(!target)return;
+    openBillDetails(target.dataset.billOpen);
+  };
 
-    const updateBtn=target.closest("[data-bill-update]");
-    if(updateBtn){
-      e.preventDefault();
-      e.stopPropagation();
-      window.checkstrideEditBill(updateBtn.dataset.billUpdate);
-      return;
-    }
-
-    const toggle=target.closest("[data-bill-toggle]");
-    if(toggle){
-      e.preventDefault();
-      e.stopPropagation();
-      const id=toggle.dataset.billToggle, wasPaid=toggle.dataset.paid==="1";
-      setBillPaid(id,!wasPaid,billsView);
-      return;
-    }
+  if($("billDetailsBack"))$("billDetailsBack").onclick=closeBillDetails;
+  if($("billDetailsEdit"))$("billDetailsEdit").onclick=()=>{
+    if(selectedBillId)window.checkstrideEditBill(selectedBillId);
+  };
+  if($("billDetailsPaid"))$("billDetailsPaid").onclick=()=>{
+    if(!selectedBillId)return;
+    const wasPaid=$("billDetailsPaid").dataset.paid==="1";
+    setBillPaid(selectedBillId,!wasPaid,billsView);
+    renderBillDetails();
+  };
+  if($("billDetailsRemove"))$("billDetailsRemove").onclick=()=>{
+    if(!selectedBillId)return;
+    const id=selectedBillId;
+    removeBillById(id);
+    selectedBillId=null;
+    $("billDetailsView")?.classList.add("hidden");
+    $("billsOverviewView")?.classList.remove("hidden");
+    renderBillsPage();
   };
 
 
@@ -4991,7 +5203,7 @@ select{
 
   document.querySelectorAll("[data-bills-view]").forEach(btn=>btn.onclick=()=>{billsView=btn.dataset.billsView||"this";billFilter="all";renderBillsPage()});
   document.querySelectorAll("[data-bill-filter]").forEach(btn=>btn.onclick=()=>{billFilter=btn.dataset.billFilter||"all";renderBillsPage()});
-  if($("showAddBill"))$("showAddBill").onclick=()=>{$("addBillPanel").open=true;$("billName").focus()};
+  if($("showAddBill"))$("showAddBill").onclick=()=>{selectedBillId=null;$("billDetailsView")?.classList.add("hidden");$("billsOverviewView")?.classList.remove("hidden");$("addBillPanel").open=true;setTimeout(()=>$("billName")?.focus(),20)};
   if($("snapshotViewAllBottom"))$("snapshotViewAllBottom").onclick=()=>switchPage("bills");
 
 
