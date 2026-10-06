@@ -2412,7 +2412,7 @@ select{
     <span id="pageStatus" class="pill">Live plan</span>
   </section>
 
-  <section class="setup-guide section" id="setupGuide">
+  <section class="setup-guide section appPageHidden" id="setupGuide">
     <div class="setup-guide-head">
       <div>
         <span>Getting started</span>
@@ -3029,7 +3029,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:78};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:79};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -5005,7 +5005,7 @@ select{
 
   if($("homeOpenPlan"))$("homeOpenPlan").onclick=()=>switchPage("coach");
   const PAGE_GROUPS={
-    home:["setupGuide","homeSection","quickStats","billIncomeRatioCard","homePeriodTabs","billSnapshot","homeCollapsedPeriods","homeStrideCard"],
+    home:["homeSection","quickStats","billIncomeRatioCard","homePeriodTabs","billSnapshot","homeCollapsedPeriods","homeStrideCard"],
     bills:["billsSection"],
     coach:["autoplanSection","strideRecommendationDropdown","scenarioSection","completePaycheckDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced"],
     more:["moreMenuSection"]
@@ -5062,7 +5062,7 @@ select{
     document.querySelectorAll(".smart-stride-dropdown,.learning-dropdown,.utility-dropdown").forEach(d=>d.removeAttribute("open"));
     const allIds=[...new Set([
       ...Object.values(PAGE_GROUPS).flat(),
-      "billIncomeRatioCard","statusCards","homePeriodTabs","homeCollapsedPeriods","homeStrideCard","autoplanSection","scenarioSection","planAdvanced",
+      "setupGuide","billIncomeRatioCard","statusCards","homePeriodTabs","homeCollapsedPeriods","homeStrideCard","autoplanSection","scenarioSection","planAdvanced",
       "moreMenuSection","moreSubpageHead","setupSection","goalsSection","moreAdvanced","accountSection"
     ])];
     allIds.forEach(id=>{const el=$(id);if(el)el.classList.add("appPageHidden")});
