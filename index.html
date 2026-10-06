@@ -2482,6 +2482,10 @@ select{
   .bills-donut{width:150px}
   .bills-chart-legend{gap:8px}
 }
+
+/* v82 Bills overview recovery */
+#billsSection:not(.appPageHidden) #billsOverviewView:not(.hidden){display:block!important}
+#billDetailsView.hidden{display:none!important}
 </style>
 </head>
 <body>
@@ -3182,7 +3186,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:81};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:82};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -4332,7 +4336,9 @@ select{
       </button>`;
     }).join(""):billsView==="totals"?'<div class="empty">No bills added yet.</div>':'<div class="empty">Nothing from this paycheck needs to be set aside for bills.</div>';
 
-    if(selectedBillId)$("billDetailsView")?.classList.contains("hidden")||renderBillDetails();
+    if(selectedBillId && state.bills.some(b=>b.id===selectedBillId) && !$("billDetailsView")?.classList.contains("hidden")){
+      renderBillDetails();
+    }
   }
 
   function renderBillDetails(){
@@ -5279,6 +5285,12 @@ select{
 
   function switchPage(page){
     $("pageHead")?.classList.remove("appPageHidden");
+    if(page==="bills"){
+      selectedBillId=null;
+      $("billsOverviewView")?.classList.remove("hidden");
+      $("billDetailsView")?.classList.add("hidden");
+      $("addBillPanel")?.removeAttribute("open");
+    }
     document.querySelectorAll(".compact-details").forEach(d=>d.removeAttribute("open"));
     document.querySelectorAll(".learning-dropdown").forEach(d=>d.removeAttribute("open"));
     document.querySelectorAll(".smart-stride-dropdown,.learning-dropdown,.utility-dropdown").forEach(d=>d.removeAttribute("open"));
