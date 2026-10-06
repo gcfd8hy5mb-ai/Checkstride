@@ -6550,8 +6550,10 @@ textarea:focus-visible{
   const link=document.createElement("link");link.rel="manifest";link.href=URL.createObjectURL(blob);document.head.appendChild(link);
 
   (async()=>{
+    const startupAttempt=authRevision;
+    const stillCurrent=()=>startupAttempt===authRevision;
     const startupWatch=setTimeout(()=>{
-      if(!startupFinished)showStartupRecovery("Session restore is taking too long. You can retry or go straight to sign in.");
+      if(!startupFinished && stillCurrent())showStartupRecovery("Session restore is taking too long. You can retry or go straight to sign in.");
     },STARTUP_TIMEOUT_MS);
     try{
       const raw=localStorage.getItem(SESSION_KEY);
@@ -6564,22 +6566,34 @@ textarea:focus-visible{
       }
       $("loadingDetail").textContent="Refreshing your session…";
       const fresh=await withTimeout(refreshSession(old.refreshToken),6000,"REFRESH_TIMEOUT");
+      if(!stillCurrent())return;
       const merged={...fresh,email:old.email};
       $("loadingDetail").textContent="Loading your paycheck plan…";
       const loaded=await withTimeout(loadState(merged),7000,"LOAD_TIMEOUT");
+      if(!stillCurrent())return;
       localStorage.setItem(SESSION_KEY,JSON.stringify(merged));
       session=merged;state=loaded.state;hydrated=true;
       if(loaded.migrationChanged){
         setCloud("Saving migration…","saving");
-        try{await saveState(merged,state);setCloud("Saved")}
+        try{
+          await saveState(merged,state);
+          if(stillCurrent() && session?.localId===merged.localId)setCloud("Saved");
+        }
         catch(migrationError){
+          if(!stillCurrent() || session?.localId!==merged.localId)return;
           console.error("Migration save warning",migrationError);
           setCloud("Migration save paused — changes are still loaded","error");
         }
-      }else setCloud("Saved");
-      try{render()}catch(renderError){console.error("Checkstride startup render warning",renderError);try{renderIncomeSources()}catch{}}
+      }else if(stillCurrent() && session?.localId===merged.localId)setCloud("Saved");
+      if(!stillCurrent() || session?.localId!==merged.localId)return;
+      try{render()}catch(renderError){
+        if(!stillCurrent() || session?.localId!==merged.localId)return;
+        console.error("Checkstride startup render warning",renderError);try{renderIncomeSources()}catch{}
+      }
+      if(!stillCurrent() || session?.localId!==merged.localId)return;
       show("app");switchPage(sessionStorage.getItem("checkstride_page")||"home");
     }catch(e){
+      if(!stillCurrent())return;
       const code=String(e?.message||"");
       if(code.includes("SESSION_EXPIRED")||code.includes("INVALID")||code.includes("REFRESH_TIMEOUT")){
         authRevision++;
