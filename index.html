@@ -2130,6 +2130,24 @@ select{
   .income-job-actions{grid-template-columns:1fr}
   .income-edit-job{width:100%}
 }
+
+/* v74 dedicated job editor */
+.income-job-edit-view{display:grid;gap:10px}
+.income-edit-head h3{margin:0;font-size:19px}
+.income-edit-head p{margin:4px 0 0;color:var(--muted-readable-strong);font-size:11px}
+.income-edit-card{
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface);
+  padding:13px;
+  display:grid;
+  gap:10px;
+}
+.income-edit-card .field{margin:0}
+.income-edit-card input,
+.income-edit-card select{min-height:48px;font-size:16px}
+.income-edit-card .primary-btn,
+.income-edit-card .ghost{width:100%;min-height:46px}
 </style>
 </head>
 <body>
@@ -2363,6 +2381,30 @@ select{
           </div>
         </div>
       </details>
+    </div>
+
+    <div id="incomeJobEditView" class="income-job-edit-view hidden">
+      <button type="button" id="incomeJobEditBack" class="income-back">‹ Paychecks & income</button>
+      <div class="income-edit-head">
+        <h3 id="incomeJobEditTitle">Edit job</h3>
+        <p>Update this job’s normal paycheck schedule.</p>
+      </div>
+      <div class="income-edit-card">
+        <div class="field"><label>Job name</label><input id="editJobName" /></div>
+        <div class="field"><label>Next payday</label><input id="editJobPayday" type="date" /></div>
+        <div class="field"><label>Typical paycheck</label><input id="editJobPaycheck" type="number" min="0" step="0.01" inputmode="decimal" /></div>
+        <div class="field"><label>Pay frequency</label>
+          <select id="editJobFrequency">
+            <option value="weekly">Weekly</option>
+            <option value="biweekly">Biweekly</option>
+            <option value="semimonthly">1st & 15th</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <button type="button" id="saveEditedJob" class="primary-btn">Save job</button>
+        <button type="button" id="cancelEditedJob" class="ghost">Cancel</button>
+        <div id="editJobMsg" class="msg hidden"></div>
+      </div>
     </div>
 
     <div id="incomeScheduleView" class="income-schedule-view hidden">
@@ -2685,6 +2727,7 @@ select{
   let selectedIncomeSourceId=null;
   let selectedPaydayKey=null;
   let incomeCalendarOffset=0;
+  let editingIncomeTargetId=null;
 
   const $=id=>document.getElementById(id);
   const money=n=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(clampMoney(n));
@@ -2776,7 +2819,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:73};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:74};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -4040,6 +4083,7 @@ select{
     selectedPaydayKey=null;
     incomeCalendarOffset=0;
     $("incomeJobOverview")?.classList.add("hidden");
+    $("incomeJobEditView")?.classList.add("hidden");
     $("incomeScheduleView")?.classList.remove("hidden");
     $("selectedPaydayEditor")?.classList.add("hidden");
     renderIncomeSchedule();
@@ -4068,34 +4112,22 @@ select{
     const src=incomeSources().find(x=>x.id===sourceId);
     if(!src)return;
 
+    editingIncomeTargetId=src.id;
     selectedIncomeSourceId=null;
     selectedPaydayKey=null;
     incomeCalendarOffset=0;
+
+    $("incomeJobOverview")?.classList.add("hidden");
     $("incomeScheduleView")?.classList.add("hidden");
-    $("incomeJobOverview")?.classList.remove("hidden");
-    $("incomeSettingsPanel").open=true;
+    $("incomeJobEditView")?.classList.remove("hidden");
 
-    if(src.primary){
-      editingIncomeSourceId=null;
-      if($("primaryJobNameInput"))$("primaryJobNameInput").value=src.name||"Primary job";
-      $("payday").value=src.payday||"";
-      $("paycheck").value=src.paycheck||"";
-      $("frequency").value=src.frequency||"biweekly";
-      setTimeout(()=>$("primaryJobNameInput")?.scrollIntoView({behavior:"smooth",block:"center"}),30);
-      return;
-    }
-
-    const x=(state.additionalPaychecks||[]).find(y=>y.id===src.id);
-    if(!x)return;
-    editingIncomeSourceId=x.id;
-    $("extraJobName").value=x.name;
-    $("extraJobPayday").value=x.payday;
-    $("extraJobPaycheck").value=x.paycheck;
-    $("extraJobFrequency").value=x.frequency;
-    $("incomeJobEditorTitle").textContent=`Edit ${x.name}`;
-    $("saveIncomeSource").textContent="Save job";
-    $("cancelIncomeSourceEdit").classList.remove("hidden");
-    setTimeout(()=>$("extraJobName")?.scrollIntoView({behavior:"smooth",block:"center"}),30);
+    $("incomeJobEditTitle").textContent=`Edit ${src.name}`;
+    $("editJobName").value=src.name||"";
+    $("editJobPayday").value=src.payday||"";
+    $("editJobPaycheck").value=src.paycheck||"";
+    $("editJobFrequency").value=src.frequency||"biweekly";
+    setMsg("editJobMsg","");
+    window.scrollTo({top:0,behavior:"smooth"});
   }
 
   function renderIncomeSchedule(){
@@ -4324,6 +4356,7 @@ select{
   if($("incomeScheduleBack"))$("incomeScheduleBack").onclick=()=>{
     selectedIncomeSourceId=null;selectedPaydayKey=null;incomeCalendarOffset=0;
     $("incomeScheduleView")?.classList.add("hidden");
+    $("incomeJobEditView")?.classList.add("hidden");
     $("incomeJobOverview")?.classList.remove("hidden");
     $("selectedPaydayEditor")?.classList.add("hidden");
     window.scrollTo({top:0,behavior:"smooth"});
@@ -4395,6 +4428,48 @@ select{
     if(selectedIncomeSourceId)openIncomeJobSettings(selectedIncomeSourceId);
   };
 
+
+  function closeIncomeJobEdit(){
+    editingIncomeTargetId=null;
+    $("incomeJobEditView")?.classList.add("hidden");
+    $("incomeScheduleView")?.classList.add("hidden");
+    $("incomeJobOverview")?.classList.remove("hidden");
+    setMsg("editJobMsg","");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  if($("incomeJobEditBack"))$("incomeJobEditBack").onclick=closeIncomeJobEdit;
+  if($("cancelEditedJob"))$("cancelEditedJob").onclick=closeIncomeJobEdit;
+
+  if($("saveEditedJob"))$("saveEditedJob").onclick=()=>{
+    const sourceId=editingIncomeTargetId;
+    if(!sourceId)return;
+    const name=($("editJobName").value||"").trim();
+    const payday=$("editJobPayday").value||"";
+    const paycheck=clampMoney($("editJobPaycheck").value);
+    const frequency=$("editJobFrequency").value||"biweekly";
+
+    if(!name||!payday||paycheck<=0){
+      setMsg("editJobMsg","Enter a job name, payday, and paycheck amount.");
+      return;
+    }
+
+    if(sourceId==="primary"){
+      state={...state,primaryJobName:name,payday,paycheck,frequency};
+    }else{
+      const rows=Array.isArray(state.additionalPaychecks)?state.additionalPaychecks:[];
+      state={...state,additionalPaychecks:rows.map(x=>x.id===sourceId?{...x,name,payday,paycheck,frequency}:x)};
+    }
+
+    setMsg("editJobMsg","Job saved.");
+    editingIncomeTargetId=null;
+    scheduleSave();
+    setTimeout(()=>{
+      $("incomeJobEditView")?.classList.add("hidden");
+      $("incomeJobOverview")?.classList.remove("hidden");
+      window.scrollTo({top:0,behavior:"smooth"});
+    },120);
+  };
 
   {
     const incomeBtn=$("saveIncomeSource");
@@ -4649,6 +4724,12 @@ select{
     $("moreSubpageHead")?.classList.remove("appPageHidden");
     $(dest.target)?.classList.remove("appPageHidden");
     if(dest.target==="moreAdvanced")$(dest.target).open=true;
+    if(key==="income"){
+      editingIncomeTargetId=null;selectedIncomeSourceId=null;selectedPaydayKey=null;incomeCalendarOffset=0;
+      $("incomeJobEditView")?.classList.add("hidden");
+      $("incomeScheduleView")?.classList.add("hidden");
+      $("incomeJobOverview")?.classList.remove("hidden");
+    }
     $("moreSubpageTitle").textContent=dest.title;
     $("moreSubpageText").textContent=dest.text;
     $("pageEyebrow").textContent="More";
