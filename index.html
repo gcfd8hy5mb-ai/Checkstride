@@ -2908,6 +2908,173 @@ select{
   .section{margin-bottom:8px}
   .page-head h2{font-size:20px}
 }
+
+/* v87 global consistency */
+:root{
+  --ui-radius-sm:11px;
+  --ui-radius-md:14px;
+  --ui-radius-lg:17px;
+  --ui-gap:8px;
+}
+
+/* Consistent page rhythm */
+main>.section,
+.plan-overview,
+.more-menu,
+.bill-focused-view,
+.income-schedule-view,
+.income-job-edit-view{
+  margin-bottom:10px;
+}
+.card,
+.bills-chart-card,
+.plan-chart-card,
+.plan-recommendation-card,
+.bill-detail-head,
+.bill-detail-card,
+.income-two-month,
+.income-job-card,
+.more-menu-list button,
+.plan-actions button,
+.bill-row-modern.bill-list-row{
+  border-radius:var(--ui-radius-lg);
+}
+
+/* One tap-target standard */
+button,
+[role="button"],
+summary{
+  -webkit-tap-highlight-color:rgba(22,137,255,.16);
+}
+button,
+[role="button"]{
+  touch-action:manipulation;
+}
+button:focus-visible,
+[role="button"]:focus-visible,
+summary:focus-visible,
+input:focus-visible,
+select:focus-visible{
+  outline:2px solid #55b8ff;
+  outline-offset:2px;
+}
+
+/* Consistent back controls on every focused screen */
+.income-back,
+#moreBackButton,
+#planDetailBack,
+#billDetailsBack{
+  min-height:44px!important;
+  min-width:44px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:flex-start;
+  border:0!important;
+  background:transparent!important;
+  color:#7fc5ff!important;
+  font-family:inherit;
+  font-size:12px!important;
+  font-weight:800!important;
+  padding:0 8px 0 0!important;
+  margin:0 0 4px!important;
+  touch-action:manipulation;
+}
+.income-back:active,
+#moreBackButton:active,
+#planDetailBack:active,
+#billDetailsBack:active{opacity:.72}
+
+/* Focused detail screens use the same header spacing */
+.plan-detail-shell,
+.bill-focused-view,
+.income-schedule-view,
+.income-job-edit-view{
+  gap:9px!important;
+}
+.plan-detail-head,
+.income-edit-head,
+.income-schedule-head{
+  margin-bottom:2px;
+}
+.plan-detail-head h2,
+.income-edit-head h3,
+.income-schedule-head h3,
+.bill-detail-head h3{
+  letter-spacing:-.01em;
+}
+
+/* Unified interactive cards */
+.more-menu-list button,
+.plan-actions button,
+.bill-list-row,
+.income-job-card{
+  transition:transform .08s ease,background .08s ease,border-color .08s ease;
+}
+.more-menu-list button:active,
+.plan-actions button:active,
+.bill-list-row:active,
+.income-job-card:active{
+  transform:scale(.99);
+  background:#102740;
+  border-color:#31536e;
+}
+
+/* Consistent primary and secondary actions */
+.primary-btn,
+#homeOpenPlan,
+.income-open-schedule,
+.add-bill-top{
+  border-radius:12px!important;
+  min-height:44px;
+  font-weight:800;
+}
+.ghost,
+.income-edit-job,
+.income-edit-settings{
+  min-height:44px;
+  border-radius:12px;
+}
+
+/* Stable four-tab bottom navigation */
+.bottom-nav{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  width:min(calc(100% - 24px),520px)!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  bottom:max(10px,env(safe-area-inset-bottom))!important;
+  padding:6px!important;
+  gap:4px!important;
+  border-radius:20px!important;
+}
+.bottom-nav button{
+  min-height:48px!important;
+  border-radius:14px!important;
+  padding:6px 4px!important;
+}
+.bottom-nav .navIcon{font-size:17px}
+.bottom-nav button.active{
+  background:linear-gradient(180deg,#183047,#12283c)!important;
+  color:#fff!important;
+}
+
+/* Keep content clear of fixed navigation on both platforms */
+.app{
+  padding-bottom:calc(92px + env(safe-area-inset-bottom))!important;
+}
+
+/* Prevent tiny edge targets */
+@media(max-width:430px){
+  .app{padding-left:12px!important;padding-right:12px!important}
+  .page-head{margin-bottom:8px!important}
+  .page-head h2{font-size:20px!important}
+  .card{border-radius:16px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .more-menu-list button,
+  .plan-actions button,
+  .bill-list-row,
+  .income-job-card{transition:none!important}
+}
 </style>
 </head>
 <body>
