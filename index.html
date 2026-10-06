@@ -3029,7 +3029,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:77};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:78};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -4050,8 +4050,6 @@ select{
   if($("setupPaycheckStep"))$("setupPaycheckStep").onclick=()=>{switchPage("more");showMoreDestination("income")};
   if($("setupBillsStep"))$("setupBillsStep").onclick=()=>{switchPage("bills");setTimeout(()=>{$("addBillPanel").open=true;$("billName")?.focus()},50)};
   if($("setupReviewStep"))$("setupReviewStep").onclick=()=>{$("billSnapshot")?.scrollIntoView({behavior:"smooth",block:"start"})};
-  if($("homeEditPaycheck"))$("homeEditPaycheck").onclick=()=>{switchPage("more");showMoreDestination("income")};
-  if($("homeAddBill"))$("homeAddBill").onclick=()=>{switchPage("bills");setTimeout(()=>{$("addBillPanel").open=true;$("billName")?.focus()},50)};
 
   document.querySelectorAll("[data-snapshot]").forEach(b=>b.classList.toggle("active",b.dataset.snapshot===snapshotView));
     $("snapshotList").innerHTML=snap.rows.length?snap.rows.slice(0,5).map(x=>{
@@ -4277,12 +4275,12 @@ select{
       if(delta<0)delta+=daysInMonth(today.getFullYear(),today.getMonth());
       if(delta<=5){dueSoonCount++;dueSoonAmount+=amt}else{upcomingCount++;upcomingAmount+=amt}
     });
-    $("statusOverdueCount").textContent=`${overdueCount} bill${overdueCount===1?"":"s"}`;
-    $("quickOverdue").textContent=money(overdueAmount);
-    $("statusDueSoonCount").textContent=`${dueSoonCount} bill${dueSoonCount===1?"":"s"}`;
-    $("statusDueSoonAmount").textContent=money(dueSoonAmount);
-    $("statusUpcomingCount").textContent=`${upcomingCount} bill${upcomingCount===1?"":"s"}`;
-    $("statusUpcomingAmount").textContent=money(upcomingAmount);
+    if($("statusOverdueCount"))$("statusOverdueCount").textContent=`${overdueCount} bill${overdueCount===1?"":"s"}`;
+    if($("quickOverdue"))$("quickOverdue").textContent=money(overdueAmount);
+    if($("statusDueSoonCount"))$("statusDueSoonCount").textContent=`${dueSoonCount} bill${dueSoonCount===1?"":"s"}`;
+    if($("statusDueSoonAmount"))$("statusDueSoonAmount").textContent=money(dueSoonAmount);
+    if($("statusUpcomingCount"))$("statusUpcomingCount").textContent=`${upcomingCount} bill${upcomingCount===1?"":"s"}`;
+    if($("statusUpcomingAmount"))$("statusUpcomingAmount").textContent=money(upcomingAmount);
   }
 
   function renderIncomeSources(){
@@ -4484,7 +4482,7 @@ select{
     const f=forecast(),first=f[0],overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0),conf=confidence();
     $("safeSpend").textContent=money(first?.safe||0);
     if($("heroText"))if($("heroText"))$("heroText").textContent=first?`${money(first.due)} due before the next check · ${money(state.cushion)} protected cushion`:"Add at least one paycheck source to build the plan.";
-    $("quickPayday").textContent=firstIncomeEvent()?firstIncomeEvent().date.toISOString().slice(0,10):"—";$("quickOverdue").textContent=money(overdue);
+    $("quickPayday").textContent=firstIncomeEvent()?firstIncomeEvent().date.toISOString().slice(0,10):"—";if($("quickOverdue"))$("quickOverdue").textContent=money(overdue);
     if($("quickRisk"))if($("quickRisk"))$("quickRisk").textContent=!hasIncomeSetup()?"Finish setup":first?.short?`Short by ${money(first.short)}`:conf<50?"Needs more data":first&&first.safe<clampMoney(state.cushion)*.5?"Tight paycheck":"Low risk";
     ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>{const el=$(id);const key=id;const val=state[key]??""; if(document.activeElement!==el) el.value=val});
     if($("primaryJobNameInput")&&document.activeElement!==$("primaryJobNameInput"))$("primaryJobNameInput").value=state.primaryJobName||"Primary job";
@@ -5029,6 +5027,7 @@ select{
   function showMoreMenu(){
     ["setupSection","goalsSection","moreAdvanced","accountSection","moreSubpageHead"].forEach(id=>$(id)?.classList.add("appPageHidden"));
     $("moreMenuSection")?.classList.remove("appPageHidden");
+    $("pageHead")?.classList.remove("appPageHidden");
     $("pageEyebrow").textContent="More";
     $("pageTitle").textContent="Income, goals & account";
     window.scrollTo({top:0,behavior:"smooth"});
@@ -5039,6 +5038,7 @@ select{
     if(!dest)return;
     ["moreMenuSection","setupSection","goalsSection","moreAdvanced","accountSection"].forEach(id=>$(id)?.classList.add("appPageHidden"));
     $("moreSubpageHead")?.classList.remove("appPageHidden");
+    $("pageHead")?.classList.add("appPageHidden");
     $(dest.target)?.classList.remove("appPageHidden");
     if(dest.target==="moreAdvanced")$(dest.target).open=true;
     if(key==="income"){
@@ -5056,6 +5056,7 @@ select{
   }
 
   function switchPage(page){
+    $("pageHead")?.classList.remove("appPageHidden");
     document.querySelectorAll(".compact-details").forEach(d=>d.removeAttribute("open"));
     document.querySelectorAll(".learning-dropdown").forEach(d=>d.removeAttribute("open"));
     document.querySelectorAll(".smart-stride-dropdown,.learning-dropdown,.utility-dropdown").forEach(d=>d.removeAttribute("open"));
