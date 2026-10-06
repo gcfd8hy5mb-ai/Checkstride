@@ -92,7 +92,7 @@ body{overscroll-behavior-y:none}
 .quick-grid{grid-template-columns:repeat(3,1fr)}
 .quick-grid>div{min-height:72px;display:flex;flex-direction:column;justify-content:center}
 .primary-btn,.ghost,.tabs button,.bottom-nav button{min-height:44px}
-.bottom-nav{width:min(calc(100% - 24px),520px);grid-template-columns:repeat(5,1fr);gap:4px;padding:6px;border-radius:20px}
+.bottom-nav{width:min(calc(100% - 24px),520px);grid-template-columns:repeat(4,1fr);gap:4px;padding:6px;border-radius:20px}
 .bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;padding:7px 3px}
 .bottom-nav .navIcon{font-size:16px;line-height:1}
 .bottom-nav button.active{background:linear-gradient(180deg,#183047,#12283c);color:var(--fg)}
@@ -2739,6 +2739,175 @@ select{
   .more-menu-list button{grid-template-columns:38px minmax(0,1fr) 18px;padding:9px 10px}
   .more-menu-icon{width:36px;height:36px}
 }
+
+/* v87 global consistency layer */
+:root{
+  --ui-radius:16px;
+  --ui-radius-sm:12px;
+  --ui-gap:10px;
+  --ui-tap:44px;
+}
+
+/* Shared screen rhythm */
+.app{
+  padding-bottom:calc(92px + env(safe-area-inset-bottom));
+}
+.section{
+  margin-bottom:10px;
+  scroll-margin-top:82px;
+}
+.page-head{
+  margin:0 0 10px;
+  padding:0 2px 4px;
+  min-height:44px;
+  align-items:center;
+}
+.page-head h2{
+  font-size:21px;
+  line-height:1.1;
+}
+.page-head span:first-child{
+  font-size:9px;
+}
+.page-head .pill{
+  display:none!important;
+}
+
+/* Shared surfaces */
+.card,
+.snapshot-card,
+.home-summary,
+.bills-chart-card,
+.plan-chart-card,
+.plan-recommendation-card,
+.bill-detail-card,
+.bill-detail-head,
+.income-edit-card,
+.calendar-month,
+.more-menu-list button,
+.plan-actions button,
+.bill-list-row{
+  border-radius:var(--ui-radius)!important;
+  box-shadow:none!important;
+}
+
+/* Shared controls */
+button,
+.primary-btn,
+.ghost,
+.income-back,
+#moreBackButton,
+.income-edit-settings{
+  -webkit-tap-highlight-color:rgba(22,137,255,.16);
+}
+.primary-btn,
+.ghost{
+  min-height:var(--ui-tap);
+  border-radius:var(--ui-radius-sm);
+  touch-action:manipulation;
+}
+button:active:not(:disabled),
+.primary-btn:active,
+.ghost:active{
+  opacity:.88;
+}
+
+/* Consistent focused-screen back controls */
+.income-back,
+#moreBackButton,
+#planDetailBack,
+#billDetailsBack{
+  min-height:var(--ui-tap)!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  padding:0 6px 0 0!important;
+  color:#7fc5ff!important;
+  font-size:11px!important;
+  font-weight:800!important;
+  touch-action:manipulation;
+}
+
+/* Consistent top controls */
+.home-period-tabs,
+.bills-tabs,
+.plan-tabs{
+  border-radius:14px!important;
+  padding:3px!important;
+  gap:3px!important;
+}
+.home-period-tabs button,
+.bills-tabs button,
+.plan-tabs button{
+  min-height:44px!important;
+  border-radius:10px!important;
+  font-size:9px!important;
+  font-weight:800!important;
+  touch-action:manipulation;
+}
+
+/* Consistent list rows */
+.bill-list-row,
+.more-menu-list button,
+.plan-actions button,
+.income-job-card{
+  border-color:var(--border)!important;
+  background:#0c1e30!important;
+}
+.bill-list-row:active,
+.more-menu-list button:active,
+.plan-actions button:active{
+  background:#102740!important;
+}
+
+/* Consistent forms */
+input,
+select{
+  min-height:46px!important;
+  border-radius:12px!important;
+}
+.field{
+  gap:5px;
+}
+.field label{
+  font-size:10px!important;
+  letter-spacing:.04em;
+}
+
+/* Bottom nav: identical feel across all screens */
+.bottom-nav{
+  width:min(calc(100% - 20px),520px)!important;
+  grid-template-columns:repeat(4,1fr)!important;
+  gap:4px!important;
+  padding:5px!important;
+  border-radius:18px!important;
+  bottom:max(8px,env(safe-area-inset-bottom))!important;
+}
+.bottom-nav button{
+  min-height:50px!important;
+  border-radius:13px!important;
+  padding:6px 4px!important;
+  font-size:9px!important;
+  touch-action:manipulation;
+}
+.bottom-nav .navIcon{
+  font-size:17px!important;
+}
+.bottom-nav button.active{
+  background:#17314a!important;
+}
+
+/* Keep destructive actions visually distinct, but not oversized */
+.danger-lite{
+  color:#ff8088!important;
+}
+
+/* Small screens */
+@media(max-width:390px){
+  .app{padding-left:10px!important;padding-right:10px!important}
+  .section{margin-bottom:8px}
+  .page-head h2{font-size:20px}
+}
 </style>
 </head>
 <body>
@@ -3495,7 +3664,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:86};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:87};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
