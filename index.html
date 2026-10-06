@@ -2008,6 +2008,65 @@ select{
     grid-template-columns:repeat(4,minmax(0,1fr));
   }
 }
+
+/* v71 job-first paycheck calendar */
+.income-hub{padding:14px}
+.income-two-month{border:1px solid rgba(38,137,255,.45);background:linear-gradient(145deg,rgba(22,137,255,.14),rgba(255,255,255,.015));border-radius:16px;padding:13px;margin-bottom:10px}
+.income-two-month-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+.income-two-month-head>div{display:flex;align-items:center;gap:8px}
+.income-two-month-head b{font-size:14px}
+.income-two-month-head small{font-size:10px;color:var(--muted-readable-strong)}
+.income-icon,.income-job-icon{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:#1269b4;color:#fff}
+.income-two-month-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.income-two-month-summary>div{background:rgba(7,17,31,.5);border:1px solid var(--border);border-radius:12px;padding:10px}
+.income-two-month-summary small,.income-two-month-summary span{display:block;color:var(--muted-readable-strong);font-size:10px}
+.income-two-month-summary b{display:block;margin:3px 0;font-size:15px}
+.income-job-cards{display:grid;gap:9px}
+.income-job-card{width:100%;border:1px solid var(--border);background:var(--surface);color:inherit;border-radius:16px;padding:13px;text-align:left;font-family:inherit}
+.income-job-card:active{transform:scale(.99)}
+.income-job-card-head{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:8px}
+.income-job-card-head b{font-size:15px}
+.income-job-card-head>span:last-child{font-size:22px;color:var(--muted-readable-strong)}
+.income-job-card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0 10px}
+.income-job-card-stats>div{min-width:0}
+.income-job-card-stats small{display:block;color:var(--muted-readable-strong);font-size:9px;margin-bottom:3px}
+.income-job-card-stats strong{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:capitalize}
+.income-open-schedule{display:block;border-radius:11px;background:#1689ff;color:#fff;text-align:center;padding:10px;font-size:11px;font-weight:750}
+.income-add-job{width:100%;min-height:46px;margin:10px 0;border:1px dashed #1689ff;border-radius:13px;background:transparent;color:#55b8ff;font-weight:750}
+.income-empty-jobs{padding:16px;border:1px solid var(--border);border-radius:14px;background:var(--surface);text-align:center}
+.income-empty-jobs b,.income-empty-jobs span{display:block}.income-empty-jobs span{margin-top:5px;color:var(--muted-readable-strong);font-size:11px}
+.income-settings-panel{border:1px solid var(--border);border-radius:14px;background:var(--surface);margin-top:8px}
+.income-settings-panel>summary{padding:12px;font-size:11px;font-weight:750;color:#59b9ff;cursor:pointer}
+.income-settings-body{padding:0 12px 12px}
+.income-settings-title{margin:8px 0 10px}.income-settings-title b,.income-settings-title small{display:block}.income-settings-title small{margin-top:3px;color:var(--muted-readable-strong);font-size:10px}
+.legacy-income-list{margin-top:14px}
+.income-schedule-view{display:grid;gap:10px}
+.income-back,.income-edit-settings{border:0;background:transparent;color:#58b8ff;font-family:inherit;font-weight:750}
+.income-back{justify-self:start;padding:4px 0;font-size:12px}
+.income-schedule-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.income-schedule-head h3{margin:0;font-size:19px}.income-schedule-head p{margin:4px 0 0;color:var(--muted-readable-strong);font-size:11px}
+.income-edit-settings{padding:5px 0;font-size:10px;white-space:nowrap}
+.income-schedule-meta{display:flex;gap:8px;flex-wrap:wrap}
+.income-schedule-meta span{padding:7px 9px;border-radius:999px;background:#102235;color:var(--muted-readable-strong);font-size:10px;text-transform:capitalize}
+.income-calendar{display:grid;gap:10px}
+.calendar-month{border:1px solid var(--border);border-radius:15px;background:var(--surface);padding:12px}
+.calendar-month h4{margin:0 0 10px;font-size:14px}
+.calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.calendar-weekdays span{text-align:center;color:var(--muted);font-size:8px;padding-bottom:4px}
+.calendar-day{min-width:0;min-height:46px;border:0;border-radius:9px;background:transparent;color:var(--muted-readable-strong);font-family:inherit;padding:4px 2px}
+.calendar-day.blank{visibility:hidden}.calendar-day:disabled{opacity:.72}
+.calendar-day span{display:block;font-size:10px}
+.calendar-day small{display:block;margin-top:2px;font-size:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calendar-day.payday{background:rgba(22,137,255,.16);color:#8ecbff;border:1px solid rgba(22,137,255,.38)}
+.calendar-day.payday.selected{background:#1689ff;color:#fff;border-color:#1689ff}
+.selected-payday-editor{border:1px solid rgba(22,137,255,.42);border-radius:15px;background:#0d1d2c;padding:13px}
+.selected-payday-row{display:flex;justify-content:space-between;gap:12px;margin-bottom:11px;font-size:11px}.selected-payday-row span{color:var(--muted-readable-strong)}
+.selected-payday-editor .primary-btn,.selected-payday-editor .ghost{width:100%;min-height:46px;margin-top:8px}
+@media(max-width:480px){
+  .income-job-card-stats{grid-template-columns:1fr 1fr}.income-job-card-stats>div:last-child{grid-column:1/-1}
+  .calendar-day{min-height:43px}
+  .income-schedule-head{display:grid}.income-edit-settings{justify-self:start}
+}
 </style>
 </head>
 <body>
@@ -2190,35 +2249,76 @@ select{
     <div><h2 id="moreSubpageTitle">Paychecks & income</h2><p id="moreSubpageText">Update the information Stride uses to build your plan.</p></div>
   </section>
 
-  <section class="card section" id="setupSection">
-    <div class="title-row"><h2>Your paychecks</h2><span id="cloudStatus" class="status-saved">Saved</span></div><p class="section-helper" id="incomeSectionHelper">Start with your main paycheck. Only add another job if it has a separate payday.</p>
-    <div class="form-grid">
-      <div class="field"><label>Next payday</label><input id="payday" type="date" /></div>
-      <div class="field"><label>Take-home pay</label><input id="paycheck" type="number" min="0" step="0.01" /></div>
-      <div class="field"><label>Extra income this check</label><input id="extraIncome" type="number" min="0" step="0.01" /></div>
-      <div class="field"><label>Money to keep untouched</label><input id="cushion" type="number" min="0" step="0.01" /></div>
-      <div class="field"><label>How often you get paid</label><select id="frequency"><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option><option value="semimonthly">1st & 15th</option><option value="monthly">Monthly</option></select></div>
-      <div class="field"><label>Catch-up style</label><select id="strategy"><option value="fastest">Catch up faster</option><option value="balanced">Balanced</option><option value="minimum">Protect more cash</option></select></div>
+  <section class="card section income-hub" id="setupSection">
+    <div class="title-row"><h2>Your paychecks</h2><span id="cloudStatus" class="status-saved">Saved</span></div>
+    <p class="section-helper">Choose a job to view or edit upcoming paychecks.</p>
+
+    <div id="incomeJobOverview">
+      <section class="income-two-month" aria-label="Next two months of paychecks">
+        <div class="income-two-month-head">
+          <div><span class="income-icon">▣</span><b>Next 2 months</b></div>
+          <small id="incomeTwoMonthTotal">0 scheduled checks</small>
+        </div>
+        <div id="incomeTwoMonthSummary" class="income-two-month-summary"></div>
+      </section>
+
+      <div id="incomeJobCards" class="income-job-cards"></div>
+
+      <button type="button" id="showAddIncomeJob" class="income-add-job">＋ Add another job</button>
+
+      <details class="income-settings-panel" id="incomeSettingsPanel">
+        <summary>Paycheck settings</summary>
+        <div class="income-settings-body">
+          <div class="income-settings-title"><b>Main job settings</b><small>Change the normal schedule used for future checks.</small></div>
+          <div class="form-grid">
+            <div class="field"><label>Next payday</label><input id="payday" type="date" /></div>
+            <div class="field"><label>Typical take-home pay</label><input id="paycheck" type="number" min="0" step="0.01" /></div>
+            <div class="field"><label>Extra income this check</label><input id="extraIncome" type="number" min="0" step="0.01" /></div>
+            <div class="field"><label>Money to keep untouched</label><input id="cushion" type="number" min="0" step="0.01" /></div>
+            <div class="field"><label>How often you get paid</label><select id="frequency"><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option><option value="semimonthly">1st & 15th</option><option value="monthly">Monthly</option></select></div>
+            <div class="field"><label>Catch-up style</label><select id="strategy"><option value="fastest">Catch up faster</option><option value="balanced">Balanced</option><option value="minimum">Protect more cash</option></select></div>
+          </div>
+
+          <div class="income-source-editor">
+            <div class="income-settings-title"><b id="incomeJobEditorTitle">Add another job</b><small>Add a separate job only if it has its own payday schedule.</small></div>
+            <div class="field"><label>Job name</label><input id="extraJobName" placeholder="Second job" /></div>
+            <div class="field"><label>Next payday</label><input id="extraJobPayday" type="date" /></div>
+            <div class="field"><label>Typical take-home pay</label><input id="extraJobPaycheck" type="number" min="0" step="0.01" /></div>
+            <div class="field"><label>How often</label><select id="extraJobFrequency"><option value="weekly">Weekly</option><option value="biweekly" selected>Biweekly</option><option value="semimonthly">1st & 15th</option><option value="monthly">Monthly</option></select></div>
+            <button id="saveIncomeSource" type="button" class="primary-btn">Add another job</button>
+            <button id="cancelIncomeSourceEdit" type="button" class="ghost hidden">Cancel</button>
+            <div id="incomeSourceMsg" class="msg hidden"></div>
+          </div>
+
+          <div class="income-sources legacy-income-list">
+            <div class="income-sources-head">
+              <div><b>Other jobs</b><small>Edit or remove another job.</small></div>
+              <span id="incomeSourceCount">1 job</span>
+            </div>
+            <div id="additionalIncomeList" class="income-source-list"></div>
+          </div>
+        </div>
+      </details>
     </div>
 
-    <div class="income-sources">
-      <div class="income-sources-head">
-        <div><b>Other jobs</b><small>Add another job only if it pays on a different schedule.</small></div>
-        <span id="incomeSourceCount">1 job</span>
+    <div id="incomeScheduleView" class="income-schedule-view hidden">
+      <button type="button" id="incomeScheduleBack" class="income-back">‹ Paychecks & income</button>
+      <div class="income-schedule-head">
+        <div><h3 id="incomeScheduleTitle">Job schedule</h3><p id="incomeScheduleHelp">Tap a payday to edit that check amount.</p></div>
+        <button type="button" id="editIncomeJobSettings" class="income-edit-settings">Edit job settings</button>
       </div>
-      <div id="additionalIncomeList" class="income-source-list"></div>
-      <div class="income-source-editor">
-        <div class="field"><label>Job name</label><input id="extraJobName" placeholder="Second job" /></div>
-        <div class="field"><label>Next payday</label><input id="extraJobPayday" type="date" /></div>
-        <div class="field"><label>Take-home pay</label><input id="extraJobPaycheck" type="number" min="0" step="0.01" /></div>
-        <div class="field"><label>How often</label><select id="extraJobFrequency"><option value="weekly">Weekly</option><option value="biweekly" selected>Biweekly</option><option value="semimonthly">1st & 15th</option><option value="monthly">Monthly</option></select></div>
-        <button id="saveIncomeSource" type="button" class="primary-btn">Add another job</button>
-        <button id="cancelIncomeSourceEdit" type="button" class="ghost hidden">Cancel</button>
-        <div id="incomeSourceMsg" class="msg hidden"></div>
-      </div>
+      <div id="incomeScheduleMeta" class="income-schedule-meta"></div>
+      <div id="incomeCalendar" class="income-calendar"></div>
+
+      <section id="selectedPaydayEditor" class="selected-payday-editor hidden">
+        <div class="selected-payday-row"><span>Selected payday</span><b id="selectedPaydayLabel">—</b></div>
+        <div class="field"><label>Check amount</label><input id="selectedPaydayAmount" type="number" min="0" step="0.01" inputmode="decimal" /></div>
+        <button type="button" id="saveSelectedPayday" class="primary-btn">Save paycheck</button>
+        <button type="button" id="resetSelectedPayday" class="ghost">Use typical amount</button>
+        <div id="selectedPaydayMsg" class="msg hidden"></div>
+      </section>
     </div>
   </section>
-
   <details class="learning-dropdown" id="strideRecommendationDropdown">
     <summary>
       <div><b>Stride recommendation</b><small>Your best next move and why Stride picked it.</small></div>
@@ -2508,10 +2608,12 @@ select{
   const API_KEY="AIzaSyDoLHFn-sHVa9LROJOg3TFA6m4xFZCfhos";
   const PROJECT_ID="paycheck-advisor";
   const SESSION_KEY="checkstride_rest_session";
-  const blank={payday:"",paycheck:0,frequency:"biweekly",primaryJobName:"Primary job",additionalPaychecks:[],cushion:100,extraIncome:0,strategy:"balanced",bills:["billsSection","completePaycheckDropdown"],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
+  const blank={payday:"",paycheck:0,frequency:"biweekly",primaryJobName:"Primary job",additionalPaychecks:[],paycheckOverrides:{},cushion:100,extraIncome:0,strategy:"balanced",bills:["billsSection","completePaycheckDropdown"],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
   let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null;
   let editingBillId=null;
   let editingIncomeSourceId=null;
+  let selectedIncomeSourceId=null;
+  let selectedPaydayKey=null;
 
   const $=id=>document.getElementById(id);
   const money=n=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(clampMoney(n));
@@ -2602,8 +2704,8 @@ select{
   }
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
-    const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:70};
+    const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:71};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -2654,6 +2756,17 @@ select{
     return rows;
   }
 
+  function incomeOverrideKey(sourceId,date){
+    const key=typeof date==="string"?date:dateKey(date);
+    return `${sourceId}|${key}`;
+  }
+
+  function paycheckAmountForSourceDate(src,date){
+    const overrides=(state.paycheckOverrides&&typeof state.paycheckOverrides==="object")?state.paycheckOverrides:{};
+    const key=incomeOverrideKey(src.id,date);
+    return Object.prototype.hasOwnProperty.call(overrides,key)?clampMoney(overrides[key]):clampMoney(src.paycheck);
+  }
+
   function hasIncomeSetup(){return incomeSources().length>0}
 
   function incomeEvents(count=16){
@@ -2662,7 +2775,7 @@ select{
       for(let i=0;i<count;i++){
         const date=nextPayday(src.payday,src.frequency,i);
         if(Number.isNaN(date.getTime()))continue;
-        events.push({sourceId:src.id,sourceName:src.name,date,income:src.paycheck,frequency:src.frequency,primary:src.primary});
+        events.push({sourceId:src.id,sourceName:src.name,date,income:paycheckAmountForSourceDate(src,date),frequency:src.frequency,primary:src.primary});
       }
     });
     const grouped=new Map();
@@ -2708,6 +2821,7 @@ select{
       $("extraJobPaycheck").value="";
       $("extraJobFrequency").value="biweekly";
       $("saveIncomeSource").textContent="Add another job";
+      if($("incomeJobEditorTitle"))$("incomeJobEditorTitle").textContent="Add another job";
       $("cancelIncomeSourceEdit").classList.add("hidden");
       setMsg("incomeSourceMsg","Job saved.");
 
@@ -2765,7 +2879,7 @@ select{
 
   function monthlyIncomeAndBills(date=new Date()){
     const year=date.getFullYear(),month=date.getMonth();
-    const income=incomeSources().reduce((sum,src)=>sum+(sourcePaydatesInMonth(src,year,month).length*clampMoney(src.paycheck)),0);
+    const income=incomeSources().reduce((sum,src)=>sum+sourcePaydatesInMonth(src,year,month).reduce((s,d)=>s+paycheckAmountForSourceDate(src,d),0),0);
     const bills=(Array.isArray(state.bills)?state.bills:[]).reduce((sum,b)=>sum+clampMoney(b.amount),0);
     const percent=income>0?(bills/income)*100:0;
     const ratio=income>0?bills/income:0;
@@ -3784,17 +3898,112 @@ select{
   }
 
   function renderIncomeSources(){
-    if(!$("additionalIncomeList"))return;
-    const rows=Array.isArray(state.additionalPaychecks)?state.additionalPaychecks:[];
-    $("incomeSourceCount").textContent=`${1+rows.length} job${rows.length?"s":""}`;
-    $("additionalIncomeList").innerHTML=rows.length?rows.map(x=>`
-      <div class="income-source-row">
-        <div><b>${escapeHtml(x.name||"Job")}</b><small>${money(x.paycheck)} · ${escapeHtml(x.frequency)} · next ${escapeHtml(x.payday)}</small></div>
-        <div class="income-source-actions">
-          <button type="button" data-income-edit="${x.id}">Edit</button>
-          <button type="button" class="remove" data-income-remove="${x.id}">Remove</button>
-        </div>
-      </div>`).join(""):'<div class="empty">No additional jobs yet.</div>';
+    const sources=incomeSources();
+    const otherRows=Array.isArray(state.additionalPaychecks)?state.additionalPaychecks:[];
+
+    if($("incomeSourceCount"))$("incomeSourceCount").textContent=`${sources.length} job${sources.length===1?"":"s"}`;
+
+    if($("additionalIncomeList")){
+      $("additionalIncomeList").innerHTML=otherRows.length?otherRows.map(x=>`
+        <div class="income-source-row">
+          <div><b>${escapeHtml(x.name||"Job")}</b><small>${money(x.paycheck)} · ${escapeHtml(x.frequency)} · next ${escapeHtml(x.payday)}</small></div>
+          <div class="income-source-actions">
+            <button type="button" data-income-edit="${x.id}">Edit</button>
+            <button type="button" class="remove" data-income-remove="${x.id}">Remove</button>
+          </div>
+        </div>`).join(""):'<div class="empty">No additional jobs.</div>';
+    }
+
+    if($("incomeJobCards")){
+      $("incomeJobCards").innerHTML=sources.length?sources.map(src=>{
+        const next=new Date(src.payday+"T12:00:00");
+        const nextText=Number.isNaN(next.getTime())?"Not set":next.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+        return `<button type="button" class="income-job-card" data-income-open="${escapeHtml(src.id)}">
+          <div class="income-job-card-head"><span class="income-job-icon">▣</span><b>${escapeHtml(src.name)}</b><span>›</span></div>
+          <div class="income-job-card-stats">
+            <div><small>Pay schedule</small><strong>${escapeHtml(src.frequency)}</strong></div>
+            <div><small>Next payday</small><strong>${escapeHtml(nextText)}</strong></div>
+            <div><small>Typical check</small><strong>${money(src.paycheck)}</strong></div>
+          </div>
+          <span class="income-open-schedule">Open schedule</span>
+        </button>`;
+      }).join(""):'<div class="income-empty-jobs"><b>No paychecks set up yet.</b><span>Open Paycheck settings below to add your first payday and amount.</span></div>';
+    }
+
+    renderIncomeTwoMonthSummary();
+
+    if(selectedIncomeSourceId&&sources.some(x=>x.id===selectedIncomeSourceId)){
+      renderIncomeSchedule();
+    }else if(selectedIncomeSourceId){
+      selectedIncomeSourceId=null;selectedPaydayKey=null;
+      $("incomeScheduleView")?.classList.add("hidden");
+      $("incomeJobOverview")?.classList.remove("hidden");
+    }
+  }
+
+  function renderIncomeTwoMonthSummary(){
+    if(!$("incomeTwoMonthSummary"))return;
+    const sources=incomeSources(), now=new Date();
+    const months=[new Date(now.getFullYear(),now.getMonth(),1,12),new Date(now.getFullYear(),now.getMonth()+1,1,12)];
+    let grandCount=0;
+    $("incomeTwoMonthSummary").innerHTML=months.map(month=>{
+      let count=0,total=0;
+      sources.forEach(src=>{
+        const dates=sourcePaydatesInMonth(src,month.getFullYear(),month.getMonth());
+        count+=dates.length;
+        total+=dates.reduce((s,d)=>s+paycheckAmountForSourceDate(src,d),0);
+      });
+      grandCount+=count;
+      return `<div><small>${month.toLocaleDateString(undefined,{month:"short",year:"numeric"})}</small><b>${count} check${count===1?"":"s"}</b><span>${money(total)}</span></div>`;
+    }).join("");
+    if($("incomeTwoMonthTotal"))$("incomeTwoMonthTotal").textContent=`${grandCount} scheduled check${grandCount===1?"":"s"}`;
+  }
+
+  function openIncomeSchedule(sourceId){
+    const src=incomeSources().find(x=>x.id===sourceId);
+    if(!src)return;
+    selectedIncomeSourceId=sourceId;
+    selectedPaydayKey=null;
+    $("incomeJobOverview")?.classList.add("hidden");
+    $("incomeScheduleView")?.classList.remove("hidden");
+    $("selectedPaydayEditor")?.classList.add("hidden");
+    renderIncomeSchedule();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  function calendarMonthHtml(src,monthDate){
+    const y=monthDate.getFullYear(),m=monthDate.getMonth();
+    const first=new Date(y,m,1,12), days=daysInMonth(y,m), offset=first.getDay();
+    const paydays=new Map(sourcePaydatesInMonth(src,y,m).map(d=>[dateKey(d),d]));
+    const cells=[];
+    for(let i=0;i<offset;i++)cells.push('<span class="calendar-day blank"></span>');
+    for(let day=1;day<=days;day++){
+      const d=dateAtDay(y,m,day),key=dateKey(d),isPayday=paydays.has(key),selected=selectedPaydayKey===key;
+      const amount=isPayday?paycheckAmountForSourceDate(src,d):0;
+      cells.push(`<button type="button" class="calendar-day ${isPayday?"payday":""} ${selected?"selected":""}" ${isPayday?`data-payday-date="${key}"`:"disabled"}><span>${day}</span>${isPayday?`<small>${money(amount)}</small>`:""}</button>`);
+    }
+    return `<section class="calendar-month">
+      <h4>${monthDate.toLocaleDateString(undefined,{month:"long",year:"numeric"})}</h4>
+      <div class="calendar-weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+      <div class="calendar-grid">${cells.join("")}</div>
+    </section>`;
+  }
+
+  function renderIncomeSchedule(){
+    if(!$("incomeScheduleView")||!selectedIncomeSourceId)return;
+    const src=incomeSources().find(x=>x.id===selectedIncomeSourceId);
+    if(!src)return;
+    $("incomeScheduleTitle").textContent=`${src.name} schedule`;
+    $("incomeScheduleMeta").innerHTML=`<span>${escapeHtml(src.frequency)}</span><span>Typical check <b>${money(src.paycheck)}</b></span>`;
+    const now=new Date();
+    const months=[new Date(now.getFullYear(),now.getMonth(),1,12),new Date(now.getFullYear(),now.getMonth()+1,1,12)];
+    $("incomeCalendar").innerHTML=months.map(m=>calendarMonthHtml(src,m)).join("");
+    if(selectedPaydayKey){
+      const d=new Date(selectedPaydayKey+"T12:00:00");
+      $("selectedPaydayLabel").textContent=d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+      if(document.activeElement!==$("selectedPaydayAmount"))$("selectedPaydayAmount").value=paycheckAmountForSourceDate(src,d);
+      $("selectedPaydayEditor").classList.remove("hidden");
+    }
   }
 
   function renderGreeting(){
@@ -3983,6 +4192,82 @@ select{
   $("logout").onclick=async()=>{if(session&&hydrated){try{await saveState(session,state)}catch{try{const fresh=await withTimeout(refreshSession(session.refreshToken),6000,"REFRESH_TIMEOUT");await saveState({...fresh,email:session.email},state)}catch{}}}localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem("checkstride_page");session=null;hydrated=false;state={...blank};show("auth")};
 
   ["payday","paycheck","extraIncome","cushion","frequency","strategy"].forEach(id=>$(id).addEventListener("change",e=>{state={...state,[id]:["paycheck","extraIncome","cushion"].includes(id)?Number(e.target.value):e.target.value};scheduleSave()}));
+  if($("incomeJobCards"))$("incomeJobCards").onclick=e=>{
+    const target=e.target instanceof Element?e.target:null;
+    const card=target?.closest("[data-income-open]");
+    if(card)openIncomeSchedule(card.dataset.incomeOpen);
+  };
+
+  if($("incomeScheduleBack"))$("incomeScheduleBack").onclick=()=>{
+    selectedIncomeSourceId=null;selectedPaydayKey=null;
+    $("incomeScheduleView")?.classList.add("hidden");
+    $("incomeJobOverview")?.classList.remove("hidden");
+    $("selectedPaydayEditor")?.classList.add("hidden");
+    window.scrollTo({top:0,behavior:"smooth"});
+  };
+
+  if($("incomeCalendar"))$("incomeCalendar").onclick=e=>{
+    const target=e.target instanceof Element?e.target:null;
+    const btn=target?.closest("[data-payday-date]");
+    if(!btn)return;
+    selectedPaydayKey=btn.dataset.paydayDate;
+    setMsg("selectedPaydayMsg","");
+    renderIncomeSchedule();
+    setTimeout(()=>$("selectedPaydayEditor")?.scrollIntoView({behavior:"smooth",block:"nearest"}),30);
+  };
+
+  if($("saveSelectedPayday"))$("saveSelectedPayday").onclick=()=>{
+    const src=incomeSources().find(x=>x.id===selectedIncomeSourceId);
+    if(!src||!selectedPaydayKey)return;
+    const amount=clampMoney($("selectedPaydayAmount").value);
+    if(amount<=0)return setMsg("selectedPaydayMsg","Enter the take-home amount for this payday.");
+    const key=incomeOverrideKey(src.id,selectedPaydayKey);
+    state={...state,paycheckOverrides:{...(state.paycheckOverrides||{}),[key]:amount}};
+    setMsg("selectedPaydayMsg","Paycheck amount saved.");
+    scheduleSave();
+  };
+
+  if($("resetSelectedPayday"))$("resetSelectedPayday").onclick=()=>{
+    const src=incomeSources().find(x=>x.id===selectedIncomeSourceId);
+    if(!src||!selectedPaydayKey)return;
+    const key=incomeOverrideKey(src.id,selectedPaydayKey),next={...(state.paycheckOverrides||{})};
+    delete next[key];
+    state={...state,paycheckOverrides:next};
+    setMsg("selectedPaydayMsg","Using the typical check amount.");
+    scheduleSave();
+  };
+
+  if($("showAddIncomeJob"))$("showAddIncomeJob").onclick=()=>{
+    editingIncomeSourceId=null;
+    $("extraJobName").value="";$("extraJobPayday").value="";$("extraJobPaycheck").value="";$("extraJobFrequency").value="biweekly";
+    $("incomeJobEditorTitle").textContent="Add another job";
+    $("saveIncomeSource").textContent="Add another job";
+    $("cancelIncomeSourceEdit").classList.add("hidden");
+    $("incomeSettingsPanel").open=true;
+    setTimeout(()=>$("extraJobName")?.scrollIntoView({behavior:"smooth",block:"center"}),30);
+  };
+
+  if($("editIncomeJobSettings"))$("editIncomeJobSettings").onclick=()=>{
+    const src=incomeSources().find(x=>x.id===selectedIncomeSourceId);
+    if(!src)return;
+    $("incomeSettingsPanel").open=true;
+    if(src.primary){
+      setTimeout(()=>$("payday")?.scrollIntoView({behavior:"smooth",block:"center"}),30);
+    }else{
+      const x=(state.additionalPaychecks||[]).find(y=>y.id===src.id);
+      if(!x)return;
+      editingIncomeSourceId=x.id;
+      $("extraJobName").value=x.name;$("extraJobPayday").value=x.payday;$("extraJobPaycheck").value=x.paycheck;$("extraJobFrequency").value=x.frequency;
+      $("incomeJobEditorTitle").textContent=`Edit ${x.name}`;
+      $("saveIncomeSource").textContent="Save job";
+      $("cancelIncomeSourceEdit").classList.remove("hidden");
+      $("incomeJobOverview")?.classList.remove("hidden");
+      $("incomeScheduleView")?.classList.add("hidden");
+      selectedIncomeSourceId=null;selectedPaydayKey=null;
+      setTimeout(()=>$("extraJobName")?.scrollIntoView({behavior:"smooth",block:"center"}),30);
+    }
+  };
+
 
   {
     const incomeBtn=$("saveIncomeSource");
@@ -3991,7 +4276,7 @@ select{
   }
   $("cancelIncomeSourceEdit").onclick=()=>{
     editingIncomeSourceId=null;$("extraJobName").value="";$("extraJobPayday").value="";$("extraJobPaycheck").value="";$("extraJobFrequency").value="biweekly";
-    $("saveIncomeSource").textContent="Add another job";$("cancelIncomeSourceEdit").classList.add("hidden");setMsg("incomeSourceMsg","");
+    if($("incomeJobEditorTitle"))$("incomeJobEditorTitle").textContent="Add another job";$("saveIncomeSource").textContent="Add another job";$("cancelIncomeSourceEdit").classList.add("hidden");setMsg("incomeSourceMsg","");
   };
   $("additionalIncomeList").onclick=e=>{
     const target=e.target instanceof Element?e.target:null;if(!target)return;
@@ -3999,7 +4284,7 @@ select{
     if(edit){
       const x=(state.additionalPaychecks||[]).find(y=>y.id===edit.dataset.incomeEdit);if(!x)return;
       editingIncomeSourceId=x.id;$("extraJobName").value=x.name;$("extraJobPayday").value=x.payday;$("extraJobPaycheck").value=x.paycheck;$("extraJobFrequency").value=x.frequency;
-      $("saveIncomeSource").textContent="Save job";$("cancelIncomeSourceEdit").classList.remove("hidden");return;
+      $("incomeJobEditorTitle").textContent=`Edit ${x.name}`;$("saveIncomeSource").textContent="Save job";$("cancelIncomeSourceEdit").classList.remove("hidden");$("incomeSettingsPanel").open=true;return;
     }
     if(remove){
       state={...state,additionalPaychecks:(state.additionalPaychecks||[]).filter(x=>x.id!==remove.dataset.incomeRemove)};
