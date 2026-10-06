@@ -3029,7 +3029,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:79};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:80};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -4479,6 +4479,10 @@ select{
   }
 
   function render(){
+    // Saved paychecks/jobs are core account data. Render them first so an
+    // unrelated dashboard widget can never make the income page look empty.
+    renderIncomeSources();
+    try{
     const f=forecast(),first=f[0],overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0),conf=confidence();
     $("safeSpend").textContent=money(first?.safe||0);
     if($("heroText"))if($("heroText"))$("heroText").textContent=first?`${money(first.due)} due before the next check · ${money(state.cushion)} protected cushion`:"Add at least one paycheck source to build the plan.";
@@ -4598,10 +4602,15 @@ select{
     renderStatusCards();
     renderBillIncomeRatio();
     renderGreeting();
-    renderIncomeSources();
     renderSetupGuide();
     if($("accountEmail"))$("accountEmail").textContent=session?.email||"Signed in";
     $("forecastList").innerHTML=f.length?f.map(x=>`<div class="row"><div><b>${x.date.toLocaleDateString()}</b><small>${money(x.due)} bills · ${money(x.catchup)} catch-up</small></div><div class="right"><span style="display:block;color:var(--muted);font-size:11px">Safe</span><b>${money(x.safe)}</b></div></div>`).join(""):'<p class="empty">Your forecast will appear here once setup is complete.</p>';
+    }catch(renderError){
+      console.error("Checkstride non-income render warning",renderError);
+      // Keep the app usable and the saved income/job UI visible.
+      // Individual sections can recover on the next render without forcing
+      // the entire signed-in app into display-recovery mode.
+    }
   }
   function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
   function scheduleSave(){
@@ -4621,7 +4630,8 @@ select{
       }catch(renderError){
         console.error("Checkstride render error",renderError);
         show("app");
-        setCloud("Plan loaded — display recovery active","error");
+        try{renderIncomeSources()}catch{}
+        setCloud("Saved");
       }
     }catch(e){
       session=null;hydrated=false;const code=String(e?.message||"");
@@ -5107,7 +5117,8 @@ select{
       const loaded=await withTimeout(loadState(merged),7000,"LOAD_TIMEOUT");
       localStorage.setItem(SESSION_KEY,JSON.stringify(merged));
       session=merged;state=loaded;hydrated=true;
-      render();show("app");switchPage(sessionStorage.getItem("checkstride_page")||"home");
+      try{render()}catch(renderError){console.error("Checkstride startup render warning",renderError);try{renderIncomeSources()}catch{}}
+      show("app");switchPage(sessionStorage.getItem("checkstride_page")||"home");
     }catch(e){
       const code=String(e?.message||"");
       if(code.includes("SESSION_EXPIRED")||code.includes("INVALID")||code.includes("REFRESH_TIMEOUT")){
