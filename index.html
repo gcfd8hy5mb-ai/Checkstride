@@ -3075,6 +3075,12 @@ select:focus-visible{
   .bill-list-row,
   .income-job-card{transition:none!important}
 }
+
+/* v91 tappable job cards */
+.income-job-card[role="button"]{cursor:pointer;touch-action:manipulation}
+.income-job-card[role="button"]:focus-visible{outline:2px solid #55b8ff;outline-offset:2px}
+.income-job-card[role="button"]:active{transform:scale(.99);background:#102740!important}
+.income-edit-job{position:relative;z-index:2}
 </style>
 </head>
 <body>
@@ -3831,7 +3837,7 @@ select:focus-visible{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:90};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:91};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -5247,7 +5253,7 @@ select:focus-visible{
       $("incomeJobCards").innerHTML=sources.length?sources.map(src=>{
         const next=new Date(src.payday+"T12:00:00");
         const nextText=Number.isNaN(next.getTime())?"Not set":next.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
-        return `<div class="income-job-card">
+        return `<div class="income-job-card" role="button" tabindex="0" data-income-open="${escapeHtml(src.id)}" aria-label="Open ${escapeHtml(src.name)} schedule">
           <div class="income-job-card-head"><span class="income-job-icon">▣</span><b>${escapeHtml(src.name)}</b><span>›</span></div>
           <div class="income-job-card-stats">
             <div><small>Pay schedule</small><strong>${escapeHtml(src.frequency)}</strong></div>
@@ -5583,10 +5589,23 @@ select:focus-visible{
   if($("incomeJobCards"))$("incomeJobCards").onclick=e=>{
     const target=e.target instanceof Element?e.target:null;
     if(!target)return;
-    const open=target.closest("[data-income-open]");
     const edit=target.closest("[data-income-settings]");
-    if(open){openIncomeSchedule(open.dataset.incomeOpen);return}
-    if(edit){openIncomeJobSettings(edit.dataset.incomeSettings)}
+    if(edit){
+      e.stopPropagation();
+      openIncomeJobSettings(edit.dataset.incomeSettings);
+      return;
+    }
+    const open=target.closest("[data-income-open]");
+    if(open)openIncomeSchedule(open.dataset.incomeOpen);
+  };
+  if($("incomeJobCards"))$("incomeJobCards").onkeydown=e=>{
+    if(e.key!=="Enter"&&e.key!==" ")return;
+    const target=e.target instanceof Element?e.target:null;
+    if(!target||target.closest("[data-income-settings]"))return;
+    const open=target.closest("[data-income-open]");
+    if(!open)return;
+    e.preventDefault();
+    openIncomeSchedule(open.dataset.incomeOpen);
   };
 
   if($("incomeScheduleBack"))$("incomeScheduleBack").onclick=()=>{
