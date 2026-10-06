@@ -3452,6 +3452,7 @@ textarea:focus-visible{
         </div>
         <button type="button" id="saveEditedJob" class="primary-btn">Save job</button>
         <button type="button" id="cancelEditedJob" class="ghost">Cancel</button>
+        <button type="button" id="removeEditedJob" class="ghost danger-lite hidden">Remove job</button>
         <div id="editJobMsg" class="msg hidden"></div>
       </div>
     </div>
@@ -3981,7 +3982,7 @@ textarea:focus-visible{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:103};
+      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:104};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -5531,6 +5532,7 @@ textarea:focus-visible{
     $("editJobPaycheck").value=src.paycheck||"";
     $("editJobFrequency").value=src.frequency||"biweekly";
     $("saveEditedJob").textContent="Save job";
+    $("removeEditedJob")?.classList.remove("hidden");
     setMsg("editJobMsg","");
     window.scrollTo({top:0,behavior:"smooth"});
   }
@@ -5553,6 +5555,7 @@ textarea:focus-visible{
     $("editJobPaycheck").value="";
     $("editJobFrequency").value="biweekly";
     $("saveEditedJob").textContent="Add job";
+    $("removeEditedJob")?.classList.add("hidden");
     setMsg("editJobMsg","");
     window.scrollTo({top:0,behavior:"smooth"});
   }
@@ -5892,6 +5895,86 @@ textarea:focus-visible{
 
   if($("incomeJobEditBack"))$("incomeJobEditBack").onclick=closeIncomeJobEdit;
   if($("cancelEditedJob"))$("cancelEditedJob").onclick=closeIncomeJobEdit;
+
+  function removeIncomeSourceById(sourceId){
+    if(!sourceId||sourceId==="new"||sourceId==="new-primary")return false;
+    const overrides=(state.paycheckOverrides&&typeof state.paycheckOverrides==="object")?state.paycheckOverrides:{};
+    const nextOverrides={};
+    const copyOverrides=(fromId,toId=null)=>{
+      Object.entries(overrides).forEach(([key,value])=>{
+        const prefix=fromId+"|";
+        if(key.startsWith(prefix)){
+          if(toId)nextOverrides[toId+"|"+key.slice(prefix.length)]=value;
+        }else if(!Object.prototype.hasOwnProperty.call(nextOverrides,key)){
+          nextOverrides[key]=value;
+        }
+      });
+    };
+
+    if(sourceId==="primary"){
+      const extras=Array.isArray(state.additionalPaychecks)?state.additionalPaychecks:[];
+      if(extras.length){
+        const promote=extras[0];
+        copyOverrides("primary",null);
+        Object.entries(overrides).forEach(([key,value])=>{
+          const prefix=String(promote.id)+"|";
+          if(key.startsWith(prefix))nextOverrides["primary|"+key.slice(prefix.length)]=value;
+        });
+        state={
+          ...state,
+          primaryJobName:String(promote.name||"Primary job"),
+          payday:String(promote.payday||""),
+          paycheck:clampMoney(promote.paycheck),
+          frequency:promote.frequency||"biweekly",
+          additionalPaychecks:extras.slice(1),
+          paycheckOverrides:nextOverrides
+        };
+      }else{
+        copyOverrides("primary",null);
+        state={
+          ...state,
+          primaryJobName:"Primary job",
+          payday:"",
+          paycheck:0,
+          frequency:"biweekly",
+          paycheckOverrides:nextOverrides
+        };
+      }
+      return true;
+    }
+
+    const exists=(Array.isArray(state.additionalPaychecks)?state.additionalPaychecks:[]).some(x=>x.id===sourceId);
+    if(!exists)return false;
+    copyOverrides(sourceId,null);
+    state={
+      ...state,
+      additionalPaychecks:(state.additionalPaychecks||[]).filter(x=>x.id!==sourceId),
+      paycheckOverrides:nextOverrides
+    };
+    return true;
+  }
+
+  if($("removeEditedJob"))$("removeEditedJob").onclick=()=>{
+    const sourceId=editingIncomeTargetId;
+    if(!sourceId||sourceId==="new"||sourceId==="new-primary")return;
+    const src=incomeSources().find(x=>x.id===sourceId);
+    if(!src)return;
+    if(!confirm(`Remove ${src.name}? This will remove its future paycheck schedule from Checkstride.`))return;
+    if(!removeIncomeSourceById(sourceId))return;
+    editingIncomeTargetId=null;
+    incomeEditReturnSourceId=null;
+    selectedIncomeSourceId=null;
+    selectedPaydayKey=null;
+    scheduleSave();
+    $("incomeJobEditView")?.classList.add("hidden");
+    $("incomeScheduleView")?.classList.add("hidden");
+    $("incomeJobOverview")?.classList.remove("hidden");
+    renderIncomeSources();
+    renderBillIncomeRatio();
+    renderPlanOverview();
+    renderSetupGuide();
+    window.scrollTo({top:0,behavior:"smooth"});
+  };
 
   if($("saveEditedJob"))$("saveEditedJob").onclick=()=>{
     const sourceId=editingIncomeTargetId;
