@@ -4136,6 +4136,8 @@ textarea:focus-visible{
         if(existing && (existing.payday!==payday || existing.frequency!==frequency)){
           state={...state,paycheckOverrides:removeIncomeOverridesForSource(editingIncomeSourceId)};
         }
+      }else if(!String(state.payday||"") || clampMoney(state.paycheck)<=0){
+        state={...state,primaryJobName:name,payday,paycheck,frequency};
       }else{
         state={...state,additionalPaychecks:[...rows,{id:newIncomeSourceId(),name,payday,paycheck,frequency}]};
       }
@@ -4153,7 +4155,8 @@ textarea:focus-visible{
       try{
         renderIncomeSources();
         renderBillIncomeRatio();
-    renderPlanOverview();
+        renderPlanOverview();
+        renderSetupGuide();
       }catch(renderErr){
         console.error("Income source refresh error",renderErr);
       }
