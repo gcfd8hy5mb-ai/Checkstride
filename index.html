@@ -2702,11 +2702,21 @@ select{
 .more-subpage-head p{margin:3px 0 0;color:#9fb5cf;font-size:10px;line-height:1.35}
 
 /* The shared subpage header is the title; suppress repeated card titles beneath it. */
-#setupSection>.title-row,
+#setupSection>.title-row h2,
 #setupSection>.section-helper,
 #goalsSection>.title-row,
 #goalsSection>#goalSectionHelper,
 #accountSection>.title-row{display:none!important}
+
+#setupSection>.title-row{
+  display:flex!important;
+  justify-content:flex-end!important;
+  margin:0 0 6px!important;
+}
+#setupSection>.title-row #cloudStatus{
+  display:inline-flex!important;
+  margin-left:auto
+}
 
 #setupSection,
 #goalsSection,
@@ -3154,6 +3164,35 @@ select:focus-visible{
 .plan-detail-list-item[open]>summary{border-bottom:1px solid var(--border)}
 .plan-detail-list-item[open]>.learning-dropdown-body,
 .plan-detail-list-item[open]>.details-body{padding:9px!important}
+
+/* v96 More identity and status cleanup */
+#moreMenuSection .more-menu-intro h2{display:none!important}
+#moreMenuSection .more-menu-intro{padding-top:0!important}
+#setupSection>.title-row #cloudStatus{
+  display:inline-flex!important;
+  align-items:center;
+  min-height:28px;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:800
+}
+.account-identity{
+  display:grid;
+  gap:3px;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:#0c1e30
+}
+.account-identity span{
+  font-size:10px;
+  color:#9fb5cf
+}
+.account-identity b{
+  font-size:13px;
+  overflow-wrap:anywhere
+}
 </style>
 </head>
 <body>
@@ -3795,6 +3834,7 @@ select:focus-visible{
 
   <section class="card account-card section" id="accountSection">
     <div class="title-row"><h2>Your account</h2><span id="accountEmail">Signed in</span></div>
+    <div class="account-identity" id="accountIdentity"><span>Signed in as</span><b id="accountEmailVisible">Signed in</b></div>
     <button id="logout" class="ghost danger-lite">Sign out</button>
   </section>
 
@@ -3912,7 +3952,7 @@ select:focus-visible{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:95};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:96};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -5630,6 +5670,7 @@ select:focus-visible{
     renderGreeting();
     renderSetupGuide();
     if($("accountEmail"))$("accountEmail").textContent=session?.email||"Signed in";
+    if($("accountEmailVisible"))$("accountEmailVisible").textContent=session?.email||"Signed in";
     $("forecastList").innerHTML=f.length?f.map(x=>`<div class="row"><div><b>${x.date.toLocaleDateString()}</b><small>${money(x.due)} bills · ${money(x.catchup)} catch-up</small></div><div class="right"><span style="display:block;color:var(--muted);font-size:11px">Safe</span><b>${money(x.safe)}</b></div></div>`).join(""):'<p class="empty">Your forecast will appear here once setup is complete.</p>';
     }catch(renderError){
       console.error("Checkstride non-income render warning",renderError);
