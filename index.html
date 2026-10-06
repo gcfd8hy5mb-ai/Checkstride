@@ -5846,10 +5846,22 @@ textarea:focus-visible{
   $("loadingRetry").onclick=()=>location.reload();
   $("loadingSignIn").onclick=resetToSignIn;
 
-  $("tabLogin").onclick=()=>{mode="login";$("tabLogin").classList.add("active");$("tabSignup").classList.remove("active");$("authSubmit").textContent="Sign in"};
-  $("tabSignup").onclick=()=>{mode="signup";$("tabSignup").classList.add("active");$("tabLogin").classList.remove("active");$("authSubmit").textContent="Create account"};
+  $("tabLogin").onclick=()=>{authRevision++;mode="login";setMsg("authMsg","");$("tabLogin").classList.add("active");$("tabSignup").classList.remove("active");$("authSubmit").textContent="Sign in"};
+  $("tabSignup").onclick=()=>{authRevision++;mode="signup";setMsg("authMsg","");$("tabSignup").classList.add("active");$("tabLogin").classList.remove("active");$("authSubmit").textContent="Create account"};
   $("authSubmit").onclick=submitAuth;
-  $("resetPassword").onclick=async()=>{const email=$("email").value.trim();if(!email)return setMsg("authMsg","Enter your email first.");try{await authRequest("accounts:sendOobCode",{requestType:"PASSWORD_RESET",email});setMsg("authMsg","Password reset email sent.")}catch{setMsg("authMsg","If that email has an account, a reset email will be sent.")}};
+  $("resetPassword").onclick=async()=>{
+    const email=$("email").value.trim();
+    if(!email)return setMsg("authMsg","Enter your email first.");
+    const attempt=++authRevision;
+    const stillCurrent=()=>attempt===authRevision;
+    setMsg("authMsg","Sending reset email…");
+    try{
+      await authRequest("accounts:sendOobCode",{requestType:"PASSWORD_RESET",email});
+      if(stillCurrent())setMsg("authMsg","Password reset email sent.");
+    }catch{
+      if(stillCurrent())setMsg("authMsg","If that email has an account, a reset email will be sent.");
+    }
+  };
   $("logout").onclick=async()=>{
     authRevision++;saveRevision++;
     clearTimeout(saveTimer);saveTimer=null;
