@@ -3977,12 +3977,24 @@ textarea:focus-visible{
     const setupReviewSeen=typeof decoded.setupReviewSeen==="boolean"
       ? decoded.setupReviewSeen
       : legacySetupComplete;
-    return {...blank,...decoded,setupReviewSeen,additionalPaychecks,bills:fixedBills,paycheckHistory:Array.isArray(decoded.paycheckHistory)?decoded.paycheckHistory:[],paymentHistory:Array.isArray(decoded.paymentHistory)?decoded.paymentHistory:[]};
+    const validIncomeIds=new Set([
+      ...(String(decoded.payday||"")&&clampMoney(decoded.paycheck)>0?["primary"]:[]),
+      ...additionalPaychecks.map(x=>String(x.id))
+    ]);
+    const decodedOverrides=(decoded.paycheckOverrides&&typeof decoded.paycheckOverrides==="object")?decoded.paycheckOverrides:{};
+    const paycheckOverrides=Object.fromEntries(
+      Object.entries(decodedOverrides).filter(([key])=>{
+        const split=String(key).indexOf("|");
+        if(split<1)return false;
+        return validIncomeIds.has(String(key).slice(0,split));
+      })
+    );
+    return {...blank,...decoded,setupReviewSeen,additionalPaychecks,paycheckOverrides,bills:fixedBills,paycheckHistory:Array.isArray(decoded.paycheckHistory)?decoded.paycheckHistory:[],paymentHistory:Array.isArray(decoded.paymentHistory)?decoded.paymentHistory:[]};
   }
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:105};
+      bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:106};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -5921,10 +5933,14 @@ textarea:focus-visible{
       const extras=Array.isArray(state.additionalPaychecks)?state.additionalPaychecks:[];
       if(extras.length){
         const promote=extras[0];
-        copyOverrides("primary",null);
+        const promotePrefix=String(promote.id)+"|";
         Object.entries(overrides).forEach(([key,value])=>{
-          const prefix=String(promote.id)+"|";
-          if(key.startsWith(prefix))nextOverrides["primary|"+key.slice(prefix.length)]=value;
+          if(key.startsWith("primary|"))return;
+          if(key.startsWith(promotePrefix)){
+            nextOverrides["primary|"+key.slice(promotePrefix.length)]=value;
+            return;
+          }
+          nextOverrides[key]=value;
         });
         state={
           ...state,
