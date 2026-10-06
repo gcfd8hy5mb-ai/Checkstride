@@ -4589,14 +4589,21 @@ textarea:focus-visible{
     };
   }
 
+  function autonomousPlanMatches(a,b){
+    if(!a||!b)return false;
+    const moneyKeys=["income","due","cushion","catchup","goalAllocation","safe"];
+    return moneyKeys.every(key=>Math.abs(clampMoney(a[key])-clampMoney(b[key]))<=1)
+      && String(a.strategy||"")===String(b.strategy||"")
+      && String(a.goalName||"")===String(b.goalName||"");
+  }
+
   function currentAutonomousPlan(){
     const existing=state.smartMemory?.autonomousPlan;
     const fresh=buildAutonomousPlan();
     if(!fresh)return null;
     if(!existing)return fresh;
     const stale=!existing.createdAt || Date.now()-new Date(existing.createdAt).getTime()>12*60*60*1000;
-    const material=Math.abs(clampMoney(existing.income)-fresh.income)>1 || Math.abs(clampMoney(existing.due)-fresh.due)>1;
-    return stale||material?fresh:existing;
+    return stale||!autonomousPlanMatches(existing,fresh)?fresh:existing;
   }
 
   // Level 8 — strategy is selected from outcomes, context and runway instead of one rule.
@@ -5658,8 +5665,10 @@ textarea:focus-visible{
     $("diagnosisDetail").textContent=od.detail;
 
     const autoPlan=currentAutonomousPlan();
-    $("autoplanStatus").textContent=state.smartMemory?.autonomousPlan?.approvedAt?"Approved":"Draft";
-    $("autoplanHeadline").textContent=autoPlan?`Draft plan for ${money(autoPlan.income)} of income`:"Finish setup to generate a paycheck plan.";
+    const storedPlan=state.smartMemory?.autonomousPlan;
+    const autoPlanApproved=!!(autoPlan&&storedPlan?.approvedAt&&autonomousPlanMatches(storedPlan,autoPlan));
+    $("autoplanStatus").textContent=autoPlanApproved?"Approved":"Draft";
+    $("autoplanHeadline").textContent=autoPlan?`${autoPlanApproved?"Approved":"Draft"} plan for ${money(autoPlan.income)} of income`:"Finish setup to generate a paycheck plan.";
     $("autoplanWhy").textContent=autoPlan?autoPlan.why:"Checkstride will allocate the paycheck without moving money or paying bills.";
     $("autoplanList").innerHTML=autoPlan?[
       ["Bills due",money(autoPlan.due)],
