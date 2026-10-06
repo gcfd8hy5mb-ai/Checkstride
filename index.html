@@ -5859,12 +5859,20 @@ textarea:focus-visible{
     if(!email)return setMsg("authMsg","Enter your email first.");
     const attempt=++authRevision;
     const stillCurrent=()=>attempt===authRevision;
+    const button=$("resetPassword");
+    button.disabled=true;
+    button.textContent="Sending…";
     setMsg("authMsg","Sending reset email…");
     try{
       await authRequest("accounts:sendOobCode",{requestType:"PASSWORD_RESET",email});
-      if(stillCurrent())setMsg("authMsg","Password reset email sent.");
+      if(stillCurrent())setMsg("authMsg","Password reset email sent. Check your inbox and spam folder.");
     }catch{
       if(stillCurrent())setMsg("authMsg","If that email has an account, a reset email will be sent.");
+    }finally{
+      if(stillCurrent()){
+        button.disabled=false;
+        button.textContent="Forgot password?";
+      }
     }
   };
   $("logout").onclick=async()=>{
