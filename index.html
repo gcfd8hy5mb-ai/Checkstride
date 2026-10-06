@@ -6277,6 +6277,12 @@ textarea:focus-visible{
         unexpectedSpend:unexpected,
         strategy:state.strategy
       }].slice(-52),
+      paycheckOverrides:(()=>{
+        const next={...(state.paycheckOverrides||{})};
+        const completedDate=dateKey(completedEvent.date);
+        completedEvent.sources.forEach(src=>delete next[incomeOverrideKey(src.sourceId,completedDate)]);
+        return next;
+      })(),
       payday:(()=>{
         const primaryPaid=completedEvent.sources.some(s=>s.primary);
         return primaryPaid?advancePayday(state.payday,state.frequency):state.payday;
