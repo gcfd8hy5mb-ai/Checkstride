@@ -6206,12 +6206,34 @@ textarea:focus-visible{
   };
   if($("billDetailsRemove"))$("billDetailsRemove").onclick=()=>{
     if(!selectedBillId)return;
+    const button=$("billDetailsRemove");
+    if(button?.dataset?.armed!=="1"){
+      button.dataset.armed="1";
+      button.textContent="Tap again to remove";
+      button.classList.add("armed");
+      setTimeout(()=>{
+        if(button && document.body.contains(button)){
+          button.dataset.armed="0";
+          button.textContent="Remove bill";
+          button.classList.remove("armed");
+        }
+      },3000);
+      return;
+    }
     const id=selectedBillId;
+    button.dataset.armed="0";
+    button.textContent="Remove bill";
+    button.classList.remove("armed");
     removeBillById(id);
     selectedBillId=null;
     $("billDetailsView")?.classList.add("hidden");
     $("billsOverviewView")?.classList.remove("hidden");
     renderBillsPage();
+    renderSnapshot();
+    renderHomeUpcoming();
+    renderBillIncomeRatio();
+    renderPlanOverview();
+    renderSetupGuide();
   };
 
 
