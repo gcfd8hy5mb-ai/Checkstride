@@ -4255,11 +4255,22 @@ textarea:focus-visible{
   function getSmartMemory(){
     const m=state.smartMemory&&typeof state.smartMemory==="object"?state.smartMemory:{};
     return {
+      ...m,
       planWins:Number(m.planWins||0),
       planMisses:Number(m.planMisses||0),
       lastRecommendation:String(m.lastRecommendation||""),
       lastOutcome:String(m.lastOutcome||""),
-      lastSnapshot:m.lastSnapshot||null
+      lastSnapshot:m.lastSnapshot||null,
+      predictions:Array.isArray(m.predictions)?m.predictions:[],
+      spendingPatterns:m.spendingPatterns&&typeof m.spendingPatterns==="object"?m.spendingPatterns:{},
+      adaptivePlan:m.adaptivePlan&&typeof m.adaptivePlan==="object"?m.adaptivePlan:{},
+      contextCalibration:m.contextCalibration&&typeof m.contextCalibration==="object"?m.contextCalibration:{},
+      decisionMemory:m.decisionMemory&&typeof m.decisionMemory==="object"?m.decisionMemory:{contexts:{},lastDecision:null},
+      diagnostics:Array.isArray(m.diagnostics)?m.diagnostics:[],
+      autonomousPlan:m.autonomousPlan||null,
+      goals:Array.isArray(m.goals)?m.goals:[],
+      warnings:Array.isArray(m.warnings)?m.warnings:[],
+      coachMode:String(m.coachMode||"guided")
     };
   }
   function paycheckStats(){
@@ -6278,9 +6289,10 @@ textarea:focus-visible{
   $("saveGoal").onclick=()=>{
     const name=$("goalName").value.trim(),target=clampMoney($("goalTarget").value),saved=clampMoney($("goalSaved").value);
     if(!name||target<=0)return;
-    const m=getSmartMemory();
-    state={...state,smartMemory:{...m,goals:[{id:"primary",name,target,saved,createdAt:new Date().toISOString()}]}};
+    const m=getSmartMemory(), existing=primaryGoal();
+    state={...state,smartMemory:{...m,goals:[{id:"primary",name,target,saved,createdAt:existing?.createdAt||new Date().toISOString()}],autonomousPlan:null}};
     scheduleSave();
+    renderPlanOverview();
   };
   $("toggleCoachMode").onclick=()=>{
     const m=getSmartMemory(), next=(m.coachMode||"guided")==="guided"?"auto-draft":"guided";
