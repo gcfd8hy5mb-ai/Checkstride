@@ -2161,6 +2161,217 @@ select{
 .income-add-job{margin:12px 0 0}
 .income-job-edit-view{min-height:55vh}
 .income-edit-card{margin-top:4px}
+
+/* v77 home information architecture */
+.home-summary{
+  display:grid;
+  grid-template-columns:1.2fr .8fr;
+  gap:0;
+  border:1px solid rgba(28,144,255,.6);
+  border-radius:18px;
+  background:linear-gradient(135deg,#0e355c,#0b1e33);
+  padding:16px;
+  overflow:hidden;
+}
+.home-summary .safe-block,
+.home-summary .payday-block{display:grid;gap:4px}
+.home-summary .payday-block{
+  border-left:1px solid rgba(143,207,255,.28);
+  padding-left:16px;
+}
+.home-summary span{
+  color:#a9bed7;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-size:10px;
+  font-weight:800;
+}
+.home-summary strong{font-size:24px;line-height:1.05}
+.home-summary .safe-block strong{font-size:38px;color:#24b7ff}
+.home-summary small{color:var(--muted-readable-strong);font-size:11px}
+#billIncomeRatioCard{
+  padding:15px;
+  border-radius:18px;
+}
+#billIncomeRatioCard .ratio-head{align-items:start}
+#billIncomeRatioCard .ratio-head h2{font-size:19px;line-height:1.25;margin-top:4px}
+#billIncomeRatioCard .ratio-head>strong{font-size:34px}
+#billIncomeRatioCard .ratio-bar{margin-top:12px}
+#billIncomeRatioCard .bill-compact-summary{
+  display:block!important;
+  margin:10px 0 0;
+  color:var(--muted-readable-strong);
+  font-size:13px;
+}
+.home-ratio-hidden{display:none!important}
+
+.home-period-tabs{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:4px;
+  border:1px solid var(--border);
+  background:#0b1b2b;
+  border-radius:15px;
+  padding:4px;
+}
+.home-period-tabs button{
+  min-height:46px;
+  border:0;
+  border-radius:11px;
+  background:transparent;
+  color:#a8bdd6;
+  font-family:inherit;
+  font-size:11px;
+  font-weight:800;
+  padding:8px 6px;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:rgba(22,137,255,.18);
+}
+.home-period-tabs button.active{
+  background:#1689ff;
+  color:white;
+  box-shadow:0 4px 18px rgba(22,137,255,.24);
+}
+.home-period-tabs button:active,
+.home-period-header:active,
+.home-collapsed-periods button:active,
+.snapshot-bill:active,
+#homeOpenPlan:active{transform:scale(.99);opacity:.9}
+
+.home-period-card{
+  padding:0;
+  overflow:hidden;
+  border-radius:18px;
+}
+.home-period-header{
+  width:100%;
+  min-height:68px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  padding:15px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  text-align:left;
+  font-family:inherit;
+  touch-action:manipulation;
+}
+.home-period-header h2{margin:0;font-size:22px}
+.home-period-header p{margin:3px 0 0;color:#9fb5cf;font-size:13px}
+#homePeriodChevron{font-size:24px;color:#36a9ff;line-height:1}
+#homePeriodBody{padding:0 14px 14px}
+.home-setaside-total{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  border:1px solid rgba(84,139,196,.34);
+  background:#10253a;
+  border-radius:14px;
+  padding:13px;
+}
+.home-setaside-total span{font-size:13px;font-weight:750;line-height:1.3}
+.home-setaside-total>div:last-child{text-align:right;display:grid;gap:2px}
+.home-setaside-total b{font-size:22px}
+.home-setaside-total small{color:#a8bdd6;font-size:11px}
+.home-setaside-help{margin:10px 2px;color:#9eb4cc;font-size:11px;line-height:1.4}
+.home-snapshot-secondary{grid-template-columns:1fr 1fr}
+.snapshot-list{display:grid;gap:7px}
+.snapshot-bill{
+  min-height:66px;
+  border:1px solid rgba(84,139,196,.26);
+  border-radius:13px;
+  padding:11px 12px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  gap:9px;
+  align-items:center;
+  background:#0c1e30;
+}
+.snapshot-bill .name{display:grid;gap:2px}
+.snapshot-bill .name b{font-size:13px}
+.snapshot-bill .name small{font-size:10px;color:#9eb4cc}
+.snapshot-bill .split-primary{font-size:10px;color:#8fcfff}
+.snapshot-bill .split-secondary{display:none}
+.snapshot-bill .amount{font-size:14px;font-weight:800}
+.snapshot-bill .paid-toggle{
+  min-height:44px;
+  min-width:76px;
+  border-radius:10px;
+  touch-action:manipulation;
+}
+.home-upcoming-heading{
+  align-items:center;
+  margin-bottom:10px;
+}
+.home-upcoming-heading h2{margin:0;font-size:18px}
+.home-upcoming-heading span{display:block;color:#9eb4cc;font-size:10px;margin-top:2px}
+.home-upcoming-heading button{
+  min-height:44px;
+  border:1px solid rgba(88,184,255,.32);
+  border-radius:11px;
+  background:#102235;
+  color:#8fcfff;
+  font:750 11px var(--font);
+  padding:8px 12px;
+}
+#homeUpcomingList .bill-row-modern{
+  min-height:64px;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+
+.home-collapsed-periods{display:grid;gap:8px}
+.home-collapsed-periods button{
+  width:100%;
+  min-height:62px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:#0b1b2b;
+  color:inherit;
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  text-align:left;
+  font-family:inherit;
+  touch-action:manipulation;
+}
+.home-collapsed-periods button div{display:grid;gap:2px}
+.home-collapsed-periods button b{font-size:16px}
+.home-collapsed-periods button small{font-size:11px;color:#9eb4cc}
+.home-collapsed-periods button span{font-size:22px;color:#a6c7ec}
+
+.home-stride-card{
+  border:1px solid rgba(22,137,255,.65);
+  border-radius:18px;
+  background:linear-gradient(135deg,#0e355c,#0a2138);
+  padding:13px;
+  display:grid;
+  gap:11px;
+}
+.home-stride-copy{display:flex;gap:10px;align-items:center}
+.home-stride-copy>div{display:grid;gap:2px}
+.home-stride-copy b{font-size:15px}
+.home-stride-copy small{font-size:11px;color:#a7bdd5;line-height:1.35}
+.home-stride-icon{font-size:24px;color:#36c4ff}
+#homeOpenPlan{
+  min-height:46px;
+  border:0;
+  border-radius:13px;
+  background:#1689ff;
+  color:white;
+  font:800 12px var(--font);
+  touch-action:manipulation;
+}
+
+@media(max-width:430px){
+  .home-summary{grid-template-columns:1.15fr .85fr;padding:14px}
+  .home-summary .safe-block strong{font-size:34px}
+  .home-period-tabs{grid-template-columns:1fr 1fr}
+  .home-period-tabs button{min-height:44px}
+}
 </style>
 </head>
 <body>
@@ -2235,15 +2446,11 @@ select{
   </section>
 
 
-  <section class="home-actions section" id="homeActions">
-    <button type="button" id="homeEditPaycheck">Paychecks</button>
-    <button type="button" id="homeAddBill">Add bill</button>
-  </section>
-
   <section class="home-summary section" id="quickStats">
     <div class="safe-block">
       <span>Safe to Spend</span>
       <strong id="safeSpend">$0.00</strong>
+      <small>After bills and upcoming payments</small>
     </div>
     <div class="payday-block">
       <span>Next Payday</span>
@@ -2260,70 +2467,74 @@ select{
       </div>
       <strong id="billIncomeRatioPercent">—</strong>
     </div>
-    <div class="ratio-bar"><i id="billIncomeRatioBar"></i></div><p id="billCompactSummary" class="bill-compact-summary">Monthly bill summary</p>
-    <div class="ratio-numbers">
+    <div class="ratio-bar"><i id="billIncomeRatioBar"></i></div>
+    <p id="billCompactSummary" class="bill-compact-summary">Monthly bill summary</p>
+    <div class="ratio-numbers home-ratio-hidden">
       <div><span>Monthly income</span><b id="monthlyIncomeTotal">$0.00</b></div>
       <div><span>Monthly bills</span><b id="monthlyBillsTotal">$0.00</b></div>
       <div><span>Ratio</span><b id="billIncomeRatioRaw">—</b></div>
     </div>
-    <p id="billIncomeRatioNote">Add your paycheck schedule and bills to see how much of your monthly income is committed.</p>
+    <p id="billIncomeRatioNote" class="home-ratio-hidden">Add your paycheck schedule and bills to see how much of your monthly income is committed.</p>
   </section>
 
-  <section class="status-grid section" id="statusCards">
-    <button type="button" class="status-card overdue" data-home-bill-filter="overdue" aria-label="Show overdue bills">
-      <span>Overdue</span>
-      <b id="statusOverdueCount">0 bills</b>
-      <strong id="quickOverdue">$0.00</strong>
-    </button>
-    <button type="button" class="status-card due" data-home-bill-filter="due" aria-label="Show bills due soon">
-      <span>Due Soon</span>
-      <b id="statusDueSoonCount">0 bills</b>
-      <strong id="statusDueSoonAmount">$0.00</strong>
-    </button>
-    <button type="button" class="status-card upcoming" data-home-bill-filter="upcoming" aria-label="Show upcoming bills">
-      <span>Upcoming</span>
-      <b id="statusUpcomingCount">0 bills</b>
-      <strong id="statusUpcomingAmount">$0.00</strong>
-    </button>
+  <section class="home-period-tabs section" id="homePeriodTabs" role="tablist" aria-label="Home planning period">
+    <button type="button" class="active" data-home-period="this" role="tab">This paycheck</button>
+    <button type="button" data-home-period="next" role="tab">Next paycheck</button>
+    <button type="button" data-home-period="totals" role="tab">Whole month</button>
+    <button type="button" data-home-period="upcoming" role="tab">Upcoming bills</button>
   </section>
 
-  <section class="card snapshot-card section" id="billSnapshot">
-    <div class="snapshot-head">
+  <section class="card snapshot-card home-period-card section" id="billSnapshot">
+    <button type="button" class="home-period-header" id="homePeriodHeader" aria-expanded="true">
       <div>
-        <h2>Bills for this paycheck</h2>
-        <p>What Stride wants this check to cover.</p>
+        <h2 id="homePeriodTitle">This paycheck</h2>
+        <p id="snapshotRange">Current paycheck</p>
       </div>
-      <button id="viewBillsFromSnapshot" type="button">View All</button>
-    </div>
+      <span id="homePeriodChevron" aria-hidden="true">⌃</span>
+    </button>
 
-    <div class="snapshot-tabs" role="tablist" aria-label="Bills snapshot period">
-      <button type="button" class="active" data-snapshot="this">This Check</button>
-      <button type="button" data-snapshot="next">Next Check</button>
-      <button type="button" data-snapshot="totals">This Month</button>
-    </div>
+    <div id="homePeriodBody">
+      <div id="homeSnapshotBody">
+        <div class="home-setaside-total">
+          <div>
+            <span id="snapshotTotalLabel">Total to set aside from this paycheck</span>
+          </div>
+          <div>
+            <b id="snapshotTotal">$0.00</b>
+            <small id="snapshotBillCount">0 bills</small>
+          </div>
+        </div>
 
-    <div class="snapshot-range-row">
-      <span id="snapshotRange">Current paycheck</span>
-      <span id="snapshotBillCount">0 bills</span>
-    </div>
+        <p class="home-setaside-help" id="homeSetasideHelp">Set aside this amount from your paycheck to cover these bills.</p>
 
-    <div class="snapshot-totals">
-      <div><span>Set aside</span><b id="snapshotTotal">$0.00</b></div>
-      <div><span>Already paid</span><b id="snapshotPaid">$0.00</b></div>
-      <div><span>Still due</span><b id="snapshotRemaining">$0.00</b></div>
-    </div>
+        <div class="snapshot-totals home-snapshot-secondary">
+          <div><span>Already paid</span><b id="snapshotPaid">$0.00</b></div>
+          <div><span>Still due</span><b id="snapshotRemaining">$0.00</b></div>
+        </div>
 
-    <div class="snapshot-progress"><i id="snapshotProgress"></i></div>
-    <div class="snapshot-progress-copy"><span id="snapshotProgressText">0% paid</span></div>
-    <div id="snapshotList" class="snapshot-list"></div>
+        <div class="snapshot-progress"><i id="snapshotProgress"></i></div>
+        <div class="snapshot-progress-copy"><span id="snapshotProgressText">0% paid</span></div>
+        <div id="snapshotList" class="snapshot-list"></div>
+      </div>
+
+      <div id="homeUpcomingWrap" class="hidden">
+        <div class="section-head-row home-upcoming-heading">
+          <div><h2>Upcoming bills</h2><span>Next bills, sorted by due date.</span></div>
+          <button type="button" id="viewBillsFromSnapshot">View all</button>
+        </div>
+        <div id="homeUpcomingList" class="list"></div>
+      </div>
+    </div>
   </section>
 
-  <section class="card section upcoming-home" id="todayFocus">
-    <div class="section-head-row">
-      <h2>Next bills</h2>
-      <span>By due date</span>
+  <section class="home-collapsed-periods section" id="homeCollapsedPeriods" aria-label="Other planning periods"></section>
+
+  <section class="home-stride-card section" id="homeStrideCard">
+    <div class="home-stride-copy">
+      <span class="home-stride-icon">✦</span>
+      <div><b>Stride says</b><small id="homeStrideText">Your plan is ready when your paycheck and bills are set up.</small></div>
     </div>
-    <div id="homeUpcomingList" class="list"></div>
+    <button type="button" id="homeOpenPlan">Open plan</button>
   </section>
 
   <section class="more-menu section" id="moreMenuSection">
@@ -2818,7 +3029,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:76};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:77};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -3514,6 +3725,8 @@ select{
 
 
   let snapshotView="this";
+  let homePeriodView="this";
+  let homePeriodExpanded=true;
   let billsView="totals", billFilter="all";
 
   function previousPayday(nextDate,frequency){
@@ -3810,6 +4023,17 @@ select{
   function renderSnapshot(){
     const snap=snapshotData(snapshotView);
     if(!$("billSnapshot"))return;
+    const labels={
+      this:{title:"This paycheck",total:"Total to set aside from this paycheck",help:"Set aside this amount from your paycheck to cover these bills."},
+      next:{title:"Next paycheck",total:"Total to set aside from next paycheck",help:"Set aside this amount from your next paycheck to cover these bills."},
+      totals:{title:"Whole month",total:"Total bills for the whole month",help:"Your listed bills for the month, including what has already been paid."}
+    };
+    const label=labels[snapshotView]||labels.this;
+    if($("homePeriodTitle"))$("homePeriodTitle").textContent=label.title;
+    if($("snapshotTotalLabel"))$("snapshotTotalLabel").textContent=label.total;
+    if($("homeSetasideHelp"))$("homeSetasideHelp").textContent=label.help;
+    if($("homeSnapshotBody"))$("homeSnapshotBody").classList.remove("hidden");
+    if($("homeUpcomingWrap"))$("homeUpcomingWrap").classList.add("hidden");
     $("snapshotRange").textContent=snap.range;
     $("snapshotTotal").textContent=money(snap.total);
     $("snapshotPaid").textContent=money(snap.paid);
@@ -3964,6 +4188,57 @@ select{
       </div>`;
     }).join(""):'<div class="empty">No upcoming bills.</div>';
   }
+
+  function homePeriodMeta(view){
+    const snap=view==="upcoming"?null:snapshotData(view);
+    if(view==="this")return{title:"This paycheck",sub:snap?.range||"Current paycheck"};
+    if(view==="next")return{title:"Next paycheck",sub:snap?.range||"Next paycheck"};
+    if(view==="totals")return{title:"Whole month",sub:snap?.range||"This month"};
+    return{title:"Upcoming bills",sub:"Next bills, sorted by due date"};
+  }
+
+  function renderHomePeriod(){
+    document.querySelectorAll("[data-home-period]").forEach(btn=>{
+      const active=btn.dataset.homePeriod===homePeriodView;
+      btn.classList.toggle("active",active);
+      btn.setAttribute("aria-selected",active?"true":"false");
+    });
+
+    const meta=homePeriodMeta(homePeriodView);
+    if($("homePeriodTitle"))$("homePeriodTitle").textContent=meta.title;
+    if($("snapshotRange"))$("snapshotRange").textContent=meta.sub;
+    if($("homePeriodBody"))$("homePeriodBody").classList.toggle("hidden",!homePeriodExpanded);
+    if($("homePeriodHeader"))$("homePeriodHeader").setAttribute("aria-expanded",homePeriodExpanded?"true":"false");
+    if($("homePeriodChevron"))$("homePeriodChevron").textContent=homePeriodExpanded?"⌃":"⌄";
+
+    if(homePeriodView==="upcoming"){
+      $("homeSnapshotBody")?.classList.add("hidden");
+      $("homeUpcomingWrap")?.classList.remove("hidden");
+      renderHomeUpcoming();
+    }else{
+      snapshotView=homePeriodView;
+      renderSnapshot();
+    }
+
+    const order=["this","next","totals","upcoming"].filter(v=>v!==homePeriodView);
+    if($("homeCollapsedPeriods")){
+      $("homeCollapsedPeriods").innerHTML=order.map(v=>{
+        const m=homePeriodMeta(v);
+        return `<button type="button" data-home-collapsed="${v}" aria-label="Open ${escapeHtml(m.title)}">
+          <div><b>${escapeHtml(m.title)}</b><small>${escapeHtml(m.sub)}</small></div>
+          <span aria-hidden="true">⌄</span>
+        </button>`;
+      }).join("");
+    }
+  }
+
+  function setHomePeriod(view){
+    if(!["this","next","totals","upcoming"].includes(view))return;
+    homePeriodView=view;
+    homePeriodExpanded=true;
+    renderHomePeriod();
+  }
+
 
   function renderBillIncomeRatio(){
     if(!$("billIncomeRatioCard"))return;
@@ -4315,6 +4590,13 @@ select{
     renderSnapshot();
     renderBillsPage();
     renderHomeUpcoming();
+    renderHomePeriod();
+    if($("homeStrideText")){
+      const first=firstIncomeEvent();
+      $("homeStrideText").textContent=first
+        ? `Next payday is ${first.date.toLocaleDateString(undefined,{month:"short",day:"numeric"})}. Keep an eye on upcoming bills.`
+        : "Add your paycheck schedule so Stride can build your plan.";
+    }
     renderStatusCards();
     renderBillIncomeRatio();
     renderGreeting();
@@ -4704,9 +4986,29 @@ select{
   if($("showAddBill"))$("showAddBill").onclick=()=>{$("addBillPanel").open=true;$("billName").focus()};
   if($("snapshotViewAllBottom"))$("snapshotViewAllBottom").onclick=()=>switchPage("bills");
 
+
+  document.querySelectorAll("[data-home-period]").forEach(btn=>{
+    btn.onclick=()=>setHomePeriod(btn.dataset.homePeriod);
+  });
+
+  if($("homePeriodHeader"))$("homePeriodHeader").onclick=()=>{
+    homePeriodExpanded=!homePeriodExpanded;
+    renderHomePeriod();
+  };
+
+  if($("homeCollapsedPeriods")){
+    $("homeCollapsedPeriods").onclick=e=>{
+      const target=e.target instanceof Element?e.target.closest("[data-home-collapsed]"):null;
+      if(!target)return;
+      setHomePeriod(target.dataset.homeCollapsed);
+      setTimeout(()=>$("billSnapshot")?.scrollIntoView({behavior:"smooth",block:"start"}),20);
+    };
+  }
+
+  if($("homeOpenPlan"))$("homeOpenPlan").onclick=()=>switchPage("coach");
   const PAGE_GROUPS={
-    home:["setupGuide","homeSection","homeActions","quickStats","billSnapshot","todayFocus"],
-    bills:["billIncomeRatioCard","billsSection"],
+    home:["setupGuide","homeSection","quickStats","billIncomeRatioCard","homePeriodTabs","billSnapshot","homeCollapsedPeriods","homeStrideCard"],
+    bills:["billsSection"],
     coach:["autoplanSection","strideRecommendationDropdown","scenarioSection","completePaycheckDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced"],
     more:["moreMenuSection"]
   };
@@ -4759,7 +5061,7 @@ select{
     document.querySelectorAll(".smart-stride-dropdown,.learning-dropdown,.utility-dropdown").forEach(d=>d.removeAttribute("open"));
     const allIds=[...new Set([
       ...Object.values(PAGE_GROUPS).flat(),
-      "billIncomeRatioCard","statusCards","autoplanSection","scenarioSection","planAdvanced",
+      "billIncomeRatioCard","statusCards","homePeriodTabs","homeCollapsedPeriods","homeStrideCard","autoplanSection","scenarioSection","planAdvanced",
       "moreMenuSection","moreSubpageHead","setupSection","goalsSection","moreAdvanced","accountSection"
     ])];
     allIds.forEach(id=>{const el=$(id);if(el)el.classList.add("appPageHidden")});
