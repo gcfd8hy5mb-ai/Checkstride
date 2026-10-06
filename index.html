@@ -6555,8 +6555,11 @@ textarea:focus-visible{
     }catch(e){
       const code=String(e?.message||"");
       if(code.includes("SESSION_EXPIRED")||code.includes("INVALID")||code.includes("REFRESH_TIMEOUT")){
+        clearTimeout(saveTimer);saveTimer=null;
         localStorage.removeItem(SESSION_KEY);
-        session=null;hydrated=false;
+        sessionStorage.removeItem("checkstride_page");
+        sessionStorage.removeItem("checkstride_more_destination");
+        session=null;hydrated=false;state={...blank};
         show("auth");
         setMsg("authMsg","Your session expired. Sign in again.");
       }else{
