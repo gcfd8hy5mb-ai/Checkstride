@@ -5200,6 +5200,7 @@ textarea:focus-visible{
     const spendPct=Math.max(0,100-billsPct-protectedPct);
     const protectedStop=billsPct+protectedPct;
     const coach=closedLoopCoach();
+    const currentPlan=currentAutonomousPlan();
     const confidence=forecastReasoning().confidence||0;
 
     document.querySelectorAll("[data-plan-view]").forEach(btn=>btn.classList.toggle("active",btn.dataset.planView===planView));
@@ -5215,6 +5216,14 @@ textarea:focus-visible{
     $("planSummaryBills").textContent=money(d.bills);
     $("planSummaryProtected").textContent=money(d.protected);
     $("planSummarySafe").textContent=money(d.safe);
+    if(planView==="this" && currentPlan){
+      $("planBillsAmount").textContent=money(currentPlan.due+currentPlan.catchup);
+      $("planProtectedAmount").textContent=money(currentPlan.cushion+currentPlan.goalAllocation);
+      $("planSpendAmount").textContent=money(currentPlan.safe);
+      $("planSummaryBills").textContent=money(currentPlan.due+currentPlan.catchup);
+      $("planSummaryProtected").textContent=money(currentPlan.cushion+currentPlan.goalAllocation);
+      $("planSummarySafe").textContent=money(currentPlan.safe);
+    }
     $("planRecommendationAction").textContent=coach.action;
     $("planRecommendationWhy").textContent=coach.reason;
     $("planConfidencePill").textContent=confidence>=80?"High confidence":confidence>=60?"Medium confidence":confidence>=35?"Low confidence":"Learning";
@@ -5745,7 +5754,6 @@ textarea:focus-visible{
     const warns=proactiveWarnings();
     $("warningCount").textContent=`${warns.length} active`;
     $("warningList").innerHTML=warns.length?warns.map(w=>`<div class="warning-item ${w.severity}"><b>${escapeHtml(w.title)}</b><small>${escapeHtml(w.detail)}</small></div>`).join(""):'<p class="empty">No proactive warnings right now.</p>';
-    const coachHome=closedLoopCoach(), homePlan=currentAutonomousPlan();
     const topWarning=warns[0];
 
     const now=new Date(), currentDay=now.getDate();
@@ -5783,10 +5791,12 @@ textarea:focus-visible{
     renderHomeUpcoming();
     renderHomePeriod();
     if($("homeStrideText")){
-      const first=firstIncomeEvent();
-      $("homeStrideText").textContent=first
-        ? `Next payday is ${first.date.toLocaleDateString(undefined,{month:"short",day:"numeric"})}. Keep an eye on upcoming bills.`
-        : "Add your paycheck schedule so Stride can build your plan.";
+      const first=firstIncomeEvent(), homePlan=currentAutonomousPlan();
+      $("homeStrideText").textContent=first&&homePlan
+        ? `Next payday is ${first.date.toLocaleDateString(undefined,{month:"short",day:"numeric"})}. Stride plans ${money(homePlan.due+homePlan.catchup)} for bills/catch-up, ${money(homePlan.cushion+homePlan.goalAllocation)} protected, and ${money(homePlan.safe)} safe to spend.`
+        : first
+          ? `Next payday is ${first.date.toLocaleDateString(undefined,{month:"short",day:"numeric"})}. Keep an eye on upcoming bills.`
+          : "Add your paycheck schedule so Stride can build your plan.";
     }
     renderBillIncomeRatio();
     renderGreeting();
