@@ -2148,6 +2148,19 @@ select{
 .income-edit-card select{min-height:48px;font-size:16px}
 .income-edit-card .primary-btn,
 .income-edit-card .ghost{width:100%;min-height:46px}
+
+/* v75 stripped-down paycheck hub */
+#incomeSettingsPanel{display:none!important}
+.income-hub{padding:14px}
+.income-hub>.title-row{margin-bottom:3px}
+.income-hub>.section-helper{margin:0 0 12px;font-size:12px;line-height:1.4}
+.income-two-month{margin-bottom:12px}
+.income-job-cards{gap:10px}
+.income-job-card{padding:14px}
+.income-job-card-stats{margin:10px 0}
+.income-add-job{margin:12px 0 0}
+.income-job-edit-view{min-height:55vh}
+.income-edit-card{margin-top:4px}
 </style>
 </head>
 <body>
@@ -2332,7 +2345,7 @@ select{
 
   <section class="card section income-hub" id="setupSection">
     <div class="title-row"><h2>Your paychecks</h2><span id="cloudStatus" class="status-saved">Saved</span></div>
-    <p class="section-helper">Choose a job to view or edit upcoming paychecks.</p>
+    <p class="section-helper">Choose a job to view its schedule or make changes.</p>
 
     <div id="incomeJobOverview">
       <section class="income-two-month" aria-label="Next two months of paychecks">
@@ -2347,41 +2360,25 @@ select{
 
       <button type="button" id="showAddIncomeJob" class="income-add-job">＋ Add another job</button>
 
-      <details class="income-settings-panel" id="incomeSettingsPanel">
-        <summary>Paycheck settings</summary>
-        <div class="income-settings-body">
-          <div class="income-settings-title"><b>Main job settings</b><small>Change the normal schedule used for future checks.</small></div>
-          <div class="form-grid">
-            <div class="field"><label>Job name</label><input id="primaryJobNameInput" placeholder="Main job" /></div>
-            <div class="field"><label>Next payday</label><input id="payday" type="date" /></div>
-            <div class="field"><label>Typical take-home pay</label><input id="paycheck" type="number" min="0" step="0.01" /></div>
-            <div class="field"><label>Extra income this check</label><input id="extraIncome" type="number" min="0" step="0.01" /></div>
-            <div class="field"><label>Money to keep untouched</label><input id="cushion" type="number" min="0" step="0.01" /></div>
-            <div class="field"><label>How often you get paid</label><select id="frequency"><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option><option value="semimonthly">1st & 15th</option><option value="monthly">Monthly</option></select></div>
-            <div class="field"><label>Catch-up style</label><select id="strategy"><option value="fastest">Catch up faster</option><option value="balanced">Balanced</option><option value="minimum">Protect more cash</option></select></div>
-          </div>
-
-          <div class="income-source-editor">
-            <div class="income-settings-title"><b id="incomeJobEditorTitle">Add another job</b><small>Add a separate job only if it has its own payday schedule.</small></div>
-            <div class="field"><label>Job name</label><input id="extraJobName" placeholder="Second job" /></div>
-            <div class="field"><label>Next payday</label><input id="extraJobPayday" type="date" /></div>
-            <div class="field"><label>Typical take-home pay</label><input id="extraJobPaycheck" type="number" min="0" step="0.01" /></div>
-            <div class="field"><label>How often</label><select id="extraJobFrequency"><option value="weekly">Weekly</option><option value="biweekly" selected>Biweekly</option><option value="semimonthly">1st & 15th</option><option value="monthly">Monthly</option></select></div>
-            <button id="saveIncomeSource" type="button" class="primary-btn">Add another job</button>
-            <button id="cancelIncomeSourceEdit" type="button" class="ghost hidden">Cancel</button>
-            <div id="incomeSourceMsg" class="msg hidden"></div>
-          </div>
-
-          <div class="income-sources legacy-income-list">
-            <div class="income-sources-head">
-              <div><b>Other jobs</b><small>Edit or remove another job.</small></div>
-              <span id="incomeSourceCount">1 job</span>
-            </div>
-            <div id="additionalIncomeList" class="income-source-list"></div>
-          </div>
-        </div>
-      </details>
-    </div>
+      <div id="incomeSettingsPanel" class="hidden" aria-hidden="true">
+        <input id="primaryJobNameInput" />
+        <input id="payday" type="date" />
+        <input id="paycheck" type="number" />
+        <input id="extraIncome" type="number" />
+        <input id="cushion" type="number" />
+        <select id="frequency"><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option><option value="semimonthly">1st & 15th</option><option value="monthly">Monthly</option></select>
+        <select id="strategy"><option value="fastest">Catch up faster</option><option value="balanced">Balanced</option><option value="minimum">Protect more cash</option></select>
+        <input id="extraJobName" />
+        <input id="extraJobPayday" type="date" />
+        <input id="extraJobPaycheck" type="number" />
+        <select id="extraJobFrequency"><option value="weekly">Weekly</option><option value="biweekly" selected>Biweekly</option><option value="semimonthly">1st & 15th</option><option value="monthly">Monthly</option></select>
+        <button id="saveIncomeSource" type="button">Add another job</button>
+        <button id="cancelIncomeSourceEdit" type="button" class="hidden">Cancel</button>
+        <div id="incomeSourceMsg" class="msg hidden"></div>
+        <b id="incomeJobEditorTitle">Add another job</b>
+        <span id="incomeSourceCount">1 job</span>
+        <div id="additionalIncomeList"></div>
+      </div>
 
     <div id="incomeJobEditView" class="income-job-edit-view hidden">
       <button type="button" id="incomeJobEditBack" class="income-back">‹ Paychecks & income</button>
@@ -2819,7 +2816,7 @@ select{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:74};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:75};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -4126,6 +4123,27 @@ select{
     $("editJobPayday").value=src.payday||"";
     $("editJobPaycheck").value=src.paycheck||"";
     $("editJobFrequency").value=src.frequency||"biweekly";
+    $("saveEditedJob").textContent="Save job";
+    setMsg("editJobMsg","");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  function openNewIncomeJob(){
+    editingIncomeTargetId="new";
+    selectedIncomeSourceId=null;
+    selectedPaydayKey=null;
+    incomeCalendarOffset=0;
+
+    $("incomeJobOverview")?.classList.add("hidden");
+    $("incomeScheduleView")?.classList.add("hidden");
+    $("incomeJobEditView")?.classList.remove("hidden");
+
+    $("incomeJobEditTitle").textContent="Add another job";
+    $("editJobName").value="";
+    $("editJobPayday").value="";
+    $("editJobPaycheck").value="";
+    $("editJobFrequency").value="biweekly";
+    $("saveEditedJob").textContent="Add job";
     setMsg("editJobMsg","");
     window.scrollTo({top:0,behavior:"smooth"});
   }
@@ -4414,15 +4432,7 @@ select{
     scheduleSave();
   };
 
-  if($("showAddIncomeJob"))$("showAddIncomeJob").onclick=()=>{
-    editingIncomeSourceId=null;
-    $("extraJobName").value="";$("extraJobPayday").value="";$("extraJobPaycheck").value="";$("extraJobFrequency").value="biweekly";
-    $("incomeJobEditorTitle").textContent="Add another job";
-    $("saveIncomeSource").textContent="Add another job";
-    $("cancelIncomeSourceEdit").classList.add("hidden");
-    $("incomeSettingsPanel").open=true;
-    setTimeout(()=>$("extraJobName")?.scrollIntoView({behavior:"smooth",block:"center"}),30);
-  };
+  if($("showAddIncomeJob"))$("showAddIncomeJob").onclick=openNewIncomeJob;
 
   if($("editIncomeJobSettings"))$("editIncomeJobSettings").onclick=()=>{
     if(selectedIncomeSourceId)openIncomeJobSettings(selectedIncomeSourceId);
@@ -4454,14 +4464,17 @@ select{
       return;
     }
 
-    if(sourceId==="primary"){
+    if(sourceId==="new"){
+      const rows=Array.isArray(state.additionalPaychecks)?state.additionalPaychecks:[];
+      state={...state,additionalPaychecks:[...rows,{id:newIncomeSourceId(),name,payday,paycheck,frequency}]};
+    }else if(sourceId==="primary"){
       state={...state,primaryJobName:name,payday,paycheck,frequency};
     }else{
       const rows=Array.isArray(state.additionalPaychecks)?state.additionalPaychecks:[];
       state={...state,additionalPaychecks:rows.map(x=>x.id===sourceId?{...x,name,payday,paycheck,frequency}:x)};
     }
 
-    setMsg("editJobMsg","Job saved.");
+    setMsg("editJobMsg",sourceId==="new"?"Job added.":"Job saved.");
     editingIncomeTargetId=null;
     scheduleSave();
     setTimeout(()=>{
@@ -4486,7 +4499,7 @@ select{
     if(edit){
       const x=(state.additionalPaychecks||[]).find(y=>y.id===edit.dataset.incomeEdit);if(!x)return;
       editingIncomeSourceId=x.id;$("extraJobName").value=x.name;$("extraJobPayday").value=x.payday;$("extraJobPaycheck").value=x.paycheck;$("extraJobFrequency").value=x.frequency;
-      $("incomeJobEditorTitle").textContent=`Edit ${x.name}`;$("saveIncomeSource").textContent="Save job";$("cancelIncomeSourceEdit").classList.remove("hidden");$("incomeSettingsPanel").open=true;return;
+      $("incomeJobEditorTitle").textContent=`Edit ${x.name}`;$("saveIncomeSource").textContent="Save job";$("cancelIncomeSourceEdit").classList.remove("hidden");return;
     }
     if(remove){
       state={...state,additionalPaychecks:(state.additionalPaychecks||[]).filter(x=>x.id!==remove.dataset.incomeRemove)};
