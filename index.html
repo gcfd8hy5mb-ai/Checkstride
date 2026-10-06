@@ -3081,6 +3081,25 @@ select:focus-visible{
 .income-job-card[role="button"]:focus-visible{outline:2px solid #55b8ff;outline-offset:2px}
 .income-job-card[role="button"]:active{transform:scale(.99);background:#102740!important}
 .income-edit-job{position:relative;z-index:2}
+
+/* v93 focused bill form */
+#addBillPanel[open]{
+  border:0!important;
+  background:transparent!important;
+  padding:0!important;
+  margin:0!important;
+}
+#addBillPanel[open]>summary{display:none!important}
+#addBillPanel[open] #billFormBack{display:inline-flex!important}
+#billFormBack{display:none}
+#addBillPanel[open] .bill-form{
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:#0b1b2b;
+  padding:13px;
+  margin-top:4px
+}
+#addBillPanel[open] .bill-helper{padding:8px 3px 0}
 </style>
 </head>
 <body>
@@ -3561,6 +3580,7 @@ select:focus-visible{
 
     <details class="add-bill-panel" id="addBillPanel">
       <summary>Add or edit a bill</summary>
+      <button type="button" id="billFormBack" class="income-back">‹ Bills</button>
       <div class="bill-form">
         <div class="field"><label>Bill name</label><input id="billName" placeholder="Rent" /></div>
         <div class="field"><label>Amount</label><input id="billAmount" type="number" min="0" step="0.01" /></div>
@@ -3838,7 +3858,7 @@ select:focus-visible{
   async function saveState(s,data){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
-      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:92};
+      bills:data.bills.map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:93};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
     const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
     if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
@@ -4788,7 +4808,7 @@ select:focus-visible{
     switchPage("bills");
     selectedBillId=null;
     $("billDetailsView")?.classList.add("hidden");
-    $("billsOverviewView")?.classList.remove("hidden");
+    $("billsOverviewView")?.classList.add("hidden");
     $("addBillPanel").open=true;
     $("billName").value=b.name||"";
     $("billAmount").value=clampMoney(b.amount)||"";
@@ -5776,6 +5796,30 @@ select:focus-visible{
     return "bill-"+Date.now()+"-"+Math.random().toString(36).slice(2,10);
   }
 
+  function resetBillForm(){
+    editingBillId=null;
+    $("billName").value="";
+    $("billAmount").value="";
+    $("billDueMode").value="date";
+    $("billDay").value="1";
+    $("billDayField").classList.remove("hidden");
+    $("billSplitMode").value="auto";
+    $("billPriority").value="important";
+    $("addBill").textContent="Add bill";
+    $("cancelBillEdit").classList.add("hidden");
+    setMsg("billMsg","");
+  }
+
+  function closeBillForm(){
+    resetBillForm();
+    $("addBillPanel")?.removeAttribute("open");
+    $("billDetailsView")?.classList.add("hidden");
+    $("billsOverviewView")?.classList.remove("hidden");
+    selectedBillId=null;
+    renderBillsPage();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
   function submitBill(){
     try{
     const name=$("billName").value.trim(),amount=clampMoney($("billAmount").value),dueMode=$("billDueMode").value,day=Math.trunc(Number($("billDay").value)),splitMode=$("billSplitMode").value,priority=$("billPriority").value;
@@ -5796,9 +5840,9 @@ select:focus-visible{
       setMsg("billMsg","Bill added.");
     }
 
-    $("billName").value="";$("billAmount").value="";$("billDueMode").value="date";$("billDay").value="1";$("billDayField").classList.remove("hidden");$("billSplitMode").value="auto";$("billPriority").value="important";
     try{renderBillsPage();renderSnapshot();renderHomeUpcoming();renderBillIncomeRatio()}catch(renderErr){console.error("Bill refresh error",renderErr)}
     scheduleSave();
+    setTimeout(closeBillForm,80);
     }catch(err){
       console.error("Add bill failed",err);
       setMsg("billMsg","Could not add bill. "+(err?.message||"Please try again."));
@@ -5817,6 +5861,8 @@ select:focus-visible{
   };
 
   if($("billDetailsBack"))$("billDetailsBack").onclick=closeBillDetails;
+  if($("billFormBack"))$("billFormBack").onclick=closeBillForm;
+  if($("cancelBillEdit"))$("cancelBillEdit").onclick=closeBillForm;
   if($("billDetailsEdit"))$("billDetailsEdit").onclick=()=>{
     if(selectedBillId)window.checkstrideEditBill(selectedBillId);
   };
@@ -5964,7 +6010,7 @@ select:focus-visible{
 
   document.querySelectorAll("[data-bills-view]").forEach(btn=>btn.onclick=()=>{billsView=btn.dataset.billsView||"this";billFilter="all";renderBillsPage()});
   document.querySelectorAll("[data-bill-filter]").forEach(btn=>btn.onclick=()=>{billFilter=btn.dataset.billFilter||"all";renderBillsPage()});
-  if($("showAddBill"))$("showAddBill").onclick=()=>{selectedBillId=null;$("billDetailsView")?.classList.add("hidden");$("billsOverviewView")?.classList.remove("hidden");$("addBillPanel").open=true;setTimeout(()=>{$("addBillPanel")?.scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("billName")?.focus({preventScroll:true}),280)},30)};
+  if($("showAddBill"))$("showAddBill").onclick=()=>{resetBillForm();selectedBillId=null;$("billDetailsView")?.classList.add("hidden");$("billsOverviewView")?.classList.add("hidden");$("addBillPanel").open=true;window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>$("billName")?.focus({preventScroll:true}),180)};
   if($("snapshotViewAllBottom"))$("snapshotViewAllBottom").onclick=()=>switchPage("bills");
 
 
@@ -6049,9 +6095,12 @@ select:focus-visible{
     $("pageHead")?.classList.remove("appPageHidden");
     if(page==="bills"){
       selectedBillId=null;
+      editingBillId=null;
       $("billsOverviewView")?.classList.remove("hidden");
       $("billDetailsView")?.classList.add("hidden");
       $("addBillPanel")?.removeAttribute("open");
+      if($("addBill"))$("addBill").textContent="Add bill";
+      $("cancelBillEdit")?.classList.add("hidden");
     }
     if(page==="coach"){
       ["planDetailShell","strideRecommendationDropdown","scenarioSection","completePaycheckDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced","autoplanSection"].forEach(id=>$(id)?.classList.add("appPageHidden"));
