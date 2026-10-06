@@ -6109,6 +6109,21 @@ textarea:focus-visible{
     }
     if(remove){
       const sourceId=remove.dataset.incomeRemove;
+      const src=incomeSources().find(x=>x.id===sourceId);
+      if(!src)return;
+      if(remove.dataset.armed!=="1"){
+        remove.dataset.armed="1";
+        remove.textContent="Tap again";
+        remove.classList.add("armed");
+        setTimeout(()=>{
+          if(remove && document.body.contains(remove)){
+            remove.dataset.armed="0";
+            remove.textContent="Remove";
+            remove.classList.remove("armed");
+          }
+        },3000);
+        return;
+      }
       if(!removeIncomeSourceById(sourceId))return;
       if(editingIncomeSourceId===sourceId)editingIncomeSourceId=null;
       if(selectedIncomeSourceId===sourceId)selectedIncomeSourceId=null;
