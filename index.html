@@ -5823,6 +5823,28 @@ textarea:focus-visible{
   async function submitAuth(){
     const button=$("authSubmit");
     if(button.disabled)return;
+    const email=$("email").value.trim();
+    const password=$("password").value;
+    if(!email){
+      setMsg("authMsg","Enter your email.");
+      $("email").focus();
+      return;
+    }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      setMsg("authMsg","Enter a valid email address.");
+      $("email").focus();
+      return;
+    }
+    if(!password){
+      setMsg("authMsg","Enter your password.");
+      $("password").focus();
+      return;
+    }
+    if(mode==="signup"&&password.length<6){
+      setMsg("authMsg","Use at least 6 characters for your password.");
+      $("password").focus();
+      return;
+    }
     const attempt=++authRevision;
     const stillCurrent=()=>attempt===authRevision;
     const label=mode==="signup"?"Create account":"Sign in";
@@ -5830,9 +5852,9 @@ textarea:focus-visible{
     button.textContent=mode==="signup"?"Creating account…":"Signing in…";
     setMsg("authMsg","");hydrated=false;
     try{
-      const j=await withTimeout(authRequest(mode==="signup"?"accounts:signUp":"accounts:signInWithPassword",{email:$("email").value.trim(),password:$("password").value,returnSecureToken:true}),8000,"AUTH_TIMEOUT");
+      const j=await withTimeout(authRequest(mode==="signup"?"accounts:signUp":"accounts:signInWithPassword",{email,password,returnSecureToken:true}),8000,"AUTH_TIMEOUT");
       if(!stillCurrent())return;
-      const s={idToken:j.idToken,refreshToken:j.refreshToken,localId:j.localId,email:j.email||$("email").value.trim()};
+      const s={idToken:j.idToken,refreshToken:j.refreshToken,localId:j.localId,email:j.email||email};
       const loaded=await withTimeout(loadState(s),7000,"LOAD_TIMEOUT");
       if(!stillCurrent())return;
       session=s;state=loaded.state;localStorage.setItem(SESSION_KEY,JSON.stringify(s));hydrated=true;
