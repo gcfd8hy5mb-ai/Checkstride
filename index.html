@@ -3424,9 +3424,9 @@ textarea:focus-visible{
       <div id="incomeSettingsPanel" class="hidden" aria-hidden="true">
         <input id="primaryJobNameInput" />
         <input id="payday" type="date" />
-        <input id="paycheck" type="number" />
-        <input id="extraIncome" type="number" />
-        <input id="cushion" type="number" />
+        <input id="paycheck" type="number" inputmode="decimal" />
+        <input id="extraIncome" type="number" inputmode="decimal" />
+        <input id="cushion" type="number" inputmode="decimal" />
         <select id="frequency"><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option><option value="semimonthly">1st & 15th</option><option value="monthly">Monthly</option></select>
         <select id="strategy"><option value="fastest">Catch up faster</option><option value="balanced">Balanced</option><option value="minimum">Protect more cash</option></select>
       </div>
@@ -3695,14 +3695,14 @@ textarea:focus-visible{
       <button type="button" id="billFormBack" class="income-back">‹ Bills</button>
       <div class="bill-form">
         <div class="field"><label>Bill name</label><input id="billName" placeholder="Rent" /></div>
-        <div class="field"><label>Amount</label><input id="billAmount" type="number" min="0" step="0.01" /></div>
+        <div class="field"><label>Amount</label><input id="billAmount" type="number" min="0" step="0.01" inputmode="decimal" /></div>
         <div class="field"><label>Due timing</label>
           <select id="billDueMode">
             <option value="date">I know the due date</option>
             <option value="monthly">Monthly — date unknown</option>
           </select>
         </div>
-        <div class="field" id="billDayField"><label>Due day</label><input id="billDay" type="number" min="1" max="31" value="1" /></div>
+        <div class="field" id="billDayField"><label>Due day</label><input id="billDay" type="number" min="1" max="31" value="1" inputmode="numeric" /></div>
         <div class="field"><label>Paycheck split</label>
           <select id="billSplitMode">
             <option value="auto">Stride recommended</option>
@@ -3788,9 +3788,9 @@ textarea:focus-visible{
   <section class="card section" id="scenarioSection">
     <div class="title-row"><h2>Try a change</h2><span>Preview</span></div>
     <div class="scenario-grid">
-      <div class="field"><label>Extra purchase</label><input id="scenarioPurchase" type="number" min="0" step="0.01" placeholder="0" /></div>
-      <div class="field"><label>Income change</label><input id="scenarioIncome" type="number" step="0.01" placeholder="0" /></div>
-      <div class="field"><label>Extra bill</label><input id="scenarioBill" type="number" min="0" step="0.01" placeholder="0" /></div>
+      <div class="field"><label>Extra purchase</label><input id="scenarioPurchase" type="number" min="0" step="0.01" placeholder="0" inputmode="decimal" /></div>
+      <div class="field"><label>Income change</label><input id="scenarioIncome" type="number" step="0.01" placeholder="0" inputmode="decimal" /></div>
+      <div class="field"><label>Extra bill</label><input id="scenarioBill" type="number" min="0" step="0.01" placeholder="0" inputmode="decimal" /></div>
     </div>
     <button id="runScenario" class="ghost" style="width:100%;margin-top:10px">Run scenario</button>
     <div id="scenarioResult" class="scenario-result"><span style="color:var(--muted);font-size:12px">Change an amount to see how it would affect your plan.</span></div>
@@ -3800,8 +3800,8 @@ textarea:focus-visible{
     <div class="title-row"><h2>Savings goal</h2><span id="goalSummary">No active goal</span></div><p class="section-helper" id="goalSectionHelper">Pick one goal to focus on. Stride will work it into your paycheck plan.</p>
     <div class="goal-row">
       <div class="field"><label>Goal</label><input id="goalName" placeholder="Emergency fund" /></div>
-      <div class="field"><label>Target</label><input id="goalTarget" type="number" min="0" step="0.01" placeholder="1000" /></div>
-      <div class="field"><label>Saved</label><input id="goalSaved" type="number" min="0" step="0.01" placeholder="0" /></div>
+      <div class="field"><label>Target</label><input id="goalTarget" type="number" min="0" step="0.01" placeholder="1000" inputmode="decimal" /></div>
+      <div class="field"><label>Saved</label><input id="goalSaved" type="number" min="0" step="0.01" placeholder="0" inputmode="decimal" /></div>
       <button id="saveGoal" class="primary-btn">Save goal</button>
       <button id="removeGoal" class="ghost danger-lite hidden">Remove goal</button>
       <div id="goalMsg" class="msg hidden" aria-live="polite"></div>
@@ -3829,10 +3829,10 @@ textarea:focus-visible{
   <section class="card section" id="completePaycheckSection">
     <div class="title-row"><h2>Complete this paycheck</h2><span id="completionHint">Record what actually happened</span></div>
     <div class="form-grid">
-      <div class="field"><label>Actual take-home</label><input id="actualIncome" type="number" min="0" step="0.01" /></div>
-      <div class="field"><label>Actual extra income</label><input id="actualExtra" type="number" min="0" step="0.01" /></div>
-      <div class="field"><label>Unexpected spending</label><input id="unexpectedSpend" type="number" min="0" step="0.01" /></div>
-      <div class="field"><label>Amount left before next check</label><input id="actualLeft" type="number" min="0" step="0.01" /></div>
+      <div class="field"><label>Actual take-home</label><input id="actualIncome" type="number" min="0" step="0.01" inputmode="decimal" /></div>
+      <div class="field"><label>Actual extra income</label><input id="actualExtra" type="number" min="0" step="0.01" inputmode="decimal" /></div>
+      <div class="field"><label>Unexpected spending</label><input id="unexpectedSpend" type="number" min="0" step="0.01" inputmode="decimal" /></div>
+      <div class="field"><label>Amount left before next check</label><input id="actualLeft" type="number" min="0" step="0.01" inputmode="decimal" /></div>
     </div>
     <button id="completePaycheck" class="primary-btn">Complete paycheck & learn</button>
     <div id="completeMsg" class="msg hidden"></div>
