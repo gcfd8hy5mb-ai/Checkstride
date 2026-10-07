@@ -5812,7 +5812,7 @@ textarea:focus-visible{
     button.textContent=mode==="signup"?"Creating account…":"Signing in…";
     setMsg("authMsg","");hydrated=false;
     try{
-      const j=await authRequest(mode==="signup"?"accounts:signUp":"accounts:signInWithPassword",{email:$("email").value.trim(),password:$("password").value,returnSecureToken:true});
+      const j=await withTimeout(authRequest(mode==="signup"?"accounts:signUp":"accounts:signInWithPassword",{email:$("email").value.trim(),password:$("password").value,returnSecureToken:true}),8000,"AUTH_TIMEOUT");
       if(!stillCurrent())return;
       const s={idToken:j.idToken,refreshToken:j.refreshToken,localId:j.localId,email:j.email||$("email").value.trim()};
       const loaded=await withTimeout(loadState(s),7000,"LOAD_TIMEOUT");
@@ -5844,7 +5844,7 @@ textarea:focus-visible{
       if(!stillCurrent())return;
       clearTimeout(saveTimer);saveTimer=null;
       session=null;hydrated=false;const code=String(e?.message||"");
-      setMsg("authMsg",code.includes("TOO_MANY_ATTEMPTS")?"Too many attempts. Try again later.":code.includes("EMAIL_EXISTS")?"An account already uses that email.":code.includes("WEAK_PASSWORD")?"Use a stronger password.":code.includes("INVALID_LOGIN_CREDENTIALS")||code.includes("INVALID_PASSWORD")||code.includes("EMAIL_NOT_FOUND")?"Could not sign in. Check your email and password.":code.includes("LOAD_TIMEOUT")?"Signed in, but your plan took too long to load. Try again.":code.includes("LOAD_FAILED")?"Signed in, but Checkstride could not load your saved plan.":"Could not sign in right now.");
+      setMsg("authMsg",code.includes("TOO_MANY_ATTEMPTS")?"Too many attempts. Try again later.":code.includes("EMAIL_EXISTS")?"An account already uses that email.":code.includes("WEAK_PASSWORD")?"Use a stronger password.":code.includes("INVALID_LOGIN_CREDENTIALS")||code.includes("INVALID_PASSWORD")||code.includes("EMAIL_NOT_FOUND")?"Could not sign in. Check your email and password.":code.includes("AUTH_TIMEOUT")?"Checkstride could not reach the sign-in service. Check your connection and try again.":code.includes("LOAD_TIMEOUT")?"Signed in, but your plan took too long to load. Try again.":code.includes("LOAD_FAILED")?"Signed in, but Checkstride could not load your saved plan.":"Could not sign in right now.");
     }finally{
       if(stillCurrent()){
         button.disabled=false;
@@ -5878,7 +5878,7 @@ textarea:focus-visible{
     button.textContent="Sending…";
     setMsg("authMsg","Sending reset email…");
     try{
-      await authRequest("accounts:sendOobCode",{requestType:"PASSWORD_RESET",email});
+      await withTimeout(authRequest("accounts:sendOobCode",{requestType:"PASSWORD_RESET",email}),8000,"RESET_TIMEOUT");
       if(stillCurrent())setMsg("authMsg","Password reset email sent. Check your inbox and spam folder.");
     }catch{
       if(stillCurrent())setMsg("authMsg","If that email has an account, a reset email will be sent.");
