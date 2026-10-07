@@ -3959,7 +3959,7 @@ textarea:focus-visible{
   async function loadState(s){
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const r=await fetch(url,{headers:{Authorization:`Bearer ${s.idToken}`}});
-    if(r.status===404)return {state:{...blank},migrationChanged:false};if(!r.ok)throw new Error("LOAD_FAILED");
+    if(r.status===404)return {state:{...blank},migrationChanged:false};if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("LOAD_FAILED");
     const j=await r.json(),fields=j.fields||{},decoded=Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,decodeValue(v)]));
     const rawBills=(Array.isArray(decoded.bills)?decoded.bills:[]).filter(b=>{
       if(!b||typeof b!=="object"||Array.isArray(b))return false;
