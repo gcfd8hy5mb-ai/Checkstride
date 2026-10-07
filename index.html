@@ -3243,11 +3243,11 @@ textarea:focus-visible{
       <button id="tabLogin" class="active">Sign in</button>
       <button id="tabSignup">Create account</button>
     </div>
-    <div class="field"><label>Email</label><input id="email" type="email" autocomplete="email" /></div>
-    <div class="field"><label>Password</label><div class="password-wrap"><input id="password" type="password" autocomplete="current-password" /><button id="togglePassword" type="button" aria-label="Show password">Show</button></div></div>
+    <div class="field"><label>Email</label><input id="email" type="email" autocomplete="email" enterkeyhint="next" /></div>
+    <div class="field"><label>Password</label><div class="password-wrap"><input id="password" type="password" autocomplete="current-password" enterkeyhint="go" /><button id="togglePassword" type="button" aria-label="Show password">Show</button></div></div>
     <button id="authSubmit" class="primary-btn">Sign in</button>
     <div class="auth-recovery-row"><button id="forgotUsername" class="link-btn" type="button">Forgot username/email?</button><button id="resetPassword" class="link-btn" type="button">Forgot password?</button></div><div class="auth-note">Your plan is private to your account. Checkstride does not move money or make payments.</div>
-    <div id="authMsg" class="msg hidden"></div>
+    <div id="authMsg" class="msg hidden" aria-live="polite"></div>
   </section>
 
 </main>
@@ -5897,9 +5897,22 @@ textarea:focus-visible{
   $("loadingRetry").onclick=()=>location.reload();
   $("loadingSignIn").onclick=resetToSignIn;
 
-  $("tabLogin").onclick=()=>{authRevision++;mode="login";setMsg("authMsg","");$("tabLogin").classList.add("active");$("tabSignup").classList.remove("active");$("authSubmit").disabled=false;$("authSubmit").textContent="Sign in"};
-  $("tabSignup").onclick=()=>{authRevision++;mode="signup";setMsg("authMsg","");$("tabSignup").classList.add("active");$("tabLogin").classList.remove("active");$("authSubmit").disabled=false;$("authSubmit").textContent="Create account"};
+  function syncAuthModeFields(){
+    if($("password"))$("password").autocomplete=mode==="signup"?"new-password":"current-password";
+  }
+  $("tabLogin").onclick=()=>{authRevision++;mode="login";setMsg("authMsg","");$("tabLogin").classList.add("active");$("tabSignup").classList.remove("active");$("authSubmit").disabled=false;$("authSubmit").textContent="Sign in";syncAuthModeFields()};
+  $("tabSignup").onclick=()=>{authRevision++;mode="signup";setMsg("authMsg","");$("tabSignup").classList.add("active");$("tabLogin").classList.remove("active");$("authSubmit").disabled=false;$("authSubmit").textContent="Create account";syncAuthModeFields()};
   $("authSubmit").onclick=submitAuth;
+  $("email").addEventListener("keydown",event=>{
+    if(event.key!=="Enter")return;
+    event.preventDefault();
+    $("password").focus();
+  });
+  $("password").addEventListener("keydown",event=>{
+    if(event.key!=="Enter")return;
+    event.preventDefault();
+    submitAuth();
+  });
   $("forgotUsername").onclick=()=>{
     authRevision++;
     $("authSubmit").disabled=false;
