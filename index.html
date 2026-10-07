@@ -24,10 +24,10 @@
   --primary:#2aa9a0;--accent:#6f9fbd;--muted:#93a7b8;--error:#d65a64;--warn:#d5a23e;--ok:#2aa67d;
   --shadow:0 12px 32px rgba(0,0,0,.22);--display:'Bricolage Grotesque',sans-serif;--base:'IBM Plex Sans',sans-serif;
 }
-*{box-sizing:border-box} html{background:var(--bg)} body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--base);min-height:100vh}
+*{box-sizing:border-box} html{background:var(--bg)} body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--base);min-height:100vh;min-height:100dvh}
 button,input,select{font:inherit}.hidden{display:none!important}
-.center{min-height:100vh;display:grid;place-items:center;padding:24px}
-.auth{min-height:100vh;display:grid;place-items:center;padding:calc(env(safe-area-inset-top) + 26px) 22px calc(env(safe-area-inset-bottom) + 26px)}
+.center{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:24px}
+.auth{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:calc(env(safe-area-inset-top) + 26px) 22px calc(env(safe-area-inset-bottom) + 26px)}
 .auth-card{width:min(100%,430px);background:var(--card);border:1px solid var(--border);border-radius:28px;padding:24px;box-shadow:var(--shadow)}
 .brand-lockup{display:flex;align-items:center;gap:14px;margin-bottom:18px}
 .logo{width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,#2aa9a0,#6f9fbd);display:grid;place-items:center;font-weight:800;font-size:20px;color:#041719}
