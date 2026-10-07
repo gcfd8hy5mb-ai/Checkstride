@@ -4968,9 +4968,9 @@ textarea:focus-visible{
   window.checkstrideEditBill=(id)=>{
     const bill=state.bills.find(b=>b.id===id);
     if(!bill)return;
-    editingBillId=id;
     const b=normalizedBill(bill);
     switchPage("bills");
+    editingBillId=id;
     selectedBillId=null;
     $("billDetailsView")?.classList.add("hidden");
     $("billsOverviewView")?.classList.add("hidden");
