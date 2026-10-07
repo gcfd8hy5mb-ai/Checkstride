@@ -1,4 +1,5 @@
-const CACHE='checkstride-shell-v6';
+const CACHE_PREFIX='checkstride-shell-';
+const CACHE=`${CACHE_PREFIX}v7`;
 const SHELL=['./','./index.html','./checkstride-logo.svg','./manifest.webmanifest'];
 
 self.addEventListener('install',event=>{
@@ -12,7 +13,7 @@ self.addEventListener('install',event=>{
 self.addEventListener('activate',event=>{
   event.waitUntil(
     caches.keys()
-      .then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))))
+      .then(keys=>Promise.all(keys.filter(key=>key.startsWith(CACHE_PREFIX)&&key!==CACHE).map(key=>caches.delete(key))))
       .then(()=>self.clients.claim())
   );
 });
