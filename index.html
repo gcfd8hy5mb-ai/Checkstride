@@ -5857,8 +5857,8 @@ textarea:focus-visible{
   $("loadingRetry").onclick=()=>location.reload();
   $("loadingSignIn").onclick=resetToSignIn;
 
-  $("tabLogin").onclick=()=>{authRevision++;mode="login";setMsg("authMsg","");$("tabLogin").classList.add("active");$("tabSignup").classList.remove("active");$("authSubmit").textContent="Sign in"};
-  $("tabSignup").onclick=()=>{authRevision++;mode="signup";setMsg("authMsg","");$("tabSignup").classList.add("active");$("tabLogin").classList.remove("active");$("authSubmit").textContent="Create account"};
+  $("tabLogin").onclick=()=>{authRevision++;mode="login";setMsg("authMsg","");$("tabLogin").classList.add("active");$("tabSignup").classList.remove("active");$("authSubmit").disabled=false;$("authSubmit").textContent="Sign in"};
+  $("tabSignup").onclick=()=>{authRevision++;mode="signup";setMsg("authMsg","");$("tabSignup").classList.add("active");$("tabLogin").classList.remove("active");$("authSubmit").disabled=false;$("authSubmit").textContent="Create account"};
   $("authSubmit").onclick=submitAuth;
   $("forgotUsername").onclick=()=>{
     authRevision++;
