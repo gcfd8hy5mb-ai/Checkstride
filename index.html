@@ -5862,12 +5862,16 @@ textarea:focus-visible{
   $("authSubmit").onclick=submitAuth;
   $("forgotUsername").onclick=()=>{
     authRevision++;
+    $("authSubmit").disabled=false;
+    $("authSubmit").textContent=mode==="signup"?"Create account":"Sign in";
     setMsg("authMsg","Your Checkstride username is the email address you used to create your account. If you remember that email but not the password, tap Forgot password? and we’ll email you a reset link.");
   };
   $("resetPassword").onclick=async()=>{
     const email=$("email").value.trim();
     if(!email)return setMsg("authMsg","Enter your email first.");
     const attempt=++authRevision;
+    $("authSubmit").disabled=false;
+    $("authSubmit").textContent=mode==="signup"?"Create account":"Sign in";
     const stillCurrent=()=>attempt===authRevision;
     const button=$("resetPassword");
     button.disabled=true;
