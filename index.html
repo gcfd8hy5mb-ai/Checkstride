@@ -6640,9 +6640,20 @@ textarea:focus-visible{
   }
 
   function visibleSwipeBackButton(){
-    return SWIPE_BACK_BUTTONS
-      .map(id=>$(id))
-      .find(el=>el&&el.offsetParent!==null);
+    if(activePage==="bills"){
+      if($("addBillPanel")?.open)return $("billFormBack");
+      if(selectedBillId && !$("billDetailsView")?.classList.contains("hidden"))return $("billDetailsBack");
+      return null;
+    }
+    if(activePage==="coach"){
+      return $("planDetailShell") && !$("planDetailShell").classList.contains("appPageHidden") ? $("planDetailBack") : null;
+    }
+    if(activePage==="more"){
+      if($("incomeJobEditView") && !$("incomeJobEditView").classList.contains("hidden"))return $("incomeJobEditBack");
+      if($("incomeScheduleView") && !$("incomeScheduleView").classList.contains("hidden"))return $("incomeScheduleBack");
+      if($("moreSubpageHead") && !$("moreSubpageHead").classList.contains("appPageHidden"))return $("moreBackButton");
+    }
+    return null;
   }
 
   function handleAppSwipe(dx,dy,duration){
