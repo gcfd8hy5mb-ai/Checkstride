@@ -5903,6 +5903,11 @@ textarea:focus-visible{
     sessionStorage.removeItem("checkstride_page");
     sessionStorage.removeItem("checkstride_more_destination");
     session=null;hydrated=false;state={...blank};
+    mode="login";
+    if($("tabLogin"))$("tabLogin").classList.add("active");
+    if($("tabSignup"))$("tabSignup").classList.remove("active");
+    if($("authSubmit")){$("authSubmit").disabled=false;$("authSubmit").textContent="Sign in";}
+    if($("resetPassword")){$("resetPassword").disabled=false;$("resetPassword").textContent="Forgot password?";}
     if($("password"))$("password").value="";
     setMsg("authMsg","");
     show("auth");
@@ -6678,6 +6683,11 @@ textarea:focus-visible{
         sessionStorage.removeItem("checkstride_page");
         sessionStorage.removeItem("checkstride_more_destination");
         session=null;hydrated=false;state={...blank};
+        mode="login";
+        if($("tabLogin"))$("tabLogin").classList.add("active");
+        if($("tabSignup"))$("tabSignup").classList.remove("active");
+        if($("authSubmit")){$("authSubmit").disabled=false;$("authSubmit").textContent="Sign in";}
+        if($("resetPassword")){$("resetPassword").disabled=false;$("resetPassword").textContent="Forgot password?";}
         show("auth");
         setMsg("authMsg","Your session expired. Sign in again.");
       }else{
