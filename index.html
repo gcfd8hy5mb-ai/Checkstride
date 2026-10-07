@@ -6629,6 +6629,64 @@ textarea:focus-visible{
 
   document.querySelectorAll("#bottomNav button").forEach(btn=>btn.onclick=()=>switchPage(btn.dataset.page));
 
+  const SWIPE_PAGES=["home","bills","coach","more"];
+  const SWIPE_BACK_BUTTONS=["billFormBack","billDetailsBack","planDetailBack","incomeJobEditBack","incomeScheduleBack","moreBackButton"];
+  let swipeStartX=0,swipeStartY=0,swipeStartedAt=0,swipeTracking=false;
+
+  function swipeTargetIsInteractive(target){
+    if(!(target instanceof Element))return false;
+    return !!target.closest('input,textarea,select,button,a,summary,[contenteditable="true"],[role="button"]');
+  }
+
+  function visibleSwipeBackButton(){
+    return SWIPE_BACK_BUTTONS
+      .map(id=>$(id))
+      .find(el=>el&&el.offsetParent!==null);
+  }
+
+  function handleAppSwipe(dx,dy,duration){
+    const absX=Math.abs(dx),absY=Math.abs(dy);
+    if(absX<70||absX<absY*1.35||duration>900)return;
+    const direction=dx<0?"left":"right";
+
+    if(direction==="right"){
+      const back=visibleSwipeBackButton();
+      if(back){
+        back.click();
+        return;
+      }
+    }
+
+    const index=SWIPE_PAGES.indexOf(activePage);
+    if(index<0)return;
+    const nextIndex=direction==="left"?index+1:index-1;
+    if(nextIndex<0||nextIndex>=SWIPE_PAGES.length)return;
+    switchPage(SWIPE_PAGES[nextIndex]);
+  }
+
+  if($("appView")){
+    $("appView").addEventListener("touchstart",event=>{
+      if(event.touches.length!==1||swipeTargetIsInteractive(event.target)){
+        swipeTracking=false;
+        return;
+      }
+      const touch=event.touches[0];
+      swipeStartX=touch.clientX;
+      swipeStartY=touch.clientY;
+      swipeStartedAt=Date.now();
+      swipeTracking=true;
+    },{passive:true});
+
+    $("appView").addEventListener("touchend",event=>{
+      if(!swipeTracking||event.changedTouches.length!==1)return;
+      swipeTracking=false;
+      const touch=event.changedTouches[0];
+      handleAppSwipe(touch.clientX-swipeStartX,touch.clientY-swipeStartY,Date.now()-swipeStartedAt);
+    },{passive:true});
+
+    $("appView").addEventListener("touchcancel",()=>{swipeTracking=false},{passive:true});
+  }
+
   if("serviceWorker" in navigator){
     window.addEventListener("load",()=>{
       navigator.serviceWorker.register("./service-worker.js").catch(error=>{
