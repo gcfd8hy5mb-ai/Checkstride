@@ -4056,6 +4056,9 @@ textarea:focus-visible{
     $("loadingRetry").classList.remove("hidden");
     $("loadingSignIn").classList.remove("hidden");
   }
+  function resetAuthControls(){
+    resetAuthControls();
+  }
   function resetToSignIn(){
     authRevision++;
     clearTimeout(saveTimer);saveTimer=null;
@@ -4063,11 +4066,7 @@ textarea:focus-visible{
     sessionStorage.removeItem("checkstride_page");
     sessionStorage.removeItem("checkstride_more_destination");
     session=null;hydrated=false;state={...blank};
-    mode="login";
-    if($("tabLogin"))$("tabLogin").classList.add("active");
-    if($("tabSignup"))$("tabSignup").classList.remove("active");
-    if($("authSubmit")){$("authSubmit").disabled=false;$("authSubmit").textContent="Sign in";}
-    if($("resetPassword")){$("resetPassword").disabled=false;$("resetPassword").textContent="Forgot password?";}
+    resetAuthControls();
     setMsg("authMsg","");
     finishStartup();
     show("auth");
@@ -5903,11 +5902,7 @@ textarea:focus-visible{
     sessionStorage.removeItem("checkstride_page");
     sessionStorage.removeItem("checkstride_more_destination");
     session=null;hydrated=false;state={...blank};
-    mode="login";
-    if($("tabLogin"))$("tabLogin").classList.add("active");
-    if($("tabSignup"))$("tabSignup").classList.remove("active");
-    if($("authSubmit")){$("authSubmit").disabled=false;$("authSubmit").textContent="Sign in";}
-    if($("resetPassword")){$("resetPassword").disabled=false;$("resetPassword").textContent="Forgot password?";}
+        resetAuthControls();
     if($("password"))$("password").value="";
     setMsg("authMsg","");
     show("auth");
