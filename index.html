@@ -5922,7 +5922,16 @@ textarea:focus-visible{
   };
   $("resetPassword").onclick=async()=>{
     const email=$("email").value.trim();
-    if(!email)return setMsg("authMsg","Enter your email first.");
+    if(!email){
+      setMsg("authMsg","Enter your email first.");
+      $("email").focus();
+      return;
+    }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      setMsg("authMsg","Enter a valid email address.");
+      $("email").focus();
+      return;
+    }
     const attempt=++authRevision;
     $("authSubmit").disabled=false;
     $("authSubmit").textContent=mode==="signup"?"Create account":"Sign in";
