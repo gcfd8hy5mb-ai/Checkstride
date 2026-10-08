@@ -5778,7 +5778,7 @@ textarea:focus-visible{
     }
   }
   function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
-  function scheduleSave(){
+  function scheduleSave(delayMs=650){
     if(state.setupReviewSeen===true && (!hasIncomeSetup() || !Array.isArray(state.bills) || state.bills.length===0)){
       state={...state,setupReviewSeen:false};
     }
@@ -5818,7 +5818,7 @@ textarea:focus-visible{
           }
         }
       }
-    },650);
+    },delayMs);
   }
 
   async function submitAuth(){
@@ -6291,7 +6291,7 @@ textarea:focus-visible{
     }
 
     try{renderBillsPage();renderSnapshot();renderHomeUpcoming();renderBillIncomeRatio();renderPlanOverview();renderSetupGuide()}catch(renderErr){console.error("Bill refresh error",renderErr)}
-    scheduleSave();
+    scheduleSave(0);
     setTimeout(closeBillForm,80);
     }catch(err){
       console.error("Add bill failed",err);
