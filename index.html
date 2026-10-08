@@ -6274,6 +6274,9 @@ textarea:focus-visible{
     if(dueMode==="date"&&(day<1||day>31))return setMsg("billMsg","Enter a due day from 1–31, or choose Monthly — date unknown.");
 
     if(editingBillId){
+      if(!state.bills.some(b=>b.id===editingBillId)){
+        return setMsg("billMsg","This bill is no longer in your list. Go back to Bills and try again.");
+      }
       const duplicate=state.bills.some(b=>b.id!==editingBillId&&b.name.trim().toLowerCase()===name.toLowerCase());
       if(duplicate)return setMsg("billMsg","Another bill already uses that name.");
       state={...state,bills:state.bills.map(b=>b.id===editingBillId?{...b,name,amount,dueMode,dueDay:dueMode==="date"?day:0,splitMode,priority}:b)};
