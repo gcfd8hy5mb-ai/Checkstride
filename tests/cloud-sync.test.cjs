@@ -1,0 +1,20 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const create=require('../cloud-sync');
+function setup(request,timeoutMs=100){const values=new Map();const storage={getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};return {storage,sync:create({storage,request,timeoutMs})}}
+const response=(updateTime,status=200)=>({status,ok:status===200,json:async()=>({updateTime})});
+const send=(version,signal,snapshot)=>({version,signal,snapshot});
+test('rapid changes serialize writes and advance document preconditions',async()=>{
+ let release;const seen=[];const {sync,storage}=setup(async o=>{seen.push(o);if(seen.length===1)await new Promise(r=>release=r);return response('v'+seen.length)});
+ sync.restore('A',{updateTime:'v0'});sync.remember('A',{amount:1});const first=sync.save('A',{amount:1},send);await Promise.resolve();
+ sync.remember('A',{amount:2});const second=sync.save('A',{amount:2},send);await Promise.resolve();assert.equal(seen.length,1);release();await first;
+ assert.deepEqual(JSON.parse(storage.getItem('checkstride_pending_v1:A')),{base:'v1',data:{amount:2}});await second;
+ assert.deepEqual(seen.map(x=>x.version),['v0','v1']);assert.equal(storage.getItem('checkstride_pending_v1:A'),null);
+});
+test('failed network write retains newest data across reload',async()=>{const {sync,storage}=setup(async()=>{throw Error('offline')});sync.restore('A',{updateTime:'v0'});sync.remember('A',{bills:[{amount:123.45}]});await assert.rejects(sync.save('A',{bills:[{amount:123.45}]},send));const restored=create({storage,request:async()=>response('v1')});assert.deepEqual(restored.restore('A',{updateTime:'v0'}),{bills:[{amount:123.45}]});});
+test('conflicting remote version blocks writes and retains later local changes',async()=>{let requests=0;const {sync,storage}=setup(async()=>{requests++;return response(null,409)});sync.restore('A',{updateTime:'v0'});sync.remember('A',{amount:1});await assert.rejects(sync.save('A',{amount:1},send),/CONFLICT/);assert.throws(()=>sync.remember('A',{amount:2}),/CONFLICT/);await assert.rejects(sync.save('A',{amount:2},send),/CONFLICT/);assert.equal(requests,1);assert.equal(JSON.parse(storage.getItem('checkstride_pending_v1:A')).data.amount,2);assert.throws(()=>sync.restore('A',{updateTime:'remote'}),/CONFLICT/);});
+test('A B A restoration keeps pending financial records account scoped',()=>{const {sync}=setup();sync.restore('A',null);sync.remember('A',{bills:['A']});assert.equal(sync.restore('B',null),null);sync.remember('B',{bills:['B']});assert.deepEqual(sync.restore('A',null),{bills:['A']});assert.deepEqual(sync.restore('B',null),{bills:['B']});});
+test('timeout aborts request and retains recovery copy',async()=>{const {sync,storage}=setup(o=>new Promise((_,reject)=>o.signal.addEventListener('abort',()=>reject(Error('aborted')))),10);sync.restore('A',null);sync.remember('A',{amount:1});await assert.rejects(sync.save('A',{amount:1},send),/aborted/);assert.ok(storage.getItem('checkstride_pending_v1:A'));});
+test('401 and 403 are distinct and never clear pending data',async()=>{for(const status of [401,403]){const {sync,storage}=setup(async()=>response(null,status));sync.restore('A',null);sync.remember('A',{amount:1});await assert.rejects(sync.save('A',{amount:1},send),status===401?/SESSION_EXPIRED/:/PERMISSION/);assert.ok(storage.getItem('checkstride_pending_v1:A'));}});
+test('unconfirmed response cannot report success or clear backup',async()=>{const {sync,storage}=setup(async()=>response(null));sync.restore('A',null);sync.remember('A',{amount:1});await assert.rejects(sync.save('A',{amount:1},send),/UNCONFIRMED/);assert.ok(storage.getItem('checkstride_pending_v1:A'));});
+test('snapshots cannot be changed by mutation during a queued write',async()=>{let sent;const {sync}=setup(async o=>{sent=o.snapshot;return response('v1')});sync.restore('A',null);const data={bills:[{amount:1}]};sync.remember('A',data);const saving=sync.save('A',data,send);data.bills[0].amount=9;await saving;assert.equal(sent.bills[0].amount,1);});
