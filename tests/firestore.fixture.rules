@@ -1,0 +1,9 @@
+// Emulator-only proposed ownership rules. NOT a copy of verified production rules.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/state/{document} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

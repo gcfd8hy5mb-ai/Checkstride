@@ -1,0 +1,31 @@
+{
+  "name": "checkstride",
+  "version": "1.0.0",
+  "description": "",
+  "main": "cloud-sync.js",
+  "scripts": {
+    "test": "node --test tests/cloud-sync.test.cjs",
+    "test:finance": "node --test tests/finance.test.cjs",
+    "test:mobile": "node --test tests/mobile.test.cjs",
+    "test:emulator": "firebase emulators:exec --config tests/firebase.emulator.json --project demo-checkstride-release --only auth,firestore \"node --test tests/isolation.test.cjs\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gcfd8hy5mb-ai/Checkstride.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/gcfd8hy5mb-ai/Checkstride/issues"
+  },
+  "homepage": "https://github.com/gcfd8hy5mb-ai/Checkstride#readme",
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "firebase": "^11.10.0",
+    "firebase-tools": "^13.35.1",
+    "playwright": "^1.56.1"
+  },
+  "private": true
+}

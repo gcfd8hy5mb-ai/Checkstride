@@ -3869,6 +3869,7 @@ textarea:focus-visible{
   <button data-page="more"><span class="navIcon">•••</span><span>More</span></button>
 </nav>
 
+<script src="./cloud-sync.js"></script>
 <script>
 (() => {
   const API_KEY="AIzaSyDoLHFn-sHVa9LROJOg3TFA6m4xFZCfhos";
@@ -3876,6 +3877,7 @@ textarea:focus-visible{
   const SESSION_KEY="checkstride_rest_session";
   const blank={payday:"",paycheck:0,frequency:"biweekly",primaryJobName:"Primary job",additionalPaychecks:[],paycheckOverrides:{},setupReviewSeen:false,cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
   let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null, saveRevision=0, authRevision=0;
+  const cloudSync=createCheckstrideCloudSync({storage:localStorage,request:options=>fetch(options.url,options.init)});
   let editingBillId=null;
   let selectedIncomeSourceId=null;
   let selectedPaydayKey=null;
@@ -3958,10 +3960,11 @@ textarea:focus-visible{
     return{idToken:j.id_token,refreshToken:j.refresh_token,localId:j.user_id};
   }
   async function loadState(s){
+    await cloudSync.idle();
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const r=await fetch(url,{headers:{Authorization:`Bearer ${s.idToken}`}});
-    if(r.status===404)return {state:{...blank},migrationChanged:false};if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("LOAD_FAILED");
-    const j=await r.json(),fields=j.fields||{},decoded=Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,decodeValue(v)]));
+    if(r.status===404){const pending=cloudSync.restore(s.localId,null);return {state:pending||structuredClone(blank),migrationChanged:!!pending}};if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("LOAD_FAILED");
+    const j=await r.json(),pending=cloudSync.restore(s.localId,j),fields=j.fields||{},decoded=Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,decodeValue(v)]));
     const rawBills=(Array.isArray(decoded.bills)?decoded.bills:[]).filter(b=>{
       if(!b||typeof b!=="object"||Array.isArray(b))return false;
       const name=String(b.name||"").trim();
@@ -4038,15 +4041,20 @@ textarea:focus-visible{
       JSON.stringify(decodedOverrides)!==JSON.stringify(paycheckOverrides) ||
       JSON.stringify(Array.isArray(decoded.bills)?decoded.bills:[])!==JSON.stringify(fixedBills) ||
       Number(decoded.version||0)<107;
-    return {state:normalized,migrationChanged};
+    return {state:pending||normalized,migrationChanged:!!pending||migrationChanged};
   }
   async function saveState(s,data){
+    const saveAuthRevision=authRevision;
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
       bills:(Array.isArray(data.bills)?data.bills:[]).filter(b=>b&&typeof b==="object"&&!Array.isArray(b)&&String(b.name||"").trim()&&clampMoney(b.amount)>0).map(b=>{const n=normalizedBill(b);return{...n,amount:clampMoney(n.amount),overdue:clampMoney(n.overdue)}}),version:108};
     const fields=Object.fromEntries(Object.entries(payload).map(([k,v])=>[k,encodeValue(v)]));
-    const r=await fetch(url,{method:"PATCH",headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})});
-    if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("SAVE_FAILED");
+    await cloudSync.save(s.localId,data,(version,signal)=>{
+      if(saveAuthRevision!==authRevision || session?.localId!==s.localId)throw new Error("SAVE_CANCELLED");
+      return {
+      url:url+(version?`?currentDocument.updateTime=${encodeURIComponent(version)}`:"?currentDocument.exists=false"),
+      init:{method:"PATCH",signal,headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})}
+    }});
   }
 
 
@@ -5790,18 +5798,22 @@ textarea:focus-visible{
         state={...state,smartMemory:{...m,autonomousPlan:freshPlan}};
       }
     }
-    render();if(!session||!hydrated)return;clearTimeout(saveTimer);setCloud("Saving…","saving");
+    render();if(!session||!hydrated)return;clearTimeout(saveTimer);
     const revision=++saveRevision;
+    const saveAuthRevision=authRevision;
+    try{cloudSync.remember(session.localId,state)}catch(error){setCloud(error.message.includes("CONFLICT")?"Save conflict — changes kept on this device":"Device backup failed — keep this page open","error");return}
+    setCloud("Saving…","saving");
     const saveSession=session;
     saveTimer=setTimeout(async()=>{
       const snapshot=state;
-      const stillCurrent=()=>revision===saveRevision && session?.localId===saveSession.localId && hydrated;
+      const stillCurrent=()=>revision===saveRevision && saveAuthRevision===authRevision && session?.localId===saveSession.localId && hydrated;
       try{
         await saveState(saveSession,snapshot);
         if(stillCurrent())setCloud("Saved");
       }catch(firstError){
         try{
           if(!stillCurrent())return;
+          if(!String(firstError?.message).includes("SESSION_EXPIRED"))throw firstError;
           const fresh=await withTimeout(refreshSession(saveSession.refreshToken),6000,"REFRESH_TIMEOUT");
           if(!stillCurrent())return;
           session={...fresh,email:saveSession.email};
@@ -5811,8 +5823,8 @@ textarea:focus-visible{
         }catch(retryError){
           if(!stillCurrent())return;
           const code=String(retryError?.message||firstError?.message||"");
-          setCloud(code.includes("SESSION_EXPIRED")||code.includes("INVALID")?"Save paused — sign in again":"Save paused — retrying","error");
-          if(stillCurrent()){
+          setCloud(code.includes("CONFLICT")?"Save conflict — changes kept on this device":code.includes("SESSION_EXPIRED")||code.includes("INVALID")?"Save paused — sign in again":"Save paused — retrying","error");
+          if(stillCurrent() && !/CONFLICT|SESSION_EXPIRED|PERMISSION|INVALID/.test(code)){
             clearTimeout(saveTimer);
             saveTimer=setTimeout(()=>{if(stillCurrent())scheduleSave()},5000);
           }
@@ -5862,6 +5874,7 @@ textarea:focus-visible{
       if(loaded.migrationChanged){
         setCloud("Saving migration…","saving");
         try{
+          cloudSync.remember(s.localId,state);
           await saveState(s,state);
           if(stillCurrent() && session?.localId===s.localId)setCloud("Saved");
         }
@@ -5879,13 +5892,12 @@ textarea:focus-visible{
         console.error("Checkstride render error",renderError);
         show("app");
         try{renderIncomeSources()}catch{}
-        setCloud("Saved");
       }
     }catch(e){
       if(!stillCurrent())return;
       clearTimeout(saveTimer);saveTimer=null;
       session=null;hydrated=false;const code=String(e?.message||"");
-      setMsg("authMsg",code.includes("TOO_MANY_ATTEMPTS")?"Too many attempts. Try again later.":code.includes("EMAIL_EXISTS")?"An account already uses that email.":code.includes("WEAK_PASSWORD")?"Use a stronger password.":code.includes("INVALID_LOGIN_CREDENTIALS")||code.includes("INVALID_PASSWORD")||code.includes("EMAIL_NOT_FOUND")?"Could not sign in. Check your email and password.":code.includes("AUTH_TIMEOUT")?"Checkstride could not reach the sign-in service. Check your connection and try again.":code.includes("LOAD_TIMEOUT")?"Signed in, but your plan took too long to load. Try again.":code.includes("LOAD_FAILED")?"Signed in, but Checkstride could not load your saved plan.":"Could not sign in right now.");
+      setMsg("authMsg",code.includes("TOO_MANY_ATTEMPTS")?"Too many attempts. Try again later.":code.includes("EMAIL_EXISTS")?"An account already uses that email.":code.includes("WEAK_PASSWORD")?"Use a stronger password.":code.includes("INVALID_LOGIN_CREDENTIALS")||code.includes("INVALID_PASSWORD")||code.includes("EMAIL_NOT_FOUND")?"Could not sign in. Check your email and password.":code.includes("LOCAL_RECOVERY_CONFLICT")?"This device has unsynced changes and the cloud plan has changed. Both copies were preserved. Resolve the conflict before editing.":code.includes("AUTH_TIMEOUT")?"Checkstride could not reach the sign-in service. Check your connection and try again.":code.includes("LOAD_TIMEOUT")?"Signed in, but your plan took too long to load. Try again.":code.includes("LOAD_FAILED")?"Signed in, but Checkstride could not load your saved plan.":"Could not sign in right now.");
     }finally{
       if(stillCurrent()){
         button.disabled=false;
@@ -5954,7 +5966,6 @@ textarea:focus-visible{
     authRevision++;saveRevision++;
     clearTimeout(saveTimer);saveTimer=null;
     const signOutSession=session;
-    const signOutState=state;
     const shouldSave=!!(signOutSession&&hydrated);
     localStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem("checkstride_page");
@@ -5964,14 +5975,8 @@ textarea:focus-visible{
     if($("password"))$("password").value="";
     setMsg("authMsg","");
     show("auth");
-    if(!shouldSave)return;
-    try{
-      await withTimeout(saveState(signOutSession,signOutState),6000,"SAVE_TIMEOUT");
-    }catch{
-      try{
-        const fresh=await withTimeout(refreshSession(signOutSession.refreshToken),6000,"REFRESH_TIMEOUT");
-        await withTimeout(saveState({...fresh,email:signOutSession.email},signOutState),6000,"SAVE_TIMEOUT");
-      }catch{}
+    if(shouldSave && localStorage.getItem(`checkstride_pending_v1:${signOutSession.localId}`)){
+      setMsg("authMsg","Signed out. Unsynced changes are kept on this device for your account.");
     }
   };
 
@@ -6822,6 +6827,7 @@ textarea:focus-visible{
       if(loaded.migrationChanged){
         setCloud("Saving migration…","saving");
         try{
+          cloudSync.remember(merged.localId,state);
           await saveState(merged,state);
           if(stillCurrent() && session?.localId===merged.localId)setCloud("Saved");
         }
@@ -6852,7 +6858,9 @@ textarea:focus-visible{
         show("auth");
         setMsg("authMsg","Your session expired. Sign in again.");
       }else{
-        const recoveryMessage=code.includes("REFRESH_TIMEOUT")
+        const recoveryMessage=code.includes("LOCAL_RECOVERY_CONFLICT")
+          ?"This device has unsynced changes and the cloud plan has changed. Both copies were preserved; resolve the conflict before editing."
+          :code.includes("REFRESH_TIMEOUT")
           ?"Checkstride could not reach the sign-in service. Your saved session is still here — retry when your connection improves."
           :code.includes("LOAD_TIMEOUT")
             ?"Your plan is taking too long to load."
