@@ -1,18 +1,6 @@
-const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),http=require('node:http');
+const test=require('node:test'),assert=require('node:assert/strict');
 const {chromium,webkit}=require('playwright');
-const encode=v=>v==null?{nullValue:null}:typeof v==='string'?{stringValue:v}:typeof v==='boolean'?{booleanValue:v}:typeof v==='number'?{doubleValue:v}:Array.isArray(v)?{arrayValue:{values:v.map(encode)}}:{mapValue:{fields:Object.fromEntries(Object.entries(v).map(([k,x])=>[k,encode(x)]))}};
-const decode=v=>'stringValue'in v?v.stringValue:'booleanValue'in v?v.booleanValue:'doubleValue'in v?v.doubleValue:'integerValue'in v?Number(v.integerValue):'arrayValue'in v?(v.arrayValue.values||[]).map(decode):'mapValue'in v?Object.fromEntries(Object.entries(v.mapValue.fields||{}).map(([k,x])=>[k,decode(x)])):null;
-const seed=()=>({payday:'2026-10-09',paycheck:1000,frequency:'biweekly',primaryJobName:'Test job',bills:[{id:'rent',name:'Rent',amount:800,dueMode:'monthly',dueDay:0,splitMode:'even',overdue:0}],version:108,setupReviewSeen:true,additionalPaychecks:[],paycheckOverrides:{},cushion:100,extraIncome:0,strategy:'balanced',paycheckHistory:[],paymentHistory:[]});
-async function serve(){const server=http.createServer((req,res)=>{const path=req.url.split('?')[0];if(!['/','/index.html','/cloud-sync.js','/service-worker.js','/manifest.webmanifest','/checkstride-logo.svg'].includes(path)){res.writeHead(404).end();return}res.setHeader('Content-Type',path.endsWith('.js')?'application/javascript':path.endsWith('.svg')?'image/svg+xml':path.endsWith('.webmanifest')?'application/manifest+json':'text/html');res.end(fs.readFileSync('.'+(path==='/'?'/index.html':path)))});await new Promise(r=>server.listen(0,'127.0.0.1',r));return {server,url:`http://127.0.0.1:${server.address().port}`}}
-async function mock(context){let records={A:seed(),B:{...seed(),bills:[{...seed().bills[0],name:'B bill',amount:90}]}},versions={A:1,B:1},writes=[],fail=false;
- await context.route('https://**/*',async route=>{const req=route.request(),url=req.url();
-  if(url.includes('securetoken.googleapis.com'))return route.fulfill({json:{id_token:'test-A',refresh_token:'refresh-A',user_id:'A'}});
-  if(url.includes('identitytoolkit.googleapis.com')){const body=req.postDataJSON();const uid=body.email?.startsWith('b@')?'B':'A';return route.fulfill({json:{idToken:'test-'+uid,refreshToken:'refresh-'+uid,localId:uid,email:body.email}})}
-  if(url.includes('firestore.googleapis.com')){const uid=url.match(/users\/([^/]+)/)[1];if(req.headers().authorization!=='Bearer test-'+uid)return route.fulfill({status:403,json:{}});
-   if(req.method()==='PATCH'){writes.push(uid);if(fail)return route.abort('failed');const condition=new URL(url).searchParams.get('currentDocument.updateTime');if(condition!=='v'+versions[uid])return route.fulfill({status:409,json:{}});records[uid]=Object.fromEntries(Object.entries(req.postDataJSON().fields).map(([k,v])=>[k,decode(v)]));versions[uid]++;await new Promise(r=>setTimeout(r,75));}
-   return route.fulfill({json:{updateTime:'v'+versions[uid],fields:Object.fromEntries(Object.entries(records[uid]).map(([k,v])=>[k,encode(v)]))}});
-  }return route.abort();
- });return {records,writes,setFail:v=>fail=v};}
+const {serve,mock}=require('./browser-harness.cjs');
 for(const [name,engine,viewport] of [['chromium-small',chromium,{width:320,height:568}],['chromium-large',chromium,{width:430,height:932}],['webkit-iphone',webkit,{width:390,height:844}]])test(name+' mocked authenticated mobile flow',async()=>{
  const {server,url}=await serve();let browser;try{browser=await engine.launch({headless:true});const context=await browser.newContext({viewport,isMobile:true,hasTouch:true,serviceWorkers:'block'});const mockApi=await mock(context);const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(url);await page.locator('#email').fill('a@example.test');await page.locator('#password').fill('fake-test-password');await page.locator('#authSubmit').click();await page.locator('#appView').waitFor({state:'visible'});

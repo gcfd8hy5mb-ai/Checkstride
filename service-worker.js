@@ -1,6 +1,6 @@
 const CACHE_PREFIX='checkstride-shell-';
-const CACHE=`${CACHE_PREFIX}v8`;
-const SHELL=['./','./index.html','./cloud-sync.js','./checkstride-logo.svg','./manifest.webmanifest'];
+const CACHE=`${CACHE_PREFIX}v9`;
+const SHELL=['./','./index.html','./cloud-sync.js','./checkstride-logo.svg','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(
