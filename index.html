@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Checkstride" />
 <link rel="manifest" href="./manifest.webmanifest" />
+<link rel="apple-touch-icon" href="./apple-touch-icon.png" />
 <title>Checkstride</title>
 <link rel="icon" href='data:image/svg+xml;utf8,
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -3247,6 +3248,8 @@ textarea:focus-visible{
     <div class="field"><label>Email</label><input id="email" type="email" autocomplete="email" enterkeyhint="next" /></div>
     <div class="field"><label>Password</label><div class="password-wrap"><input id="password" type="password" autocomplete="current-password" enterkeyhint="go" /><button id="togglePassword" type="button" aria-label="Show password">Show</button></div></div>
     <button id="authSubmit" class="primary-btn">Sign in</button>
+    <button id="downloadConflictCopy" class="ghost hidden" type="button">Download device recovery copy</button>
+    <button id="keepCloudPlan" class="ghost hidden" type="button">Keep cloud plan and preserve device copy</button>
     <div class="auth-recovery-row"><button id="forgotUsername" class="link-btn" type="button">Forgot username/email?</button><button id="resetPassword" class="link-btn" type="button">Forgot password?</button></div><div class="auth-note">Your plan is private to your account. Checkstride does not move money or make payments.</div>
     <div id="authMsg" class="msg hidden" aria-live="polite"></div>
   </section>
@@ -3857,6 +3860,7 @@ textarea:focus-visible{
   <section class="card account-card section" id="accountSection">
     <div class="title-row"><h2>Your account</h2><span id="accountEmail">Signed in</span></div>
     <div class="account-identity" id="accountIdentity"><span>Signed in as</span><b id="accountEmailVisible">Signed in</b></div>
+    <button id="downloadRecoveryCopies" class="ghost hidden" type="button">Download recovery copies</button>
     <button id="logout" class="ghost danger-lite">Sign out</button>
   </section>
 
@@ -3878,6 +3882,7 @@ textarea:focus-visible{
   const blank={payday:"",paycheck:0,frequency:"biweekly",primaryJobName:"Primary job",additionalPaychecks:[],paycheckOverrides:{},setupReviewSeen:false,cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
   let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null, saveRevision=0, authRevision=0;
   const cloudSync=createCheckstrideCloudSync({storage:localStorage,request:options=>fetch(options.url,options.init)});
+  let conflictSession=null, hasUnsyncedChanges=false;
   let editingBillId=null, billCloseTimer=null;
   let selectedIncomeSourceId=null;
   let selectedPaydayKey=null;
@@ -3891,14 +3896,14 @@ textarea:focus-visible{
   const daysInMonth=(y,m)=>new Date(y,m+1,0).getDate();
   const dateAtDay=(y,m,d)=>new Date(y,m,Math.min(Math.max(1,Math.trunc(d)||1),daysInMonth(y,m)),12);
 
-  function nextPayday(start,frequency,index){
+  function nextPayday(start,frequency,index,anchorDay=null){
     const base=new Date(start+"T12:00:00");
     if(!start||Number.isNaN(base.getTime())) return new Date(NaN);
     if(index<=0) return base;
     if(frequency==="weekly"){const d=new Date(base);d.setDate(d.getDate()+7*index);return d}
     if(frequency==="biweekly"){const d=new Date(base);d.setDate(d.getDate()+14*index);return d}
     if(frequency==="monthly"){
-      const wanted=base.getDate(), targetMonth=base.getMonth()+index;
+      const wanted=anchorDay||base.getDate(), targetMonth=base.getMonth()+index;
       const y=base.getFullYear()+Math.floor(targetMonth/12), m=((targetMonth%12)+12)%12;
       return dateAtDay(y,m,wanted);
     }
@@ -3959,12 +3964,35 @@ textarea:focus-visible{
     }
     return{idToken:j.id_token,refreshToken:j.refresh_token,localId:j.user_id};
   }
+  function validateFinancialState(data){
+    if(!data || typeof data!=="object" || Array.isArray(data))throw new Error("STATE_DATA_INVALID");
+    for(const key of ["bills","additionalPaychecks","paycheckHistory","paymentHistory"]){
+      if(data[key]!==undefined && !Array.isArray(data[key]))throw new Error("STATE_DATA_INVALID");
+    }
+    if((data.bills||[]).some(b=>!b || typeof b!=="object" || Array.isArray(b) || !String(b.name||"").trim() || !Number.isFinite(Number(b.amount)) || clampMoney(b.amount)<=0))throw new Error("STATE_DATA_INVALID");
+    if((data.additionalPaychecks||[]).some(x=>!x || typeof x!=="object" || Array.isArray(x) || !x.payday || !Number.isFinite(Number(x.paycheck)) || clampMoney(x.paycheck)<=0))throw new Error("STATE_DATA_INVALID");
+  }
+
+  function restoreCloudCopy(s,document){
+    try{return cloudSync.restore(s.localId,document)}catch(error){
+      if(error.message==="LOCAL_RECOVERY_CONFLICT"){
+        conflictSession=s;
+        $("downloadConflictCopy").classList.remove("hidden");
+        $("keepCloudPlan").classList.remove("hidden");
+      }
+      throw error;
+    }
+  }
   async function loadState(s){
+    const loadAuthRevision=authRevision;
     await cloudSync.idle();
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const r=await fetch(url,{headers:{Authorization:`Bearer ${s.idToken}`}});
-    if(r.status===404){const pending=cloudSync.restore(s.localId,null);return {state:pending||structuredClone(blank),migrationChanged:!!pending}};if(r.status===401||r.status===403)throw new Error("SESSION_EXPIRED");if(!r.ok)throw new Error("LOAD_FAILED");
-    const j=await r.json(),pending=cloudSync.restore(s.localId,j),fields=j.fields||{},decoded=Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,decodeValue(v)]));
+    if(loadAuthRevision!==authRevision)throw new Error("AUTH_CANCELLED");
+    if(r.status===404){const pending=restoreCloudCopy(s,null);if(pending)validateFinancialState(pending);return {state:pending||structuredClone(blank),migrationChanged:!!pending}};if(r.status===401)throw new Error("SESSION_EXPIRED");if(r.status===403)throw new Error("LOAD_PERMISSION_DENIED");if(!r.ok)throw new Error("LOAD_FAILED");
+    const j=await r.json(),pending=restoreCloudCopy(s,j),fields=j.fields||{},decoded=Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,decodeValue(v)]));
+    validateFinancialState(decoded);
+    if(pending)validateFinancialState(pending);
     const rawBills=(Array.isArray(decoded.bills)?decoded.bills:[]).filter(b=>{
       if(!b||typeof b!=="object"||Array.isArray(b))return false;
       const name=String(b.name||"").trim();
@@ -3979,6 +4007,7 @@ textarea:focus-visible{
       return {...b,id};
     });
     let additionalPaychecks=(Array.isArray(decoded.additionalPaychecks)?decoded.additionalPaychecks:[]).map((x,i)=>({
+      ...x,
       id:String(x?.id||`income-${i}-${Date.now()}`),
       name:String(x?.name||`Job ${i+2}`),
       payday:String(x?.payday||""),
@@ -3986,6 +4015,7 @@ textarea:focus-visible{
       frequency:["weekly","biweekly","semimonthly","monthly"].includes(x?.frequency)?x.frequency:"biweekly"
     })).filter(x=>x.payday&&x.paycheck>0);
 
+    let primaryPaydayAnchor=decoded.primaryPaydayAnchor||Number(String(decoded.payday||"").slice(-2))||null;
     let primaryJobName=String(decoded.primaryJobName||"Primary job");
     let payday=String(decoded.payday||"");
     let paycheck=clampMoney(decoded.paycheck);
@@ -4007,6 +4037,7 @@ textarea:focus-visible{
           remapped[key]=value;
         }
       });
+      primaryPaydayAnchor=promote.paydayAnchorDay||Number(String(promote.payday).slice(-2));
       primaryJobName=String(promote.name||"Primary job");
       payday=String(promote.payday||"");
       paycheck=clampMoney(promote.paycheck);
@@ -4019,18 +4050,8 @@ textarea:focus-visible{
     const setupReviewSeen=typeof decoded.setupReviewSeen==="boolean"
       ? decoded.setupReviewSeen
       : legacySetupComplete;
-    const validIncomeIds=new Set([
-      ...(payday&&paycheck>0?["primary"]:[]),
-      ...additionalPaychecks.map(x=>String(x.id))
-    ]);
-    const paycheckOverrides=Object.fromEntries(
-      Object.entries(normalizedOverrides).filter(([key])=>{
-        const split=String(key).indexOf("|");
-        if(split<1)return false;
-        return validIncomeIds.has(String(key).slice(0,split));
-      })
-    );
-    const normalized={...blank,...decoded,primaryJobName,payday,paycheck,frequency,setupReviewSeen,additionalPaychecks,paycheckOverrides,bills:fixedBills,paycheckHistory:Array.isArray(decoded.paycheckHistory)?decoded.paycheckHistory:[],paymentHistory:Array.isArray(decoded.paymentHistory)?decoded.paymentHistory:[]};
+    const paycheckOverrides={...normalizedOverrides};
+    const normalized={...blank,...decoded,primaryPaydayAnchor,primaryJobName,payday,paycheck,frequency,setupReviewSeen,additionalPaychecks,paycheckOverrides,bills:fixedBills,paycheckHistory:Array.isArray(decoded.paycheckHistory)?decoded.paycheckHistory:[],paymentHistory:Array.isArray(decoded.paymentHistory)?decoded.paymentHistory:[]};
     const migrationChanged=
       String(decoded.primaryJobName||"Primary job")!==primaryJobName ||
       String(decoded.payday||"")!==payday ||
@@ -4044,6 +4065,7 @@ textarea:focus-visible{
     return {state:pending||normalized,migrationChanged:!!pending||migrationChanged};
   }
   async function saveState(s,data){
+    validateFinancialState(data);
     const saveAuthRevision=authRevision;
     const url=`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`;
     const payload={...data,paycheck:clampMoney(data.paycheck),additionalPaychecks:(Array.isArray(data.additionalPaychecks)?data.additionalPaychecks:[]).map(x=>({...x,paycheck:clampMoney(x.paycheck)})),paycheckOverrides:(data.paycheckOverrides&&typeof data.paycheckOverrides==="object")?data.paycheckOverrides:{},cushion:clampMoney(data.cushion),extraIncome:clampMoney(data.extraIncome),
@@ -4052,8 +4074,8 @@ textarea:focus-visible{
     await cloudSync.save(s.localId,data,(version,signal)=>{
       if(saveAuthRevision!==authRevision || session?.localId!==s.localId)throw new Error("SAVE_CANCELLED");
       return {
-      url:url+(version?`?currentDocument.updateTime=${encodeURIComponent(version)}`:"?currentDocument.exists=false"),
-      init:{method:"PATCH",signal,headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({fields})}
+      url:`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:commit`,
+      init:{method:"POST",signal,headers:{Authorization:`Bearer ${s.idToken}`,"Content-Type":"application/json"},body:JSON.stringify({writes:[{update:{name:`projects/${PROJECT_ID}/databases/(default)/documents/users/${s.localId}/state/main`,fields},currentDocument:version?{updateTime:version}:{exists:false}}]})}
     }});
   }
 
@@ -4075,6 +4097,9 @@ textarea:focus-visible{
     $("loadingSignIn").classList.remove("hidden");
   }
   function resetAuthControls(){
+    conflictSession=null;
+    $("downloadConflictCopy").classList.add("hidden");
+    $("keepCloudPlan").classList.add("hidden");
     mode="login";
     if($("tabLogin"))$("tabLogin").classList.add("active");
     if($("tabSignup"))$("tabSignup").classList.remove("active");
@@ -4096,19 +4121,30 @@ textarea:focus-visible{
 
   function show(view){if(view==="auth"||view==="app")finishStartup();$("loading").classList.add("hidden");$("authView").classList.toggle("hidden",view!=="auth");$("appView").classList.toggle("hidden",view!=="app");$("bottomNav").classList.toggle("hidden",view!=="app")}
   function setMsg(id,text){const el=$(id);el.textContent=text;el.classList.toggle("hidden",!text)}
-  function setCloud(text,type="saved"){const el=$("cloudStatus");el.textContent=text;el.className=type==="saving"?"status-saving":type==="error"?"status-error":"status-saved"}
+  function setCloud(text,type="saved"){
+    if(type==="saved" && text==="Saved")hasUnsyncedChanges=false;
+    if(session)$("downloadRecoveryCopies").classList.toggle("hidden",!hasUnsyncedChanges&&!cloudSync.recoveryCopies(session.localId).length);
+    const el=$("cloudStatus");el.textContent=text;el.className=type==="saving"?"status-saving":type==="error"?"status-error":"status-saved";
+    if(type==="saving")return;
+    for(const id of ["goalMsg","editJobMsg","selectedPaydayMsg"]){
+      const message=$(id);
+      if(message && /— (syncing…|not synced; changes kept on this device\.|not synced; keep this page open\.)/.test(message.textContent)){
+        message.textContent=message.textContent.replace(/— (syncing…|not synced; changes kept on this device\.|not synced; keep this page open\.)/,type==="error"?(text.includes("backup failed")?"— not synced; keep this page open.":"— not synced; changes kept on this device."):"— saved to cloud.");
+      }
+    }
+  }
 
   function incomeSources(){
     const rows=[];
     if(state.payday&&clampMoney(state.paycheck)>0)rows.push({
       id:"primary",name:String(state.primaryJobName||"Primary job"),payday:state.payday,
-      paycheck:clampMoney(state.paycheck),frequency:state.frequency||"biweekly",primary:true
+      paycheck:clampMoney(state.paycheck),frequency:state.frequency||"biweekly",paydayAnchorDay:state.primaryPaydayAnchor||Number(state.payday.slice(-2)),primary:true
     });
     (Array.isArray(state.additionalPaychecks)?state.additionalPaychecks:[]).forEach((x,i)=>{
       if(x?.payday&&clampMoney(x?.paycheck)>0)rows.push({
         id:String(x.id||`income-${i}`),name:String(x.name||`Job ${i+2}`),
         payday:String(x.payday),paycheck:clampMoney(x.paycheck),
-        frequency:x.frequency||"biweekly",primary:false
+        frequency:x.frequency||"biweekly",paydayAnchorDay:x.paydayAnchorDay||Number(String(x.payday).slice(-2)),primary:false
       });
     });
     return rows;
@@ -4137,7 +4173,7 @@ textarea:focus-visible{
     const events=[];
     incomeSources().forEach(src=>{
       for(let i=0;i<count;i++){
-        const date=nextPayday(src.payday,src.frequency,i);
+        const date=nextPayday(src.payday,src.frequency,i,src.paydayAnchorDay);
         if(Number.isNaN(date.getTime()))continue;
         events.push({sourceId:src.id,sourceName:src.name,date,income:paycheckAmountForSourceDate(src,date),frequency:src.frequency,primary:src.primary});
       }
@@ -4164,7 +4200,7 @@ textarea:focus-visible{
   function sourcePaydatesInMonth(src,year,month){
     const base=new Date(String(src?.payday||"")+"T12:00:00");
     if(Number.isNaN(base.getTime()))return[];
-    if(src.frequency==="monthly")return[dateAtDay(year,month,base.getDate())];
+    if(src.frequency==="monthly")return[dateAtDay(year,month,src.paydayAnchorDay||base.getDate())];
     if(src.frequency==="semimonthly"){
       const dates=[dateAtDay(year,month,1),dateAtDay(year,month,15)];
       // Preserve an explicitly selected initial payday outside the regular 1st/15th cycle.
@@ -4340,8 +4376,8 @@ textarea:focus-visible{
     if(spend.avg>0)why+=` ${spend.text}`;
     return{...base,why,adaptiveCushion:ac.amount};
   }
-  function advancePayday(dateStr,frequency){
-    const d=nextPayday(dateStr,frequency,1);
+  function advancePayday(dateStr,frequency,anchorDay=null){
+    const d=nextPayday(dateStr,frequency,1,anchorDay);
     if(Number.isNaN(d.getTime()))return dateStr;
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
   }
@@ -4944,7 +4980,7 @@ textarea:focus-visible{
     if(paid){
       const date=now.toISOString();
       history.push({
-        id:newPaymentId(),billId,amount:clampMoney(bill.amount),date,
+        id:newPaymentId(),billId,billName:bill.name,amount:clampMoney(bill.amount),date,
         periodKey:view==="totals"?null:snap.key,
         monthKey:view==="totals"?snap.key:monthKeyFor(now)
       });
@@ -4964,7 +5000,7 @@ textarea:focus-visible{
     state={
       ...state,
       bills:state.bills.filter(b=>b.id!==id),
-      paymentHistory:(state.paymentHistory||[]).filter(p=>p.billId!==id)
+      paymentHistory:state.paymentHistory||[]
     };
     if($("billMsg"))setMsg("billMsg","Bill removed.");
     scheduleSave();
@@ -5094,7 +5130,7 @@ textarea:focus-visible{
       const funding=snapshotBillFundingText(x,snapshotView);
       const dueText=x.due?`Due ${x.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:(normalizedBill(x.bill).dueMode==="monthly"?"Monthly bill":"");
       return `
-      <div class="snapshot-bill" data-snapshot-bill="${x.bill.id}" role="button" tabindex="0">
+      <div class="snapshot-bill" data-snapshot-bill="${escapeHtml(x.bill.id)}" role="button" tabindex="0">
         <div class="name">
           <b>${escapeHtml(x.bill.name)}</b>
           <small>${dueText}</small>
@@ -5102,7 +5138,7 @@ textarea:focus-visible{
           <span class="split-secondary">${escapeHtml(funding.secondary)}</span>
         </div>
         <div class="amount">${money(x.bill.amount)}</div>
-        <button type="button" class="paid-toggle ${x.paid?"paid":""}" data-snapshot-paid="${x.bill.id}" data-paid="${x.paid?"1":"0"}">${x.paid?"Paid":"Mark paid"}</button>
+        <button type="button" class="paid-toggle ${x.paid?"paid":""}" data-snapshot-paid="${escapeHtml(x.bill.id)}" data-paid="${x.paid?"1":"0"}">${x.paid?"Paid":"Mark paid"}</button>
       </div>`;
     }).join(""):'<div class="snapshot-empty">Nothing needs to be set aside from this check yet.</div>';
   }
@@ -5220,7 +5256,7 @@ textarea:focus-visible{
       recommendation:{title:"Why this plan",text:"See Stride’s reasoning and confidence.",ids:["strideRecommendationDropdown"],mode:"direct"},
       scenario:{title:"Try a change",text:"Preview how a change would affect the plan.",ids:["scenarioSection"],mode:"direct"},
       complete:{title:"Record paycheck outcome",text:"Tell Stride what actually happened.",ids:["completePaycheckDropdown"],mode:"direct"},
-      advanced:{title:"More plan details",text:"Open only the part of Stride you want to review.",ids:["strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced"],mode:"list"}
+      advanced:{title:"More plan details",text:"Open only the part of Stride you want to review.",ids:["autoplanSection","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced"],mode:"list"}
     };
     const cfg=map[key]; if(!cfg)return;
     const all=["strideRecommendationDropdown","scenarioSection","completePaycheckDropdown","strideLearningDropdown","strideAdaptiveDropdown","strideSystemDropdown","planAdvanced","autoplanSection"];
@@ -5327,7 +5363,7 @@ textarea:focus-visible{
 
     $("billList").innerHTML=filtered.length?filtered.map(x=>{
       const dueText=x.due?`Due ${x.due.toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:(normalizedBill(x.bill).dueMode==="monthly"?"Monthly · date unknown":`Due day ${x.bill.dueDay}`);
-      return `<button type="button" class="bill-row-modern bill-list-row" data-bill-open="${x.bill.id}" aria-label="Open ${escapeHtml(x.bill.name)}">
+      return `<button type="button" class="bill-row-modern bill-list-row" data-bill-open="${escapeHtml(x.bill.id)}" aria-label="Open ${escapeHtml(x.bill.name)}">
         <span class="bill-row-icon" aria-hidden="true">${x.status==="paid"?"✓":"$"}</span>
         <span class="bill-main"><b>${escapeHtml(x.bill.name)}</b><small>${escapeHtml(dueText)}</small></span>
         <span class="bill-amount">${money(x.bill.amount)}</span>
@@ -5392,7 +5428,7 @@ textarea:focus-visible{
       const status=clampMoney(b.overdue)>0?"Overdue":b.daysAway<=5?"Due Soon":"Upcoming";
       const cls=status==="Overdue"?"overdue":status==="Due Soon"?"due":"upcoming";
       const dueLabel=b.dueMode==="monthly"?"Monthly · date unknown":(b.daysAway===0?"Due today":b.daysAway===1?"Due tomorrow":`Due in ${b.daysAway} days`);
-      return `<div class="bill-row-modern" data-home-bill-row="${b.id}" role="button" tabindex="0">
+      return `<div class="bill-row-modern" data-home-bill-row="${escapeHtml(b.id)}" role="button" tabindex="0">
         <div class="bill-main"><b>${escapeHtml(b.name)}</b><small>${dueLabel}</small></div>
         <div class="bill-amount">${money(b.amount)}</div>
         <span class="bill-status ${cls}">${status}</span>
@@ -5664,6 +5700,7 @@ textarea:focus-visible{
   }
 
   function render(){
+    $("downloadRecoveryCopies").classList.toggle("hidden",!session||(!hasUnsyncedChanges&&!cloudSync.recoveryCopies(session.localId).length));
     // Saved paychecks/jobs are core account data. Render them first so an
     // unrelated dashboard widget can never make the income page look empty.
     renderIncomeSources();
@@ -5797,6 +5834,7 @@ textarea:focus-visible{
         state={...state,smartMemory:{...m,autonomousPlan:freshPlan}};
       }
     }
+    if(session&&hydrated)hasUnsyncedChanges=true;
     render();if(!session||!hydrated)return;clearTimeout(saveTimer);
     const revision=++saveRevision;
     const saveAuthRevision=authRevision;
@@ -5823,7 +5861,7 @@ textarea:focus-visible{
           if(!stillCurrent())return;
           const code=String(retryError?.message||firstError?.message||"");
           setCloud(code.includes("CONFLICT")?"Save conflict — changes kept on this device":code.includes("SESSION_EXPIRED")||code.includes("INVALID")?"Save paused — sign in again":"Save paused — retrying","error");
-          if(stillCurrent() && !/CONFLICT|SESSION_EXPIRED|PERMISSION|INVALID/.test(code)){
+          if(stillCurrent() && !/CONFLICT|SESSION_EXPIRED|PERMISSION|INVALID|STATE_DATA/.test(code)){
             clearTimeout(saveTimer);
             saveTimer=setTimeout(()=>{if(stillCurrent())scheduleSave()},5000);
           }
@@ -5859,6 +5897,7 @@ textarea:focus-visible{
     }
     const attempt=++authRevision;
     const stillCurrent=()=>attempt===authRevision;
+    conflictSession=null;$("downloadConflictCopy").classList.add("hidden");$("keepCloudPlan").classList.add("hidden");
     const label=mode==="signup"?"Create account":"Sign in";
     button.disabled=true;
     button.textContent=mode==="signup"?"Creating account…":"Signing in…";
@@ -5896,7 +5935,7 @@ textarea:focus-visible{
       if(!stillCurrent())return;
       clearTimeout(saveTimer);saveTimer=null;
       session=null;hydrated=false;const code=String(e?.message||"");
-      setMsg("authMsg",code.includes("TOO_MANY_ATTEMPTS")?"Too many attempts. Try again later.":code.includes("EMAIL_EXISTS")?"An account already uses that email.":code.includes("WEAK_PASSWORD")?"Use a stronger password.":code.includes("INVALID_LOGIN_CREDENTIALS")||code.includes("INVALID_PASSWORD")||code.includes("EMAIL_NOT_FOUND")?"Could not sign in. Check your email and password.":code.includes("LOCAL_RECOVERY_CONFLICT")?"This device has unsynced changes and the cloud plan has changed. Both copies were preserved. Resolve the conflict before editing.":code.includes("AUTH_TIMEOUT")?"Checkstride could not reach the sign-in service. Check your connection and try again.":code.includes("LOAD_TIMEOUT")?"Signed in, but your plan took too long to load. Try again.":code.includes("LOAD_FAILED")?"Signed in, but Checkstride could not load your saved plan.":"Could not sign in right now.");
+      setMsg("authMsg",code.includes("TOO_MANY_ATTEMPTS")?"Too many attempts. Try again later.":code.includes("EMAIL_EXISTS")?"An account already uses that email.":code.includes("WEAK_PASSWORD")?"Use a stronger password.":code.includes("INVALID_LOGIN_CREDENTIALS")||code.includes("INVALID_PASSWORD")||code.includes("EMAIL_NOT_FOUND")?"Could not sign in. Check your email and password.":code.includes("STATE_DATA_INVALID")?"Your saved plan contains invalid records. It has not been changed; repair is needed before editing.":code.includes("LOCAL_RECOVERY_CONFLICT")?"This device has unsynced changes and the cloud plan has changed. Both copies were preserved. Download your device copy or continue with the cloud plan.":code.includes("AUTH_TIMEOUT")?"Checkstride could not reach the sign-in service. Check your connection and try again.":code.includes("LOAD_TIMEOUT")?"Signed in, but your plan took too long to load. Try again.":code.includes("LOAD_FAILED")?"Signed in, but Checkstride could not load your saved plan.":"Could not sign in right now.");
     }finally{
       if(stillCurrent()){
         button.disabled=false;
@@ -5906,6 +5945,31 @@ textarea:focus-visible{
   }
 
 
+  function downloadRecoveryCopies(uid){
+    const copies=cloudSync.recoveryCopies(uid);
+    if(session?.localId===uid&&hydrated&&hasUnsyncedChanges)copies.push({source:"current unsynced page",data:state});
+    if(!copies.length)return;
+    const url=URL.createObjectURL(new Blob([JSON.stringify({accountId:uid,recoveryCopies:copies},null,2)],{type:"application/json"}));
+    const link=document.createElement("a");link.href=url;link.download="checkstride-recovery.json";link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  $("downloadConflictCopy").onclick=()=>{if(conflictSession)downloadRecoveryCopies(conflictSession.localId)};
+  $("downloadRecoveryCopies").onclick=()=>{if(session&&hydrated)downloadRecoveryCopies(session.localId)};
+  $("keepCloudPlan").onclick=async()=>{
+    if(!conflictSession)return;
+    const s=conflictSession,attempt=++authRevision,button=$("keepCloudPlan");button.disabled=true;
+    try{
+      cloudSync.keepCloud(s.localId);
+      const loaded=await withTimeout(loadState(s),7000,"LOAD_TIMEOUT");
+      if(attempt!==authRevision)return;
+      session=s;state=loaded.state;hydrated=true;localStorage.setItem(SESSION_KEY,JSON.stringify(s));
+      if(loaded.migrationChanged){cloudSync.remember(s.localId,state);await saveState(s,state)}
+      if(attempt!==authRevision)return;
+      setCloud("Saved");conflictSession=null;$("downloadConflictCopy").classList.add("hidden");button.classList.add("hidden");
+      render();show("app");switchPage("home");
+    }catch(error){
+      if(attempt===authRevision)setMsg("authMsg","Could not continue yet. Recovery copies remain on this device. Try again.");
+    }finally{button.disabled=false}
+  };
   $("loadingRetry").onclick=()=>location.reload();
   $("loadingSignIn").onclick=resetToSignIn;
 
@@ -5954,14 +6018,19 @@ textarea:focus-visible{
     try{
       await withTimeout(authRequest("accounts:sendOobCode",{requestType:"PASSWORD_RESET",email}),8000,"RESET_TIMEOUT");
       if(stillCurrent())setMsg("authMsg","Password reset email sent. Check your inbox and spam folder.");
-    }catch{
-      if(stillCurrent())setMsg("authMsg","If that email has an account, a reset email will be sent.");
+    }catch(error){
+      if(stillCurrent())setMsg("authMsg",String(error?.message).includes("EMAIL_NOT_FOUND")?"If that email has an account, a reset email will be sent.":"Could not send reset email. Check your connection and try again.");
     }finally{
       button.disabled=false;
       button.textContent="Forgot password?";
     }
   };
   $("logout").onclick=async()=>{
+    if(session&&hydrated&&hasUnsyncedChanges){
+      try{cloudSync.remember(session.localId,state)}catch(error){
+        if(!String(error?.message).includes("CONFLICT") && !confirm("Your latest changes could not be backed up on this device or saved to the cloud. Download a recovery copy before leaving. Sign out anyway and discard the unsynced page changes?"))return;
+      }
+    }
     authRevision++;saveRevision++;
     clearTimeout(saveTimer);saveTimer=null;
     const signOutSession=session;
@@ -5983,6 +6052,7 @@ textarea:focus-visible{
     const previousPayday=state.payday;
     const previousFrequency=state.frequency;
     state={...state,[id]:["paycheck","extraIncome","cushion"].includes(id)?Number(e.target.value):e.target.value};
+    if(id==="payday" && previousPayday!==state.payday)state={...state,primaryPaydayAnchor:Number(state.payday.slice(-2))};
     if((id==="payday" && previousPayday!==state.payday) || (id==="frequency" && previousFrequency!==state.frequency)){
       state={...state,paycheckOverrides:removeIncomeOverridesForSource("primary")};
     }
@@ -6061,7 +6131,7 @@ textarea:focus-visible{
     if(amount<=0)return setMsg("selectedPaydayMsg","Enter the take-home amount for this payday.");
     const key=incomeOverrideKey(src.id,selectedPaydayKey);
     state={...state,paycheckOverrides:{...(state.paycheckOverrides||{}),[key]:amount}};
-    setMsg("selectedPaydayMsg","Paycheck amount saved.");
+    setMsg("selectedPaydayMsg","Paycheck amount updated — syncing…");
     scheduleSave();
   };
 
@@ -6135,6 +6205,7 @@ textarea:focus-visible{
         state={
           ...state,
           primaryJobName:String(promote.name||"Primary job"),
+          primaryPaydayAnchor:promote.paydayAnchorDay||Number(String(promote.payday).slice(-2)),
           payday:String(promote.payday||""),
           paycheck:clampMoney(promote.paycheck),
           frequency:promote.frequency||"biweekly",
@@ -6202,16 +6273,17 @@ textarea:focus-visible{
       return;
     }
 
+    const paydayAnchorDay=existingSource?.payday===payday && existingSource?.frequency===frequency?existingSource.paydayAnchorDay:Number(payday.slice(-2));
     if(sourceId==="new-primary"){
-      state={...state,primaryJobName:name,payday,paycheck,frequency};
+      state={...state,primaryJobName:name,payday,paycheck,frequency,primaryPaydayAnchor:paydayAnchorDay};
     }else if(sourceId==="new"){
       const rows=Array.isArray(state.additionalPaychecks)?state.additionalPaychecks:[];
-      state={...state,additionalPaychecks:[...rows,{id:newIncomeSourceId(),name,payday,paycheck,frequency}]};
+      state={...state,additionalPaychecks:[...rows,{id:newIncomeSourceId(),name,payday,paycheck,frequency,paydayAnchorDay}]};
     }else if(sourceId==="primary"){
-      state={...state,primaryJobName:name,payday,paycheck,frequency};
+      state={...state,primaryJobName:name,payday,paycheck,frequency,primaryPaydayAnchor:paydayAnchorDay};
     }else{
       const rows=Array.isArray(state.additionalPaychecks)?state.additionalPaychecks:[];
-      state={...state,additionalPaychecks:rows.map(x=>x.id===sourceId?{...x,name,payday,paycheck,frequency}:x)};
+      state={...state,additionalPaychecks:rows.map(x=>x.id===sourceId?{...x,name,payday,paycheck,frequency,paydayAnchorDay}:x)};
     }
 
     if(existingSource && (existingSource.payday!==payday || existingSource.frequency!==frequency)){
@@ -6219,7 +6291,7 @@ textarea:focus-visible{
     }
 
     const returnSource=incomeEditReturnSourceId;
-    setMsg("editJobMsg",(sourceId==="new"||sourceId==="new-primary")?"Job added.":"Job saved.");
+    setMsg("editJobMsg",(sourceId==="new"||sourceId==="new-primary")?"Job added — syncing…":"Job updated — syncing…");
     editingIncomeTargetId=null;
     incomeEditReturnSourceId=null;
     scheduleSave();
@@ -6392,7 +6464,7 @@ textarea:focus-visible{
     const m=getSmartMemory(), existing=primaryGoal();
     state={...state,smartMemory:{...m,goals:[{id:"primary",name,target,saved,createdAt:existing?.createdAt||new Date().toISOString()}],autonomousPlan:null}};
     $("removeGoal")?.classList.remove("hidden");
-    setMsg("goalMsg","Goal saved.");
+    setMsg("goalMsg","Goal updated — syncing…");
     scheduleSave();
     renderPlanOverview();
   };
@@ -6452,7 +6524,7 @@ textarea:focus-visible{
         actualLeft,
         unexpectedSpend:unexpected,
         strategy:state.strategy
-      }].slice(-52),
+      }],
       paycheckOverrides:(()=>{
         const next={...(state.paycheckOverrides||{})};
         const completedDate=dateKey(completedEvent.date);
@@ -6461,11 +6533,12 @@ textarea:focus-visible{
       })(),
       payday:(()=>{
         const primaryPaid=completedEvent.sources.some(s=>s.primary);
-        return primaryPaid?advancePayday(state.payday,state.frequency):state.payday;
+        return primaryPaid?advancePayday(state.payday,state.frequency,state.primaryPaydayAnchor||Number(state.payday.slice(-2))):state.payday;
       })(),
+      primaryPaydayAnchor:state.primaryPaydayAnchor||Number(state.payday.slice(-2)),
       additionalPaychecks:(()=>{
         const ids=new Set(completedEvent.sources.filter(s=>!s.primary).map(s=>s.sourceId));
-        return (state.additionalPaychecks||[]).map(x=>ids.has(x.id)?{...x,payday:advancePayday(x.payday,x.frequency)}:x);
+        return (state.additionalPaychecks||[]).map(x=>ids.has(x.id)?{...x,paydayAnchorDay:x.paydayAnchorDay||Number(x.payday.slice(-2)),payday:advancePayday(x.payday,x.frequency,x.paydayAnchorDay||Number(x.payday.slice(-2)))}:x);
       })(),
       extraIncome:0,
       smartMemory:{...m,planWins:m.planWins+(worked?1:0),planMisses:m.planMisses+(worked?0:1),lastOutcome:worked?"worked":"missed",lastRecommendation:contextualRecommendation().action,lastCompletedPaycheck:new Date().toISOString(),predictions:nextPred,spendingPatterns:{...patterns,unexpected:unexpectedArr},adaptivePlan:{...contextAdjustedPlan(),lastUpdated:new Date().toISOString()},contextCalibration:(()=>{const c=contextCalibration();return{income:c.income.score,spending:c.spending.score,bills:c.bills.score,overall:Math.round((c.income.score+c.spending.score+c.bills.score)/3),drift:c.drift,lastReason:c.weakest}})()},decisionMemory:{contexts:newContexts,lastDecision:{at:new Date().toISOString(),context:dkey,action:decision.action,confidence:decision.confidence,outcome:worked?"worked":"missed"}},diagnostics:[...(Array.isArray(m.diagnostics)?m.diagnostics:[]),{at:new Date().toISOString(),...outcomeDiagnosis()}].slice(-24),autonomousPlan:null
@@ -6859,14 +6932,17 @@ textarea:focus-visible{
         show("auth");
         setMsg("authMsg","Your session expired. Sign in again.");
       }else{
-        const recoveryMessage=code.includes("LOCAL_RECOVERY_CONFLICT")
-          ?"This device has unsynced changes and the cloud plan has changed. Both copies were preserved; resolve the conflict before editing."
+        const recoveryMessage=code.includes("STATE_DATA_INVALID")
+          ?"Your saved plan contains invalid records. It has not been changed; repair is needed before editing."
+          :code.includes("LOCAL_RECOVERY_CONFLICT")
+          ?"This device has unsynced changes and the cloud plan has changed. Both copies were preserved. Download your device copy or continue with the cloud plan."
           :code.includes("REFRESH_TIMEOUT")
           ?"Checkstride could not reach the sign-in service. Your saved session is still here — retry when your connection improves."
           :code.includes("LOAD_TIMEOUT")
             ?"Your plan is taking too long to load."
             :"Checkstride could not restore your session. Your saved plan has not been changed.";
         showStartupRecovery(recoveryMessage);
+        if(code.includes("LOCAL_RECOVERY_CONFLICT")){show("auth");setMsg("authMsg",recoveryMessage)}
       }
     }finally{
       clearTimeout(startupWatch);

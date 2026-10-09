@@ -4,10 +4,12 @@
   "description": "",
   "main": "cloud-sync.js",
   "scripts": {
-    "test": "node --test tests/cloud-sync.test.cjs",
+    "test": "node --test tests/cloud-sync.test.cjs tests/data-validation.test.cjs",
     "test:finance": "node --test tests/finance.test.cjs",
     "test:mobile": "node --test tests/mobile.test.cjs",
-    "test:emulator": "firebase emulators:exec --config tests/firebase.emulator.json --project demo-checkstride-release --only auth,firestore \"node --test tests/isolation.test.cjs\""
+    "test:emulator": "firebase emulators:exec --config tests/firebase.emulator.json --project demo-checkstride-release --only auth,firestore \"node --test tests/isolation.test.cjs tests/auth-emulator.test.cjs tests/rest-emulator.test.cjs\"",
+    "test:functional": "node --test tests/functional.test.cjs",
+    "test:pwa": "node --test tests/pwa.test.cjs"
   },
   "repository": {
     "type": "git",
@@ -22,10 +24,14 @@
   },
   "homepage": "https://github.com/gcfd8hy5mb-ai/Checkstride#readme",
   "devDependencies": {
-    "@firebase/rules-unit-testing": "^4.0.1",
-    "firebase": "^11.10.0",
-    "firebase-tools": "^13.35.1",
-    "playwright": "^1.56.1"
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.0.0",
+    "firebase-tools": "^15.33.0",
+    "playwright": "1.56.1"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.6",
+    "basic-ftp": "^6.2.3"
+  }
 }

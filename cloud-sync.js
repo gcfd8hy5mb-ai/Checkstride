@@ -4,6 +4,21 @@
     const versions=new Map(), blocked=new Set();
     let tail=Promise.resolve();
     const key=uid=>`checkstride_pending_v1:${uid}`;
+    const recoveryKey=uid=>`checkstride_recovery_v1:${uid}`;
+    function recoveryCopies(uid){
+      const archived=JSON.parse(storage.getItem(recoveryKey(uid))||'[]');
+      const pending=storage.getItem(key(uid));
+      return pending?archived.concat(JSON.parse(pending)):archived;
+    }
+    function keepCloud(uid){
+      const pending=storage.getItem(key(uid));
+      if(pending){
+        const archived=JSON.parse(storage.getItem(recoveryKey(uid))||'[]');
+        storage.setItem(recoveryKey(uid),JSON.stringify(archived.concat({...JSON.parse(pending),archivedAt:new Date().toISOString()})));
+        storage.removeItem(key(uid));
+      }
+      blocked.delete(uid);
+    }
     function remember(uid,data){
       const old=storage.getItem(key(uid));
       const entry={base:old?JSON.parse(old).base:versions.get(uid)??null,data:JSON.parse(JSON.stringify(data))};
@@ -34,15 +49,22 @@
           if(response.status===409||response.status===412){blocked.add(uid);throw new Error('SAVE_CONFLICT')}
           if(response.status===401)throw new Error('SESSION_EXPIRED');
           if(response.status===403)throw new Error('SAVE_PERMISSION_DENIED');
-          if(!response.ok)throw new Error('SAVE_FAILED');
+          if(!response.ok){
+            const error=await response.json().catch(()=>({}));
+            if(['FAILED_PRECONDITION','ABORTED'].includes(error?.error?.status)){
+              blocked.add(uid);throw new Error('SAVE_CONFLICT');
+            }
+            throw new Error('SAVE_FAILED');
+          }
           const document=await response.json();
-          if(!document.updateTime)throw new Error('SAVE_UNCONFIRMED');
-          versions.set(uid,document.updateTime);
+          const updateTime=document.updateTime||document.writeResults?.[0]?.updateTime;
+          if(!updateTime)throw new Error('SAVE_UNCONFIRMED');
+          versions.set(uid,updateTime);
           const raw=storage.getItem(key(uid));
           if(raw){
             const pending=JSON.parse(raw);
             if(JSON.stringify(pending.data)===JSON.stringify(snapshot))storage.removeItem(key(uid));
-            else storage.setItem(key(uid),JSON.stringify({...pending,base:document.updateTime}));
+            else storage.setItem(key(uid),JSON.stringify({...pending,base:updateTime}));
           }
         }finally{clearTimeout(timer)}
       };
@@ -50,7 +72,7 @@
       tail=result.catch(()=>{});
       return result;
     }
-    return {remember,restore,save,idle:()=>tail};
+    return {remember,restore,save,keepCloud,recoveryCopies,idle:()=>tail};
   }
   root.createCheckstrideCloudSync=createCloudSync;
   if(typeof module!=='undefined')module.exports=createCloudSync;

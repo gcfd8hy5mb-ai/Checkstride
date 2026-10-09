@@ -1,0 +1,11 @@
+const test=require('node:test'),assert=require('node:assert/strict');const create=require('../cloud-sync');
+test('emulator REST ordinary token: confirmed conditional saves and stale update rejection',async()=>{
+ const auth=await fetch('http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake-emulator-key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:`rest-${Date.now()}@example.test`,password:'emulator-only-password',returnSecureToken:true})});assert.equal(auth.status,200);const user=await auth.json();const url=`http://127.0.0.1:8080/v1/projects/demo-checkstride-release/databases/(default)/documents/users/${user.localId}/state/main`;
+ const headers={Authorization:`Bearer ${user.idToken}`,'Content-Type':'application/json'};
+ const values=new Map(),storage={getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};
+ const sync=create({storage,timeoutMs:45000,request:async({url,init})=>{const r=await fetch(url,init);if(!r.ok)console.error('Emulator conditional error:',await r.clone().json());return r}});sync.restore(user.localId,null);
+ const send=(version,signal,data)=>({url:'http://127.0.0.1:8080/v1/projects/demo-checkstride-release/databases/(default)/documents:commit',init:{method:'POST',headers,signal,body:JSON.stringify({writes:[{update:{name:`projects/demo-checkstride-release/databases/(default)/documents/users/${user.localId}/state/main`,fields:{amount:{doubleValue:data.amount}}},currentDocument:version?{updateTime:version}:{exists:false}}]})}});
+ sync.remember(user.localId,{amount:1.01});await sync.save(user.localId,{amount:1.01},send);let document=await(await fetch(url,{headers})).json();const old=document.updateTime;assert.equal(document.fields.amount.doubleValue,1.01);
+ sync.remember(user.localId,{amount:2.02});await sync.save(user.localId,{amount:2.02},send);assert.equal(storage.getItem(`checkstride_pending_v1:${user.localId}`),null);
+ const stale=await fetch(send(old,null,{amount:0}).url,send(old,null,{amount:0}).init);assert.ok(!stale.ok);const error=await stale.json();assert.ok(['FAILED_PRECONDITION','ABORTED'].includes(error.error.status));document=await(await fetch(url,{headers})).json();assert.equal(document.fields.amount.doubleValue,2.02);
+});
