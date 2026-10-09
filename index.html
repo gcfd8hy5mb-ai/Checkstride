@@ -3878,7 +3878,7 @@ textarea:focus-visible{
   const blank={payday:"",paycheck:0,frequency:"biweekly",primaryJobName:"Primary job",additionalPaychecks:[],paycheckOverrides:{},setupReviewSeen:false,cushion:100,extraIncome:0,strategy:"balanced",bills:[],paycheckHistory:[],paymentHistory:[],recommendationMemory:null,smartMemory:{planWins:0,planMisses:0,lastRecommendation:"",lastOutcome:"",lastSnapshot:null,predictions:[],spendingPatterns:{},lastCompletedPaycheck:null,adaptivePlan:{aggression:"balanced",reason:"",trend:"learning",lastUpdated:null},contextCalibration:{income:0,spending:0,bills:0,overall:0,drift:"none",lastReason:""},decisionMemory:{contexts:{},lastDecision:null},diagnostics:[],autonomousPlan:null,goals:[],warnings:[],coachMode:"guided"}};
   let mode="login", session=null, state={...blank}, hydrated=false, saveTimer=null, saveRevision=0, authRevision=0;
   const cloudSync=createCheckstrideCloudSync({storage:localStorage,request:options=>fetch(options.url,options.init)});
-  let editingBillId=null;
+  let editingBillId=null, billCloseTimer=null;
   let selectedIncomeSourceId=null;
   let selectedPaydayKey=null;
   let incomeCalendarOffset=0;
@@ -3887,7 +3887,7 @@ textarea:focus-visible{
 
   const $=id=>document.getElementById(id);
   const money=n=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(clampMoney(n));
-  const clampMoney=v=>{const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.round(n*100)/100):0};
+  const clampMoney=v=>{const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.round(n*100+Number.EPSILON*Math.abs(n*100))/100):0};
   const daysInMonth=(y,m)=>new Date(y,m+1,0).getDate();
   const dateAtDay=(y,m,d)=>new Date(y,m,Math.min(Math.max(1,Math.trunc(d)||1),daysInMonth(y,m)),12);
 
@@ -4146,7 +4146,7 @@ textarea:focus-visible{
     events.sort((a,b)=>a.date-b.date).forEach(e=>{
       const key=`${e.date.getFullYear()}-${String(e.date.getMonth()+1).padStart(2,"0")}-${String(e.date.getDate()).padStart(2,"0")}`;
       if(!grouped.has(key))grouped.set(key,{date:e.date,income:0,sources:[]});
-      const g=grouped.get(key);g.income+=e.income;g.sources.push(e);
+      const g=grouped.get(key);g.income=clampMoney(g.income+e.income);g.sources.push(e);
     });
     return [...grouped.values()].sort((a,b)=>a.date-b.date);
   }
@@ -4162,27 +4162,25 @@ textarea:focus-visible{
   }
 
   function sourcePaydatesInMonth(src,year,month){
-    if(!src?.payday)return[];
-    const dates=[];
-    const seen=new Set();
-    for(let offset=-8;offset<=12;offset++){
-      let d;
-      if(offset>=0){
-        d=nextPayday(src.payday,src.frequency,offset);
-      }else{
-        d=new Date(src.payday+"T12:00:00");
-        for(let step=0;step<Math.abs(offset);step++){
-          d=previousPayday(
-            `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`,
-            src.frequency
-          );
-        }
+    const base=new Date(String(src?.payday||"")+"T12:00:00");
+    if(Number.isNaN(base.getTime()))return[];
+    if(src.frequency==="monthly")return[dateAtDay(year,month,base.getDate())];
+    if(src.frequency==="semimonthly"){
+      const dates=[dateAtDay(year,month,1),dateAtDay(year,month,15)];
+      // Preserve an explicitly selected initial payday outside the regular 1st/15th cycle.
+      if(base.getFullYear()===year&&base.getMonth()===month&&![1,15].includes(base.getDate())){
+        return dates.filter(d=>d>=base).concat(base).sort((a,b)=>a-b);
       }
-      if(Number.isNaN(d.getTime())||d.getFullYear()!==year||d.getMonth()!==month)continue;
-      const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-      if(!seen.has(key)){seen.add(key);dates.push(d)}
+      return dates;
     }
-    return dates.sort((a,b)=>a-b);
+    const interval=src.frequency==="weekly"?7:14;
+    const first=new Date(year,month,1,12),last=new Date(year,month+1,0,12);
+    const utcDay=d=>Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000;
+    const offset=Math.ceil((utcDay(first)-utcDay(base))/interval);
+    const start=new Date(base);start.setDate(base.getDate()+offset*interval);
+    const dates=[];
+    for(let d=start;d<=last;d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+interval,12))dates.push(d);
+    return dates;
   }
 
   function monthlyIncomeAndBills(date=new Date()){
@@ -4191,7 +4189,7 @@ textarea:focus-visible{
     const bills=(Array.isArray(state.bills)?state.bills:[]).reduce((sum,b)=>sum+clampMoney(b.amount),0);
     const percent=income>0?(bills/income)*100:0;
     const ratio=income>0?bills/income:0;
-    return {income,bills,percent,ratio,remaining:income-bills};
+    return {income:clampMoney(income),bills:clampMoney(bills),percent,ratio,remaining:Math.round((income-bills)*100)/100};
   }
 
   function forecast(){
@@ -4206,9 +4204,9 @@ textarea:focus-visible{
       const due=state.bills.reduce((s,x)=>s+billAmountInWindow(x,a,b),0);
       const income=events[i].income+(i===0?extra:0);
       let available=Math.max(0,income-due-cushion);if(state.strategy==="minimum")available*=.65;
-      const catchup=Math.min(overdue,available);overdue=Math.max(0,overdue-catchup);
+      const catchup=clampMoney(Math.min(overdue,available));overdue=clampMoney(overdue-catchup);
       const safe=Math.max(0,income-due-catchup-cushion),short=Math.max(0,due+cushion+catchup-income);
-      out.push({date:a,due,income,catchup,safe,short,overdue,sources:events[i].sources});
+      out.push({date:a,due:clampMoney(due),income:clampMoney(income),catchup,safe:clampMoney(safe),short:clampMoney(short),overdue,sources:events[i].sources});
     }
     return out;
   }
@@ -4419,7 +4417,7 @@ textarea:focus-visible{
       if(plan.aggression==="balanced")available*=.82;
       if(plan.aggression==="protect")available*=.55;
       if(plan.aggression==="maintain")available*=.25;
-      const catchup=Math.min(overdue,available);overdue=Math.max(0,overdue-catchup);
+      const catchup=clampMoney(Math.min(overdue,available));overdue=clampMoney(overdue-catchup);
       out.push({date:a,due,income,cushion,catchup,remainingOverdue:overdue,safe:Math.max(0,income-due-catchup-cushion),sources:events[i].sources});
     }
     return out;
@@ -4615,14 +4613,14 @@ textarea:focus-visible{
     if(!firstEvent||income<=0)return null;
     const ctx=contextCalibration(), adaptive=contextAdjustedPlan(), goal=primaryGoal(), rows=adaptiveFourCheckPlan(), first=rows[0];
     const due=clampMoney(first?.due||0), baseCushion=outcomeAdjustedCushion().amount;
-    const cushion=adaptive.aggression==="protect"?baseCushion*1.15:adaptive.aggression==="fast"?baseCushion*.85:baseCushion;
+    const cushion=clampMoney(adaptive.aggression==="protect"?baseCushion*1.15:adaptive.aggression==="fast"?baseCushion*.85:baseCushion);
     const overdue=state.bills.reduce((s,b)=>s+clampMoney(b.overdue),0);
     let remaining=Math.max(0,income-due-cushion);
     const catchupRate=adaptive.aggression==="fast"?1:adaptive.aggression==="protect"?.5:.8;
-    const catchup=Math.min(overdue,remaining*catchupRate);remaining=Math.max(0,remaining-catchup);
+    const catchup=clampMoney(Math.min(overdue,remaining*catchupRate));remaining=clampMoney(remaining-catchup);
     const goalNeed=goal?Math.max(0,clampMoney(goal.target)-clampMoney(goal.saved)):0;
-    const goalAllocation=goal?Math.min(goalNeed,remaining*(adaptive.aggression==="protect"?.1:.2)):0;
-    remaining=Math.max(0,remaining-goalAllocation);
+    const goalAllocation=goal?clampMoney(Math.min(goalNeed,remaining*(adaptive.aggression==="protect"?.1:.2))):0;
+    remaining=clampMoney(remaining-goalAllocation);
     const safe=remaining;
     const diagnosis=outcomeDiagnosis();
     return{
@@ -4635,7 +4633,7 @@ textarea:focus-visible{
   function autonomousPlanMatches(a,b){
     if(!a||!b)return false;
     const moneyKeys=["income","due","cushion","catchup","goalAllocation","safe"];
-    return moneyKeys.every(key=>Math.abs(clampMoney(a[key])-clampMoney(b[key]))<=1)
+    return moneyKeys.every(key=>Math.round(clampMoney(a[key])*100)===Math.round(clampMoney(b[key])*100))
       && String(a.strategy||"")===String(b.strategy||"")
       && String(a.goalName||"")===String(b.goalName||"");
   }
@@ -4692,7 +4690,7 @@ textarea:focus-visible{
     const need=Math.max(0,clampMoney(goal.target)-clampMoney(goal.saved));
     if(need<=0)return{active:true,text:`${goal.name} is funded.`,perCheck:0,checks:0};
     const plan=buildAutonomousPlan(), available=clampMoney(plan?.safe||0);
-    const perCheck=Math.max(0,Math.min(need,available*.25));
+    const perCheck=clampMoney(Math.min(need,available*.25));
     const checks=perCheck>0?Math.ceil(need/perCheck):0;
     return{active:true,perCheck,checks,text:perCheck>0?`Set aside about ${money(perCheck)} per paycheck; approximately ${checks} checks to reach ${money(goal.target)}.`:`Protect cash first; this goal should wait until the paycheck margin improves.`};
   }
@@ -4974,6 +4972,7 @@ textarea:focus-visible{
 
 
   window.checkstrideEditBill=(id)=>{
+    clearTimeout(billCloseTimer);
     const bill=state.bills.find(b=>b.id===id);
     if(!bill)return;
     const b=normalizedBill(bill);
@@ -6249,6 +6248,7 @@ textarea:focus-visible{
   }
 
   function resetBillForm(){
+    clearTimeout(billCloseTimer);
     editingBillId=null;
     $("billName").value="";
     $("billAmount").value="";
@@ -6297,7 +6297,8 @@ textarea:focus-visible{
 
     try{renderBillsPage();renderSnapshot();renderHomeUpcoming();renderBillIncomeRatio();renderPlanOverview();renderSetupGuide()}catch(renderErr){console.error("Bill refresh error",renderErr)}
     scheduleSave(0);
-    setTimeout(closeBillForm,80);
+    clearTimeout(billCloseTimer);
+    billCloseTimer=setTimeout(closeBillForm,80);
     }catch(err){
       console.error("Add bill failed",err);
       setMsg("billMsg","Could not add bill. "+(err?.message||"Please try again."));
