@@ -1,5 +1,5 @@
 const CACHE_PREFIX='checkstride-shell-';
-const CACHE=`${CACHE_PREFIX}v9`;
+const CACHE=`${CACHE_PREFIX}v10`;
 const SHELL=['./','./index.html','./cloud-sync.js','./checkstride-logo.svg','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 
 self.addEventListener('install',event=>{
@@ -30,7 +30,7 @@ self.addEventListener('fetch',event=>{
         .then(response=>{
           if(response.ok){
             const copy=response.clone();
-            caches.open(CACHE).then(cache=>cache.put('./index.html','./cloud-sync.js',copy)).catch(()=>{});
+            caches.open(CACHE).then(cache=>cache.put('./index.html',copy)).catch(()=>{});
           }
           return response;
         })

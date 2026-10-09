@@ -15,7 +15,7 @@ Baseline: main at `8a3f07d29d53cc02a8a8b8a78bdf2377a47f5551`. Existing design, a
 - Escaped bill identifiers in HTML attributes; malicious names/IDs remain inert text.
 - Password-reset network failures no longer claim an email will be sent.
 - Existing plan approval and rebuild controls are reachable under Plan → More plan details.
-- PNG PWA icons and Apple touch icon added using the existing logo. Cache version advanced; caches remain scoped to Checkstride and exclude external financial/auth requests.
+- PNG PWA icons and Apple touch icon added using the existing logo. Navigation cache refresh corrected and regression-tested; cache version advanced; caches remain scoped to Checkstride and exclude external financial/auth requests.
 - Repeatable tests and a read-only GitHub Actions regression workflow added. Development tooling updated; patched gRPC and FTP dependencies selected.
 
 ## Validation evidence
